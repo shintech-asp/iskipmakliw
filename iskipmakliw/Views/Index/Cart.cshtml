@@ -1,0 +1,158 @@
+﻿@{
+    ViewData["Title"] = "My Cart";
+    Layout = "_LayoutClientLoggedIn"; // Cork layout
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Cart Items -->
+        <div class="col-lg-8 col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">🛒 Shopping Cart</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Product</th>
+                                    <th scope="col">Price</th>
+                                    <th scope="col">Quantity</th>
+                                    <th scope="col">Total</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Store 1 -->
+                                <tr class="table-secondary">
+                                    <td colspan="5"><strong>ShoeWearShop</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Shoes</td>
+                                    <td>₱5.00</td>
+                                    <td><input type="number" class="form-control w-50" value="20" min="1"></td>
+                                    <td>₱100.00</td>
+                                    <td><button class="btn btn-danger btn-sm">Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Lace</td>
+                                    <td>₱10.00</td>
+                                    <td><input type="number" class="form-control w-50" value="2" min="1"></td>
+                                    <td>₱20.00</td>
+                                    <td><button class="btn btn-danger btn-sm">Remove</button></td>
+                                </tr>
+
+                                <!-- Store 2 -->
+                                <tr class="table-secondary">
+                                    <td colspan="5"><strong>MufflerShop</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Muffler</td>
+                                    <td>₱25.00</td>
+                                    <td><input type="number" class="form-control w-50" value="1" min="1"></td>
+                                    <td>₱25.00</td>
+                                    <td><button class="btn btn-danger btn-sm">Remove</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary + Payment + Address -->
+        <div class="col-lg-4 col-md-12">
+            <!-- Order Summary -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Order Summary</h4>
+                </div>
+                <div class="card-body">
+                    <p class="d-flex justify-content-between">
+                        <span>Subtotal</span>
+                        <span>₱145.00</span>
+                    </p>
+                    <p class="d-flex justify-content-between">
+                        <span>Shipping</span>
+                        <span>₱50.00</span>
+                    </p>
+                    <hr>
+                    <h5 class="d-flex justify-content-between">
+                        <span>Total</span>
+                        <span>₱195.00</span>
+                    </h5>
+                </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Payment Method</h4>
+                </div>
+                <div class="card-body">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="gcash" value="Gcash">
+                        <label class="form-check-label" for="gcash">Gcash</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="COD">
+                        <label class="form-check-label" for="cod">Cash on Delivery (COD)</label>
+                    </div>
+
+                    <!-- Gcash Billing Details -->
+                    <div id="gcashDetails" class="mt-3" style="display:none;">
+                        <label class="form-label">Gcash Number</label>
+                        <input type="text" class="form-control mb-2" placeholder="09XXXXXXXXX">
+                        <label class="form-label">Account Name</label>
+                        <input type="text" class="form-control mb-2" placeholder="Full Name">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Address -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Delivery Address</h4>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="deliveryAddress" id="address1" checked>
+                        <label class="form-check-label w-100" for="address1">
+                            <strong>123 Main St, Quezon City</strong><br>
+                            <small>Contact Person: Juan Dela Cruz</small><br>
+                            <small>Contact Number: 09171234567</small>
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="deliveryAddress" id="address2">
+                        <label class="form-check-label w-100" for="address2">
+                            <strong>456 Sampaloc, Manila</strong><br>
+                            <small>Contact Person: Maria Santos</small><br>
+                            <small>Contact Number: 09987654321</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+
+            <button class="btn btn-success w-100">Proceed to Checkout</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Toggle Gcash details when selecting payment method
+        document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                const gcashDetails = document.getElementById('gcashDetails');
+                if (this.value === 'Gcash') {
+                    gcashDetails.style.display = 'block';
+                } else {
+                    gcashDetails.style.display = 'none';
+                }
+            });
+        });
+    </script>
+}
