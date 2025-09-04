@@ -1,6 +1,14 @@
-﻿@{
+﻿@model int?
+@{
     ViewData["title"] = "Home";
-    Layout = "~/Views/Shared/_LayoutClient.cshtml";
+    if (Model == null)
+    {
+        Layout = "~/Views/Shared/_LayoutClient.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutClientLoggedIn.cshtml";
+    }
 }
 <div class="row layout-top-spacing">
     <div class="col-lg-3 col-md-3 col-sm-3 mb-4">
@@ -32,9 +40,9 @@
 <div class="row">
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-primary">NEW</span>
-            <img src="../src/assets/img/product-3.jpg" class="card-img-top" alt="~.">
+            <img src="~/src/assets/img/product-3.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
                 <div class="row">
                     <div class="col-12 mb-4">
@@ -58,7 +66,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger"></span>
             <img src="~/src/assets/img/product-8.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -82,7 +90,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger"></span>
             <img src="~/src/assets/img/product-13.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -106,7 +114,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6  mb-md-0 mb-4" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6  mb-md-0 mb-4" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger">SALE</span>
             <img src="~/src/assets/img/product-4.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -133,7 +141,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-primary">NEW</span>
             <img src="~/src/assets/img/product-5.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -159,7 +167,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6  mb-md-0 mb-4" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6  mb-md-0 mb-4" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger">SALE</span>
             <img src="~/src/assets/img/product-6.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -186,7 +194,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger"></span>
             <img src="~/src/assets/img/product-7.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -212,7 +220,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger"></span>
             <img src="~/src/assets/img/product-1.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -238,7 +246,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6  mb-md-0 mb-4" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6  mb-md-0 mb-4" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger">SALE</span>
             <img src="~/src/assets/img/product-9.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -265,7 +273,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger"></span>
             <img src="~/src/assets/img/product-10.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -289,7 +297,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-primary">NEW</span>
             <img src="~/src/assets/img/product-11.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -315,7 +323,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger"></span>
             <img src="~/src/assets/img/product-12.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -341,7 +349,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger"></span>
             <img src="~/src/assets/img/product-14.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -367,7 +375,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger"></span>
             <img src="~/src/assets/img/product-15.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -393,7 +401,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger"></span>
             <img src="~/src/assets/img/product-16.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -419,7 +427,7 @@
     </div>
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger"></span>
             <img src="~/src/assets/img/product-17.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -446,7 +454,7 @@
 
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger"></span>
             <img src="~/src/assets/img/product-18.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">
@@ -473,7 +481,7 @@
 
 
     <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-        <a class="card style-6" asp-controller="Index" asp-action="Product"">
+        <a class="card style-6" asp-controller="Index" asp-action="Product" asp-route-id="@Model">
             <span class="badge badge-danger"></span>
             <img src="~/src/assets/img/product-19.jpg" class="card-img-top" alt="~.">
             <div class="card-footer">

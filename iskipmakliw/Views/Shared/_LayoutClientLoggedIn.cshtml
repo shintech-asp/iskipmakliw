@@ -1,10 +1,25 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+
+    // Dashboard (Shop or Cart)
+    var isDashboardActive = currentController == "Index" &&
+                           (currentAction == "Index" || currentAction == "Cart");
+
+    // Orders
+    var isOrdersActive = currentController == "Index" && currentAction == "Orders";
+
+    // Account
+    var isAccountActive = currentController == "Index" && currentAction == "Account";
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
     <title>@ViewData["title"]</title>
+    <link rel="icon" type="image/x-icon" href="~/src/assets/img/favicon.ico" />
     <link href="~/layouts/collapsible-menu/css/light/loader.css" rel="stylesheet" type="text/css" />
     <link href="~/layouts/collapsible-menu/css/dark/loader.css" rel="stylesheet" type="text/css" />
     <script src="~/layouts/collapsible-menu/loader.js"></script>
@@ -42,6 +57,50 @@
     <link rel="stylesheet" type="text/css" href="~/src/assets/css/light/apps/ecommerce-details.css">
     <link rel="stylesheet" type="text/css" href="~/src/assets/css/dark/components/tabs.css">
     <link rel="stylesheet" type="text/css" href="~/src/assets/css/dark/apps/ecommerce-details.css">
+
+    <link rel="stylesheet" type="text/css" href="~/src/assets/css/dark/forms/switches.css">
+    <link rel="stylesheet" type="text/css" href="~/src/assets/css/light/forms/switches.css">
+    <link href="~/src/plugins/css/light/pricing-table/css/component.css" rel="stylesheet" type="text/css">
+    <link href="~/src/plugins/css/dark/pricing-table/css/component.css" rel="stylesheet" type="text/css">
+    <!-- WIZARD -->
+    <link rel="stylesheet" type="text/css" href="~/src/plugins/src/stepper/bsStepper.min.css">
+    <link rel="stylesheet" type="text/css" href="~/src/assets/css/light/scrollspyNav.css">
+    <link rel="stylesheet" type="text/css" href="~/src/plugins/css/light/stepper/custom-bsStepper.css">
+    <link rel="stylesheet" type="text/css" href="~/src/assets/css/dark/scrollspyNav.css">
+    <link rel="stylesheet" type="text/css" href="~/src/plugins/css/dark/stepper/custom-bsStepper.css">
+    <!-- FILE UPLOADER -->
+    <link rel="stylesheet" href="~/src/plugins/src/filepond/filepond.min.css">
+    <link rel="stylesheet" href="~/src/plugins/src/filepond/FilePondPluginImagePreview.min.css">
+    <link href="~/src/plugins/css/light/filepond/custom-filepond.css" rel="stylesheet" type="text/css">
+    <link href="~/src/plugins/css/dark/filepond/custom-filepond.css" rel="stylesheet" type="text/css">
+
+    <link rel="stylesheet" href="~/src/plugins/src/filepond/filepond.min.css">
+    <link rel="stylesheet" href="~/src/plugins/src/filepond/FilePondPluginImagePreview.min.css">
+    <link href="~/src/plugins/src/notification/snackbar/snackbar.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="~/src/plugins/src/sweetalerts2/sweetalerts2.css">
+
+    <link href="~/src/plugins/css/light/filepond/custom-filepond.css" rel="stylesheet" type="text/css" />
+    <link href="~/src/assets/css/light/components/tabs.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="~/src/assets/css/light/elements/alert.css">
+
+    <link href="~/src/plugins/css/light/sweetalerts2/custom-sweetalert.css" rel="stylesheet" type="text/css" />
+    <link href="~/src/plugins/css/light/notification/snackbar/custom-snackbar.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="~/src/assets/css/light/forms/switches.css">
+    <link href="~/src/assets/css/light/components/list-group.css" rel="stylesheet" type="text/css">
+
+    <link href="~/src/assets/css/light/users/account-setting.css" rel="stylesheet" type="text/css" />
+
+
+
+    <link href="~/src/plugins/css/dark/filepond/custom-filepond.css" rel="stylesheet" type="text/css" />
+    <link href="~/src/assets/css/dark/components/tabs.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="~/src/assets/css/dark/elements/alert.css">
+
+    <link href="~/src/plugins/css/dark/sweetalerts2/custom-sweetalert.css" rel="stylesheet" type="text/css" />
+    <link href="~/src/plugins/css/dark/notification/snackbar/custom-snackbar.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="~/src/assets/css/dark/forms/switches.css">
+    <link href="~/src/assets/css/dark/users/account-setting.css" rel="stylesheet" type="text/css">
+    <link href="~/src/assets/css/dark/components/list-group.css" rel="stylesheet" type="text/css">
 </head>
 <body class="alt-menu">
     <!-- BEGIN LOADER -->
@@ -55,6 +114,7 @@
     <!--  END LOADER -->
     <!--  BEGIN NAVBAR  -->
     <div class="header-container container-xxl">
+
         <header class="header navbar navbar-expand-sm expand-header">
 
             <a href="javascript:void(0);" class="sidebarCollapse">
@@ -200,7 +260,7 @@
                     <a href="javascript:void(0);" class="nav-link dropdown-toggle user" id="userProfileDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div class="avatar-container">
                             <div class="avatar avatar-sm avatar-indicators avatar-online">
-                                <img alt="avatar" src="~/src/assets/img/OakMartPNG.png" class="rounded-circle">
+                                <img alt="avatar" src="~/src/assets/img/profile-30.png" class="rounded-circle">
                             </div>
                         </div>
                     </a>
@@ -212,14 +272,29 @@
                                     &#x1F44B;
                                 </div>
                                 <div class="media-body">
-                                    <h5>Guest</h5>
-                                    <p>Logged in first</p>
+                                    <h5>Shaun Park</h5>
+                                    <p>Project Leader</p>
                                 </div>
                             </div>
                         </div>
                         <div class="dropdown-item">
-                            <a asp-controller="Index" asp-action="Login">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> <span>Log In</span>
+                            <a href="user-profile.html">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> <span>Profile</span>
+                            </a>
+                        </div>
+                        <div class="dropdown-item">
+                            <a href="app-mailbox.html">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-inbox"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg> <span>Inbox</span>
+                            </a>
+                        </div>
+                        <div class="dropdown-item">
+                            <a asp-controller="Index" asp-action="BecomeSeller">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-bag"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> <span>Become a seller</span>
+                            </a>
+                        </div>
+                        <div class="dropdown-item">
+                            <a asp-controller="Index" asp-action="Index" asp-route-id="@null">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> <span>Log Out</span>
                             </a>
                         </div>
                     </div>
@@ -239,6 +314,7 @@
         <div class="sidebar-wrapper sidebar-theme">
 
             <nav id="sidebar">
+
                 <div class="navbar-nav theme-brand flex-row text-center">
                     <div class="nav-logo">
                         <div class="nav-item theme-logo">
@@ -259,25 +335,79 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="shadow-bottom"></div>
                 <ul class="list-unstyled menu-categories" id="accordionExample">
-                    <li class="menu active">
-                        <a href="#dashboard" data-bs-toggle="collapse" aria-expanded="true" class="dropdown-toggle">
-                            <div class="">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+
+                    <!-- Dashboard -->
+                    <li class="menu @(isDashboardActive ? "active" : "")">
+                        <a href="#dashboard" data-bs-toggle="collapse" aria-expanded="@(isDashboardActive.ToString().ToLower())" class="dropdown-toggle">
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
                                 <span>Dashboard</span>
                             </div>
                             <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
                             </div>
                         </a>
-                        <ul class="collapse submenu list-unstyled show" id="dashboard" data-bs-parent="#accordionExample">
-                            <li class="active">
-                                <a asp-action="Index" asp-controller="Index"> Shop </a>
+                        <ul class="collapse submenu list-unstyled @(isDashboardActive ? "show" : "")" id="dashboard" data-bs-parent="#accordionExample">
+                            <li class="@(currentAction == "Index" ? "active" : "")">
+                                <a asp-action="Index" asp-controller="Index" asp-route-id="1"> Shop </a>
+                            </li>
+                            <li class="@(currentAction == "Cart" ? "active" : "")">
+                                <a asp-action="Cart" asp-controller="Index" asp-route-id="1"> Cart </a>
                             </li>
                         </ul>
                     </li>
 
+                    <!-- Tracking Section -->
+                    <li class="menu menu-heading">
+                        <div class="heading">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-minus">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>TRACKING</span>
+                        </div>
+                    </li>
+                    <li class="menu @(isOrdersActive ? "active" : "")">
+                        <a asp-controller="Index" asp-action="Orders" aria-expanded="false" class="dropdown-toggle">
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-truck">
+                                    <rect x="1" y="3" width="15" height="13"></rect>
+                                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                </svg>
+                                <span>Orders</span>
+                            </div>
+                        </a>
+                    </li>
+
+                    <!-- Settings Section -->
+                    <li class="menu menu-heading">
+                        <div class="heading">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-minus">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>SETTINGS</span>
+                        </div>
+                    </li>
+                    <li class="menu @(isAccountActive ? "active" : "")">
+                        <a asp-controller="Index" asp-action="Account" aria-expanded="false" class="dropdown-toggle">
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                </svg>
+                                <span>Account Settings</span>
+                            </div>
+                        </a>
+                    </li>
                 </ul>
 
             </nav>
@@ -317,6 +447,8 @@
     <script src="~/src/plugins/src/waves/waves.min.js"></script>
     <script src="~/layouts/collapsible-menu/app.js"></script>
     <script src="~/src/plugins/src/global/vendors.min.js"></script>
+    <script src="~/src/plugins/src/highlight/highlight.pack.js"></script>
+    <script src="~/src/assets/js/scrollspyNav.js"></script>
     <!-- END GLOBAL MANDATORY SCRIPTS -->
     <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
     <script src="~/src/plugins/src/apex/apexcharts.min.js"></script>
@@ -335,6 +467,47 @@
     <script src="~/src/plugins/src/glightbox/glightbox.min.js"></script>
     <script src="~/src/plugins/src/splide/splide.min.js"></script>
     <script src="~/src/assets/js/apps/ecommerce-details.js"></script>
+
+    <script src="~/src/plugins/src/stepper/bsStepper.min.js"></script>
+    <script src="~/src/plugins/src/stepper/custom-bsStepper.min.js"></script>
+
+    <script src="~/src/plugins/src/filepond/filepond.min.js"></script>
+    <script src="~/src/plugins/src/filepond/FilePondPluginFileValidateType.min.js"></script>
+    <script src="~/src/plugins/src/filepond/FilePondPluginImageExifOrientation.min.js"></script>
+    <script src="~/src/plugins/src/filepond/FilePondPluginImagePreview.min.js"></script>
+    <script src="~/src/plugins/src/filepond/FilePondPluginImageCrop.min.js"></script>
+    <script src="~/src/plugins/src/filepond/FilePondPluginImageResize.min.js"></script>
+    <script src="~/src/plugins/src/filepond/FilePondPluginImageTransform.min.js"></script>
+    <script src="~/src/plugins/src/filepond/filepondPluginFileValidateSize.min.js"></script>
+    <script src="~/src/plugins/src/filepond/custom-filepond.js"></script>
+
+    <script src="~/src/plugins/src/notification/snackbar/snackbar.min.js"></script>
+    <script src="~/src/plugins/src/sweetalerts2/sweetalerts2.min.js"></script>
+    <script src="~/src/assets/js/users/account-settings.js"></script>
+    <script>
+
+        var getSwithchInput = document.querySelector('#toggle-1');
+        var pricingContainer = document.querySelector('.pricing-plans-container')
+
+        getSwithchInput.addEventListener('change', function() {
+            var isChecked = getSwithchInput.checked;
+            if (isChecked) {
+                pricingContainer.classList.add('billed-yearly');
+
+                pricingContainer.querySelectorAll('.badge').forEach(element => {
+                    element.classList.add('show')
+                });
+
+            } else {
+                pricingContainer.classList.remove('billed-yearly')
+                pricingContainer.querySelectorAll('.badge').forEach(element => {
+                    element.classList.remove('show')
+                });
+            }
+        })
+
+    </script>
+    @RenderSection("scripts", required: false)
 
 </body>
 </html>
