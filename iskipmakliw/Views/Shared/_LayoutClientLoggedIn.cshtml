@@ -4,7 +4,7 @@
 
     // Dashboard (Shop or Cart)
     var isDashboardActive = currentController == "Index" &&
-                           (currentAction == "Index" || currentAction == "Cart");
+                           (currentAction == "Index" || currentAction == "Cart" || currentAction == "Customization");
 
     // Orders
     var isOrdersActive = currentController == "Index" && currentAction == "Orders";
@@ -358,6 +358,9 @@
                         <ul class="collapse submenu list-unstyled @(isDashboardActive ? "show" : "")" id="dashboard" data-bs-parent="#accordionExample">
                             <li class="@(currentAction == "Index" ? "active" : "")">
                                 <a asp-action="Index" asp-controller="Index" asp-route-id="1"> Shop </a>
+                            </li>
+                            <li class="@(currentAction == "Customization" ? "active" : "")">
+                                <a asp-action="Customization" asp-controller="Index" asp-route-id="1"> Customize your furniture</a>
                             </li>
                             <li class="@(currentAction == "Cart" ? "active" : "")">
                                 <a asp-action="Cart" asp-controller="Index" asp-route-id="1"> Cart </a>

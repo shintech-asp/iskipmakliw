@@ -46,5 +46,9 @@ namespace iskipmakliw.Controllers
         {
             return View();
         }
+        public IActionResult Customization()
+        {
+            return View();
+        }
     }
 }
