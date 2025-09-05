@@ -4,7 +4,7 @@
 
     // Dashboard (Shop or Cart)
     var isDashboardActive = currentController == "Index" &&
-                           (currentAction == "Index" || currentAction == "Cart");
+                           (currentAction == "Index" || currentAction == "Cart" || currentAction == "Customization");
 
     // Orders
     var isOrdersActive = currentController == "Index" && currentAction == "Orders";
@@ -19,7 +19,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
     <title>@ViewData["title"]</title>
-    <link rel="icon" type="image/x-icon" href="~/src/assets/img/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="~/src/assets/img/OakMartPNG.png" />
     <link href="~/layouts/collapsible-menu/css/light/loader.css" rel="stylesheet" type="text/css" />
     <link href="~/layouts/collapsible-menu/css/dark/loader.css" rel="stylesheet" type="text/css" />
     <script src="~/layouts/collapsible-menu/loader.js"></script>
@@ -358,6 +358,9 @@
                         <ul class="collapse submenu list-unstyled @(isDashboardActive ? "show" : "")" id="dashboard" data-bs-parent="#accordionExample">
                             <li class="@(currentAction == "Index" ? "active" : "")">
                                 <a asp-action="Index" asp-controller="Index" asp-route-id="1"> Shop </a>
+                            </li>
+                            <li class="@(currentAction == "Customization" ? "active" : "")">
+                                <a asp-action="Customization" asp-controller="Index" asp-route-id="1"> Customize your furniture</a>
                             </li>
                             <li class="@(currentAction == "Cart" ? "active" : "")">
                                 <a asp-action="Cart" asp-controller="Index" asp-route-id="1"> Cart </a>
