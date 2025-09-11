@@ -1,8 +1,28 @@
 ﻿@{
     ViewData["Title"] = "Dashboard";
-    Layout = "_LayoutSeller";
 }
-<div class="row layout-top-spacing">
+@model UserDetails;
+@if(Model.Status == "Pending" || Model.Status == "For Approval")
+{
+    <div class="alert alert-warning my-5">
+        @if(Model.Status == "Pending")
+        {
+            <p>
+                <strong>Warning!</strong> Your account is currently @Model.Status.ToLower() for your payment. Please contact support for further assistance.
+            </p>
+            <button class="btn btn-primary">Pay now!</button>
+        }
+        else
+        {
+            <p>
+                <strong>Warning!</strong> Your account is currently waiting @Model.Status.ToLower(). Please contact support for further assistance.
+            </p>
+        }
+    </div>
+}
+else
+{
+    <div class="row layout-top-spacing">
     <div class="col-xl-8 col-lg-12 col-md-12 col-sm-12 col-12 layout-spacing">
         <div class="widget widget-chart-one">
             <div class="widget-heading">
@@ -809,3 +829,4 @@ opacity: 0.45;
     </div>
     
 </div>
+}

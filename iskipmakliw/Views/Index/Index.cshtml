@@ -1,14 +1,6 @@
 ﻿@model int?
 @{
     ViewData["title"] = "Home";
-    if (Model == null)
-    {
-        Layout = "~/Views/Shared/_LayoutClient.cshtml";
-    }
-    else
-    {
-        Layout = "~/Views/Shared/_LayoutClientLoggedIn.cshtml";
-    }
 }
 <div class="row layout-top-spacing">
     <div class="col-lg-3 col-md-3 col-sm-3 mb-4">

@@ -1,0 +1,382 @@
+﻿@{
+    ViewData["Title"] = "Registration";
+}
+@model UserDetails;
+<div class="row layout-top-spacing" id="cancel-row">
+    <div id="wizard_Default" class="col-lg-12 layout-spacing">
+        <div class="statbox widget box box-shadow">
+            <div class="widget-header">
+                <div class="row">
+                    <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                        <h4>Become a seller</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="widget-content widget-content-area">
+                <div class="bs-stepper stepper-form-one">
+                    <div class="bs-stepper-header" role="tablist">
+                        <div class="step" data-target="#defaultStep-one">
+                            <button type="button" class="step-trigger" role="tab">
+                                <span class="bs-stepper-circle">1</span>
+                                <span class="bs-stepper-label">Step One</span>
+                            </button>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step" data-target="#defaultStep-two">
+                            <button type="button" class="step-trigger" role="tab">
+                                <span class="bs-stepper-circle">2</span>
+                                <span class="bs-stepper-label">Step Two</span>
+                            </button>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step" data-target="#defaultStep-three">
+                            <button type="button" class="step-trigger" role="tab">
+                                <span class="bs-stepper-circle">3</span>
+                                <span class="bs-stepper-label">
+                                    <span class="bs-stepper-title">Step Three</span>
+                                </span>
+                            </button>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step" data-target="#defaultStep-four">
+                            <button type="button" class="step-trigger" role="tab">
+                                <span class="bs-stepper-circle">4</span>
+                                <span class="bs-stepper-label">
+                                    <span class="bs-stepper-title">Final Step</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    <form asp-controller="Home" asp-action="BecomeSeller" method="post" enctype="multipart/form-data">
+                        <div class="bs-stepper-content">
+                            <div id="defaultStep-one" class="content" role="tabpanel">
+                                    <div class="statbox widget box box-shadow">
+                                        <div class="mb-3">
+                                            <label class="form-label">Type of ID: </label>
+                                            <select class="form-select" asp-for="TypeId">
+                                                <option value="Drivers License">Drivers License</option>
+                                                <option value="PhilSys">PhilSys</option>
+                                                <option value="Passport">Passport</option>
+                                                <option value="Tin">TIN</option>
+                                            </select>
+                                        </div>
+                                        <label class="form-label">Upload ID: </label>
+                                        <div class="profile-image" hidden>
+
+                                            <div class="img-uploader-content">
+                                            <input type="file" class="filepond" asp-for="GovernmentIdFile"
+                                                        accept="image/png, image/jpeg, image/gif" />
+                                            </div>
+
+                                        </div>
+                                        <div class="multiple-file-upload">
+                                            <input type="file"
+                                                    class="filepond file-upload-multiple"
+                                                    asp-for="GovernmentIdFile"
+                                                    data-allow-reorder="true"
+                                                    data-max-file-size="3MB"
+                                                    data-max-files="1"
+                                                    id="GovId">
+                                        </div>
+                                    </div>
+
+                                <div class="button-action mt-5">
+                                    <button type="button" class="btn btn-secondary btn-prev me-3" disabled>Prev</button>
+                                    <button type="button" class="btn btn-secondary btn-nxt">Next</button>
+                                </div>
+                            </div>
+                            <div id="defaultStep-two" class="content" role="tabpanel">
+
+                                <div class="container mt-4 text-center" id="cameraDiv">
+                                    <h4>Camera Preview</h4>
+                                    <video id="camera" width="640" height="480" autoplay class="border"></video>
+                                    <br />
+                                    <button id="capture" type="button" class="btn btn-primary mt-3">📸 Capture</button>
+                                </div>
+                                    <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="previewLabel">Preview Capture</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body text-center">
+                                                    <img id="capturedImg" class="img-fluid rounded" alt="Captured face" />
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" id="retake" class="btn btn-secondary" data-bs-dismiss="modal">Retake</button>
+                                                    <button type="button" id="accept" class="btn btn-success">Accept</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="profile-image" hidden>
+
+                                        <div class="img-uploader-content">
+                                        <input type="file" class="filepond"
+                                               asp-for="CapturedIdFile" accept="image/png, image/jpeg, image/gif" />
+                                        </div>
+
+                                    </div>
+                                    <div class="multiple-file-upload mt-5">
+                                        <input type="file"
+                                               class="filepond file-upload-multiple"
+                                               asp-for="CapturedIdFile"
+                                               data-allow-reorder="true"
+                                               data-max-file-size="3MB"
+                                               data-max-files="1"
+                                               id="idPicture"
+                                        required>
+                                    </div>
+
+                                <div class="button-action mt-5">
+                                    <button type="button" class="btn btn-secondary btn-prev me-3">Prev</button>
+                                    <button type="button" class="btn btn-secondary btn-nxt">Next</button>
+                                </div>
+                            </div>
+                            <div id="defaultStep-three" class="content" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <label for="defaultInputAddress" class="form-label">Name on Card</label>
+                                        <input asp-for="CardName" type="text" class="form-control" id="defaultInputAddress" placeholder="John Dela Cruz">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="defaultInputAddress2" class="form-label">Card Number</label>
+                                        <input asp-for="CardNumber" type="text" class="form-control" id="defaultInputAddress2" maxlength="12" pattern="\d{12}" inputmode="numeric">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="defaultInputCity" class="form-label">Expiry Date</label>
+                                        <input asp-for="ExpirationDate" type="month" class="form-control" id="defaultInputCity" placeholder="MM/YY">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="defaultInputCity" class="form-label">CVV</label>
+                                        <input asp-for="Cvv" type="text" class="form-control" id="defaultInputCity" maxlength="3" pattern="\d{3}" inputmode="numeric">
+                                    </div>
+                                </div>
+                                <div class="button-action mt-5">
+                                    <button type="button" class="btn btn-secondary btn-prev me-3">Prev</button>
+                                    <button type="button" class="btn btn-secondary btn-nxt">Next</button>
+                                </div>
+                            </div>
+                            <div id="defaultStep-four" class="content" role="tabpanel">
+                                    <div class="statbox widget box box-shadow">
+                                        <div class="widget-content widget-content-area">
+
+                                            <div class="pricing-table-2 ">
+
+                                                <!-- Billing Cycle  -->
+                                                <div class="billing-cycle-radios mt-5">
+
+                                                    <div class="switch form-switch-custom switch-inline form-switch-primary inner-label-toggle show">
+                                                    <div class="input-checkbox">
+                                                        <span class="switch-chk-label label-left">Monthly</span>
+
+                                                        <!-- Hidden input bound to your model -->
+                                                        <input type="hidden" asp-for="Subscription" id="subscriptionHidden" value="Monthly" />
+
+                                                        <!-- Your toggle switch -->
+                                                        <input type="checkbox"
+                                                               class="switch-input"
+                                                               role="switch"
+                                                               id="toggle-1"
+                                                               onchange="document.getElementById('subscriptionHidden').value = this.checked ? 'Yearly' : 'Monthly';
+                                                                           this.checked
+                                                                               ? this.closest('.inner-label-toggle')?.classList.add('show')
+                                                                               : this.closest('.inner-label-toggle')?.classList.remove('show');
+                                                                       " />
+                                                        <span class="switch-chk-label label-right">Yearly</span>
+                                                    </div>
+
+                                                    </div>
+
+                                                </div>
+
+                                                <!-- Pricing Plans Container -->
+                                                <div class="pricing-plans-container mt-5 billed-yearly">
+                                                    <!-- Plan -->
+                                                    <div class="pricing-plan mb-5">
+
+                                                        <span class="badge badge-pill badge-warning show">45% Off</span>
+
+                                                        <div class="pricing-header-section">
+                                                            <div class="pricing-header">
+                                                                <h3>Basic</h3>
+                                                                <p>Most Popular</p>
+                                                            </div>
+
+                                                            <div class="pricing-header-pricing">
+                                                                <p class="pricing monthly-pricing">$ 9.50</p>
+                                                                <p class="pricing yearly-pricing">$ 5.50</p>
+                                                                <p class="sub-title monthly-pricing-label">Per month</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="pricing-plan-features mb-4">
+                                                            <ul>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 100MB Storage</li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 1 Guests + 2.50 per extra seat</li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 100 Automations/mo</li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 1 Domains</li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 6 Month Update</li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 48 Hours Support</li>
+                                                            </ul>
+                                                        </div>
+                                                        <div class="text-center">
+                                                        <input asp-for="PlansId" class="form-check-input" type="radio" id="offer3" value="1">
+                                                        </div>
+                                                    </div>
+                                                    <!-- Plan -->
+                                                    <div class="pricing-plan mb-5 recommanded">
+
+                                                        <span class="badge badge-pill badge-warning show">45% Off</span>
+
+                                                        <div class="pricing-header-section">
+                                                            <div class="pricing-header">
+                                                                <h3>Plus</h3>
+                                                                <p>Recommended</p>
+                                                            </div>
+
+                                                            <div class="pricing-header-pricing">
+                                                                <p class="pricing monthly-pricing">$ 19.50</p>
+                                                                <p class="pricing yearly-pricing">$ 9.50</p>
+                                                                <p class="sub-title monthly-pricing-label">Per month</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="pricing-plan-features mb-4">
+                                                            <ul>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> Unlimited</li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 5 Guests + 2 per extra seat</li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 1000 Automations/mo</li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 5 Domains</li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 1 Year Update</li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 24 Hours Support</li>
+                                                            </ul>
+                                                        </div>
+                                                        <div class="text-center">
+                                                        <input asp-for="PlansId" value="1" class="form-check-input" type="radio" id="offer3" value="2">
+                                                        </div>
+                                                    </div>
+                                                    <!-- Plan -->
+                                                    <div class="pricing-plan mb-5">
+
+                                                        <span class="badge badge-pill badge-warning show">45% Off</span>
+
+                                                        <div class="pricing-header-section">
+                                                            <div class="pricing-header">
+                                                                <h3>Business</h3>
+                                                                <p>Best Value</p>
+                                                            </div>
+
+                                                            <div class="pricing-header-pricing">
+                                                                <p class="pricing monthly-pricing">$ 29.50</p>
+                                                                <p class="pricing yearly-pricing">$ 19.50</p>
+                                                                <p class="sub-title monthly-pricing-label">Per month</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="pricing-plan-features mb-4">
+                                                            <ul>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> Unlimited</li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 10 Guests + 5 per extra seat</li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 20k Automations/mo </li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 10 Domains</li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 2 Year Update</li>
+                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> Priority Support</li>
+                                                            </ul>
+                                                        </div>
+                                                        <div class="text-center">
+                                                        <input asp-for="PlansId" value="1" class="form-check-input" type="radio" id="offer3" value="3">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                <div class="button-action mt-3">
+                                    <button type="button" class="btn btn-secondary btn-prev me-3">Prev</button>
+                                    <button type="submit" class="btn btn-success me-3">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<canvas id="snapshot" width="640" height="480" style="display:none;"></canvas>
+@section Scripts {
+    <script>
+        const video = document.getElementById('camera');
+        const canvas = document.getElementById('snapshot');
+        const ctx = canvas.getContext('2d');
+        const captureBtn = document.getElementById('capture');
+        const capturedImg = document.getElementById('capturedImg');
+        const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+
+        let stream;
+
+        // Start the camera
+        function startCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(s => {
+                    stream = s;
+                    video.srcObject = s;
+                })
+                .catch(err => console.error("Camera error:", err));
+        }
+
+        // Stop the camera
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                stream = null;
+            }
+        }
+
+        // Start camera on page load
+        startCamera();
+
+        // ✅ Configure FilePond globally so files submit with form
+        FilePond.setOptions({
+            instantUpload: false, // don’t upload via AJAX
+            storeAsFile: true     // keep file in <input> so it posts with form
+        });
+
+        // Init FilePond on #idPicture
+        const pond = FilePond.create(document.getElementById('idPicture'));
+
+        // Capture photo
+        captureBtn.addEventListener('click', () => {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            capturedImg.src = canvas.toDataURL("image/png");
+            previewModal.show();
+        });
+
+        // Retake
+        document.getElementById('retake').addEventListener('click', () => {
+            previewModal.hide();
+            startCamera();
+        });
+
+        // Accept → add to FilePond
+        document.getElementById('accept').addEventListener('click', () => {
+            fetch(capturedImg.src)
+                .then(res => res.blob())
+                .then(blob => {
+                    const file = new File([blob], "capture.png", { type: "image/png" });
+                    pond.removeFiles();
+                    pond.addFile(file);
+                    previewModal.hide();
+                    stopCamera();
+                    $("#cameraDiv").hide();
+                });
+        });
+    </script>
+}

@@ -1,12 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using iskipmakliw.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace iskipmakliw.Controllers
 {
+    [Authorize(Roles = "Seller")]
     public class SellerController : Controller
     {
+        ApplicationDbContext _context;
+        public SellerController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
         public IActionResult Index()
         {
-            return View();
+            var user = _context.UserDetails.FirstOrDefault(u => u.UsersId == 6);
+            return View(user);
         }
         public IActionResult Chats()
         {
