@@ -20,7 +20,9 @@ namespace iskipmakliw.Data
                 {
                     Username = "Administrator",
                     Email = "admin@test.com",
-                    DateCreated = DateTime.Now
+                    DateCreated = DateTime.Now,
+                    ContactNumber = "09123456789",
+                    Role = "Admin"
                 };
 
                 // Hash password at runtime
@@ -29,6 +31,39 @@ namespace iskipmakliw.Data
                 context.Users.Add(admin);
                 context.SaveChanges();
             }
+            if (!context.Plans.Any(u => u.PlanName == "Basic"
+                         || u.PlanName == "Plus"
+                         || u.PlanName == "Business"))
+            {
+                var plans = new List<Plans>
+                    {
+                        new Plans
+                        {
+                            PlanName = "Basic",
+                            PlanDetails = "For individuals starting out",
+                            Price = 999,
+                            Discount = 20
+                        },
+                        new Plans
+                        {
+                            PlanName = "Plus",
+                            PlanDetails = "For growing users",
+                            Price = 1999,
+                            Discount = 15
+                        },
+                        new Plans
+                        {
+                            PlanName = "Business",
+                            PlanDetails = "For teams and enterprises",
+                            Price = 4999,
+                            Discount = 10
+                        }
+                    };
+
+                context.Plans.AddRange(plans);
+                context.SaveChanges();
+            }
+        }
+
         }
     }
-}

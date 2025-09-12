@@ -64,19 +64,20 @@
                                         <div class="profile-image" hidden>
 
                                             <div class="img-uploader-content">
-                                            <input type="file" class="filepond" asp-for="GovernmentIdFile"
-                                                        accept="image/png, image/jpeg, image/gif" />
+                                                <input type="file" class="filepond"
+                                                       asp-for="GovernmentIdFile" accept="image/png, image/jpeg, image/gif" />
                                             </div>
 
                                         </div>
-                                        <div class="multiple-file-upload">
+                                        <div class="multiple-file-upload mt-5">
                                             <input type="file"
-                                                    class="filepond file-upload-multiple"
-                                                    asp-for="GovernmentIdFile"
-                                                    data-allow-reorder="true"
-                                                    data-max-file-size="3MB"
-                                                    data-max-files="1"
-                                                    id="GovId">
+                                                   class="filepond file-upload-multiple"
+                                                   asp-for="GovernmentIdFile"
+                                                   data-allow-reorder="true"
+                                                   data-max-file-size="3MB"
+                                                   data-max-files="1"
+                                                   id="govPicture"
+                                                   required>
                                         </div>
                                     </div>
 
@@ -351,7 +352,7 @@
 
         // Init FilePond on #idPicture
         const pond = FilePond.create(document.getElementById('idPicture'));
-
+        FilePond.create(document.getElementById('govPicture'));
         // Capture photo
         captureBtn.addEventListener('click', () => {
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);

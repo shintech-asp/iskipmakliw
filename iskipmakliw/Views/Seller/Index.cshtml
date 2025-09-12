@@ -2,7 +2,7 @@
     ViewData["Title"] = "Dashboard";
 }
 @model Payments;
-@if (Model.Status == "Pending" || Model.Users?.UserDetails?.Status == "For Approval" || Model.Users?.UserDetails?.Status == "Pending")
+@if (Model.Status == "Pending" || Model.Users?.UserDetails?.Status == "For approval" || Model.Users?.UserDetails?.Status == "Pending")
 {
     <div class="alert alert-warning my-5">
         @if(Model.Status == "Pending")

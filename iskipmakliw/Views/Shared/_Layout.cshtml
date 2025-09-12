@@ -44,7 +44,11 @@
     <link rel="stylesheet" type="text/css" href="~/src/assets/css/dark/apps/ecommerce-details.css">
     <link href="~/src/assets/css/light/apps/invoice-preview.css" rel="stylesheet" type="text/css">
     <link href="~/src/assets/css/dark/apps/invoice-preview.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="~/src/assets/css/light/forms/switches.css">
+    <link href="~/src/plugins/css/light/pricing-table/css/component.css" rel="stylesheet" type="text/css" />
 
+    <link rel="stylesheet" type="text/css" href="~/src/assets/css/dark/forms/switches.css">
+    <link href="~/src/plugins/css/dark/pricing-table/css/component.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="~/src/plugins/src/filepond/filepond.min.css">
     <link rel="stylesheet" href="~/src/plugins/src/filepond/FilePondPluginImagePreview.min.css">
     <link href="~/src/plugins/src/notification/snackbar/snackbar.min.css" rel="stylesheet" type="text/css" />
@@ -73,6 +77,14 @@
     <link href="~/src/assets/css/dark/components/list-group.css" rel="stylesheet" type="text/css">
 
     <link href="~/src/assets/css/dark/users/account-setting.css" rel="stylesheet" type="text/css" />
+
+    <link rel="stylesheet" type="text/css" href="~/src/plugins/src/stepper/bsStepper.min.css">
+
+    <link rel="stylesheet" type="text/css" href="~/src/assets/css/light/scrollspyNav.css" />
+    <link rel="stylesheet" type="text/css" href="~/src/plugins/css/light/stepper/custom-bsStepper.css">
+
+    <link rel="stylesheet" type="text/css" href="~/src/assets/css/dark/scrollspyNav.css" />
+    <link rel="stylesheet" type="text/css" href="~/src/plugins/css/dark/stepper/custom-bsStepper.css">
 </head>
 <body class="alt-menu">
     <!-- BEGIN LOADER -->
@@ -363,6 +375,30 @@
     <script src="~/src/plugins/src/notification/snackbar/snackbar.min.js"></script>
     <script src="~/src/plugins/src/sweetalerts2/sweetalerts2.min.js"></script>
     <script src="~/src/assets/js/users/account-settings.js"></script>
+
+    <script src="~/src/plugins/src/stepper/bsStepper.min.js"></script>
+    <script src="~/src/plugins/src/stepper/custom-bsStepper.min.js"></script>
+    <script>
+        var getSwithchInput = document.querySelector('#toggle-1');
+        var pricingContainer = document.querySelector('.pricing-plans-container')
+
+        getSwithchInput.addEventListener('change', function() {
+            var isChecked = getSwithchInput.checked;
+            if (isChecked) {
+                pricingContainer.classList.add('billed-yearly');
+
+                pricingContainer.querySelectorAll('.badge').forEach(element => {
+                    element.classList.add('show')
+                });
+
+            } else {
+                pricingContainer.classList.remove('billed-yearly')
+                pricingContainer.querySelectorAll('.badge').forEach(element => {
+                    element.classList.remove('show')
+                });
+            }
+        })
+    </script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

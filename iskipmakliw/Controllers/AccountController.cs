@@ -49,7 +49,7 @@ namespace iskipmakliw.Controllers
                     HttpContext.Session.SetString("Email", user.Email);
                     HttpContext.Session.SetString("ContactNumber", user.ContactNumber);
                     HttpContext.Session.SetString("Role", user.Role);
-                    HttpContext.Session.SetString("Status", user.UserDetails.Status);
+                    HttpContext.Session.SetString("Status", user.UserDetails?.Status ?? "N/A");
 
                     // 🔹 Add cookie authentication (optional but recommended)
                     var claims = new List<Claim>

@@ -1,8 +1,11 @@
 ﻿using iskipmakliw.Data;
 using iskipmakliw.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace iskipmakliw.Controllers
 {
@@ -78,7 +81,25 @@ namespace iskipmakliw.Controllers
                 var roleChange = _context.Users.Find(user.UsersId);
                 if (roleChange != null)
                 {
-                    roleChange.Role = "Seller"; // ✅ assignment not comparison
+                    roleChange.Role = "Seller";
+
+                    HttpContext.Session.SetInt32("UsersId", roleChange.Id);
+                    HttpContext.Session.SetString("Username", roleChange.Username);
+                    HttpContext.Session.SetString("Email", roleChange.Email);
+                    HttpContext.Session.SetString("ContactNumber", roleChange.ContactNumber);
+                    HttpContext.Session.SetString("Role", roleChange.Role);
+                    HttpContext.Session.SetString("Status", roleChange.UserDetails?.Status ?? "N/A");
+
+                    var claims = new List<Claim>
+                    {
+                        new Claim("UsersId", roleChange.Id.ToString()),
+                        new Claim(ClaimTypes.Role, roleChange.Role)
+                    };
+
+                    var identity = new ClaimsIdentity(claims, "MyCookieAuth");
+                    var principal = new ClaimsPrincipal(identity);
+
+                    HttpContext.SignInAsync("MyCookieAuth", principal);
                 }
 
                 // Get plan
@@ -93,7 +114,7 @@ namespace iskipmakliw.Controllers
                             PaymentDetails = "Subscription",
                             Status = "Pending",
                             UsersId = user.UsersId,
-                            CreatedAt = DateTime.Now.AddMonths(1)
+                            DueDate = DateTime.Now.AddMonths(1)
                         });
                     }
                     else if (user.Subscription == "Yearly")
@@ -105,12 +126,11 @@ namespace iskipmakliw.Controllers
                             PaymentDetails = "Subscription",
                             Status = "Pending",
                             UsersId = user.UsersId,
-                            CreatedAt = DateTime.Now.AddMonths(1)
+                            DueDate = DateTime.Now.AddMonths(1)
                         });
                     }
                 }
 
-                // Save everything in one go
                 _context.SaveChanges();
 
                 return RedirectToAction("Index", "Seller");

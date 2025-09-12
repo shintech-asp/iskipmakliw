@@ -47,7 +47,7 @@ namespace iskipmakliw.Controllers
                 users.Password = hasher.HashPassword(users, users.Password);
                 _context.Users.Add(users);
                 _context.SaveChanges();
-                return RedirectToAction("Login");
+                return RedirectToAction("Login", "Account");
             }else if(Confirm != users.Password)
             {
                 ViewBag.Error = "Password and Confirm Password do not match";
