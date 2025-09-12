@@ -92,7 +92,8 @@ namespace iskipmakliw.Controllers
                             Amount = plan.Price,
                             PaymentDetails = "Subscription",
                             Status = "Pending",
-                            UsersId = user.UsersId
+                            UsersId = user.UsersId,
+                            CreatedAt = DateTime.Now.AddMonths(1)
                         });
                     }
                     else if (user.Subscription == "Yearly")
@@ -103,7 +104,8 @@ namespace iskipmakliw.Controllers
                             Amount = discountedPrice * 12, // yearly subscription
                             PaymentDetails = "Subscription",
                             Status = "Pending",
-                            UsersId = user.UsersId
+                            UsersId = user.UsersId,
+                            CreatedAt = DateTime.Now.AddMonths(1)
                         });
                     }
                 }

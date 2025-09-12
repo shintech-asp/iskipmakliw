@@ -8,6 +8,8 @@
         public string Status { get; set; }
         public int UsersId { get; set; }
         public Users Users { get; set; }
-        public DateTime DueDate { get; set; }
+        public DateTime? DueDate { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public int? SellersId { get; set; }
     }
 }
