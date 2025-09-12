@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Payment Success";
+    var status = ViewBag.PaymentStatus?.ToString() ?? "unknown";
+}
+
+<div class="container mt-5 text-center">
+    @if (status == "paid")
+    {
+        <h2 class="text-success">Payment Successful!</h2>
+        <p>Your payment has been received and confirmed.</p>
+    }
+    else
+    {
+        <h2 class="text-danger">Payment Failed</h2>
+        <p>We couldn’t confirm your payment. Please try again.</p>
+    }
+
+    <a asp-controller="Seller" asp-action="Index" class="btn btn-primary mt-3">Return to Merchant</a>
+</div>

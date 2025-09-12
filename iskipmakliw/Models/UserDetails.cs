@@ -13,18 +13,23 @@ namespace iskipmakliw.Models
         public string CardNumber { get; set; }
         public int Cvv { get; set; }
         public DateTime ExpirationDate { get; set; }
+
+        // Foreign keys
         public int UsersId { get; set; }
         public Users Users { get; set; }
         public int? PlansId { get; set; }
         public Plans Plans { get; set; }
+
         public string? Status { get; set; }
         public string? Subscription { get; set; }
         public int? SubscriptionDuration { get; set; }
 
+        // Uploads (ignored in DB)
         [NotMapped]
         public IFormFile? GovernmentIdFile { get; set; }
 
         [NotMapped]
         public IFormFile? CapturedIdFile { get; set; }
     }
+
 }

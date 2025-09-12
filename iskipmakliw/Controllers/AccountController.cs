@@ -34,7 +34,7 @@ namespace iskipmakliw.Controllers
                 return View(users);
             }
 
-            var user = _context.Users.FirstOrDefault(u => u.Email == users.Email);
+            var user = _context.Users.Include(u => u.UserDetails).FirstOrDefault(u => u.Email == users.Email);
 
             if (user != null)
             {
@@ -49,6 +49,7 @@ namespace iskipmakliw.Controllers
                     HttpContext.Session.SetString("Email", user.Email);
                     HttpContext.Session.SetString("ContactNumber", user.ContactNumber);
                     HttpContext.Session.SetString("Role", user.Role);
+                    HttpContext.Session.SetString("Status", user.UserDetails.Status);
 
                     // 🔹 Add cookie authentication (optional but recommended)
                     var claims = new List<Claim>

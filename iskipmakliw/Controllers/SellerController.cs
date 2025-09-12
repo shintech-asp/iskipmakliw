@@ -1,6 +1,7 @@
 ﻿using iskipmakliw.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace iskipmakliw.Controllers
 {
@@ -14,7 +15,11 @@ namespace iskipmakliw.Controllers
         }
         public IActionResult Index()
         {
-            var user = _context.UserDetails.FirstOrDefault(u => u.UsersId == 6);
+            var user = _context.Payments.Include(p => p.Users)
+                            .ThenInclude(u => u.UserDetails)
+                            .ThenInclude(u => u.Plans)
+                            .Where(u => u.Users.Id == HttpContext.Session.GetInt32("UsersId"))
+                            .FirstOrDefault();
             return View(user);
         }
         public IActionResult Chats()

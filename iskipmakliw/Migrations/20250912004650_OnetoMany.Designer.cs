@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iskipmakliw.Data;
 
@@ -11,9 +12,11 @@ using iskipmakliw.Data;
 namespace iskipmakliw.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250912004650_OnetoMany")]
+    partial class OnetoMany
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -102,9 +105,6 @@ namespace iskipmakliw.Migrations
                     b.Property<double?>("Amount")
                         .HasColumnType("float");
 
-                    b.Property<DateTime>("DueDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("PaymentDetails")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -181,6 +181,9 @@ namespace iskipmakliw.Migrations
                     b.Property<byte[]>("GovernmentId")
                         .HasColumnType("varbinary(max)");
 
+                    b.Property<int?>("PaymentsId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("PlansId")
                         .HasColumnType("int");
 
@@ -202,10 +205,11 @@ namespace iskipmakliw.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PaymentsId");
+
                     b.HasIndex("PlansId");
 
-                    b.HasIndex("UsersId")
-                        .IsUnique();
+                    b.HasIndex("UsersId");
 
                     b.ToTable("UserDetails");
                 });
@@ -287,19 +291,28 @@ namespace iskipmakliw.Migrations
 
             modelBuilder.Entity("iskipmakliw.Models.UserDetails", b =>
                 {
+                    b.HasOne("iskipmakliw.Models.Payments", null)
+                        .WithMany("UserDetails")
+                        .HasForeignKey("PaymentsId");
+
                     b.HasOne("iskipmakliw.Models.Plans", "Plans")
                         .WithMany("UserDetails")
                         .HasForeignKey("PlansId");
 
                     b.HasOne("iskipmakliw.Models.Users", "Users")
-                        .WithOne("UserDetails")
-                        .HasForeignKey("iskipmakliw.Models.UserDetails", "UsersId")
+                        .WithMany()
+                        .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Plans");
 
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("iskipmakliw.Models.Payments", b =>
+                {
+                    b.Navigation("UserDetails");
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.Plans", b =>
@@ -314,8 +327,6 @@ namespace iskipmakliw.Migrations
                     b.Navigation("Gallery");
 
                     b.Navigation("Payments");
-
-                    b.Navigation("UserDetails");
                 });
 #pragma warning restore 612, 618
         }

@@ -11,8 +11,14 @@
         public DateTime DateCreated { get; set; }
         public DateTime? DateArchived { get; set; }
         public DateTime? DateModified { get; set; }
+
+        // Navigation properties
         public ICollection<Gallery>? Gallery { get; set; }
         public ICollection<Billings>? Billings { get; set; }
         public ICollection<Payments>? Payments { get; set; }
+
+        // 🔹 Add 1-to-1 relationship with UserDetails
+        public UserDetails? UserDetails { get; set; }
     }
+
 }

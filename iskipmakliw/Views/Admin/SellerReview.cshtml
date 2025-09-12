@@ -1,0 +1,153 @@
+﻿@model iskipmakliw.Models.Payments
+@{
+    ViewData["Title"] = "Review Client Payment";
+}
+<div class="row mt-5">
+    <div class="col-xl-12 col-lg-12 col-md-12 layout-spacing">
+        <form class="section general-info">
+            <div class="info">
+                <h6 class="">General Information</h6>
+                <div class="row">
+                    <div class="col-lg-11 mx-auto">
+                        <div class="row">
+                            <div class="col-xl-12 col-lg-12 col-md-8 mt-md-0 mt-4">
+                                <div class="form">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="fullName">Full Name</label>
+                                                <input type="text" class="form-control mb-3" id="fullName" value="@Model.Users.Username" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="profession">Profession</label>
+                                                <input type="text" class="form-control mb-3" id="profession" value="@Model.Users.Role" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="plan">Plan</label>
+                                                <input type="text" class="form-control mb-3" id="plan" value="@Model.Users?.UserDetails?.Plans?.PlanName" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="subscription">Subscription</label>
+                                                <input type="text" class="form-control mb-3" id="subscription" value="@Model.Users?.UserDetails?.Subscription" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="paymentStatus">Payment Status</label>
+                                                <input type="text" class="form-control mb-3" id="paymentStatus" value="@Model.Status" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="phone">Phone</label>
+                                                <input type="text" class="form-control mb-3" id="phone" value="@Model.Users?.ContactNumber" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="email">Email</label>
+                                                <input type="text" class="form-control mb-3" id="email" value="@Model.Users?.Email" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-xl-12 col-lg-12 col-md-12 layout-spacing">
+        <form asp-controller="Admin" asp-action="SellerReview" asp-route-Id="@Model.Users.Id" class="section social">
+            <div class="info">
+                <h5 class="">Status</h5>
+                <div class="row">
+                    <div class="col-md-11 mx-auto">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="input-group social-tweet mb-3">
+                                    <select class="form-select" name="Status">
+                                        <option hidden selected>@Model.Users.UserDetails.Status</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Approved">Approved</option>
+                                        <option value="Declined">Declined</option>
+                                        <option value="For approval">For approval</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 mt-1">
+                        <div class="form-group text-end">
+                            <button class="btn btn-warning _effect--ripple waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#documentsModal">
+                                Documents
+                            </button>
+                            <button class="btn btn-secondary _effect--ripple waves-effect waves-light" type="submit">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Documents Modal -->
+<div class="modal fade" id="documentsModal" tabindex="-1" aria-labelledby="documentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="documentsModalLabel">Client Documents</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body row text-center">
+
+                <!-- Government ID -->
+                <div class="col-md-6 mb-3">
+                    <h6>Government ID</h6>
+                    @if (Model.Users.UserDetails?.GovernmentId != null && Model.Users.UserDetails.GovernmentId.Length > 0)
+                    {
+                        var base64Gov = Convert.ToBase64String(Model.Users.UserDetails.GovernmentId);
+                        <img src="data:image/png;base64,@base64Gov" class="img-fluid border rounded" style="max-height:300px;" />
+                    }
+                    else
+                    {
+                        <p class="text-muted">No government ID uploaded.</p>
+                    }
+                </div>
+
+                <!-- Captured ID -->
+                <div class="col-md-6 mb-3">
+                    <h6>Captured ID</h6>
+                    @if (Model.Users.UserDetails?.CapturedId != null && Model.Users.UserDetails.CapturedId.Length > 0)
+                    {
+                        var base64Cap = Convert.ToBase64String(Model.Users.UserDetails.CapturedId);
+                        <img src="data:image/png;base64,@base64Cap" class="img-fluid border rounded" style="max-height:300px;" />
+                    }
+                    else
+                    {
+                        <p class="text-muted">No captured ID uploaded.</p>
+                    }
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light-dark" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
