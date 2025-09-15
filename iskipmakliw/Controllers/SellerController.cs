@@ -75,7 +75,7 @@ namespace iskipmakliw.Controllers
             if (product != null)
             {
                 product.Gallery = _context.Gallery
-                    .Where(g => g.pUsersId == userId && g.pProductId == product.Id)
+                    .Where(g => g.pUsersId == userId && g.ProductId == product.Id)
                     .ToList();
             }
 
@@ -130,7 +130,7 @@ namespace iskipmakliw.Controllers
             if (productVar != null)
             {
                 productVar.Gallery = _context.Gallery
-                    .Where(g => g.pUsersId == userId && g.pProductId == productVar.Id)
+                    .Where(g => g.pUsersId == userId && g.ProductId == productVar.Id)
                     .ToList();
             }
             return View(productVar);
@@ -224,7 +224,7 @@ namespace iskipmakliw.Controllers
                     {
                         Image = ms.ToArray(),
                         pUsersId = int.Parse(User.FindFirst("UsersId")?.Value),
-                        pProductId = productVariant.Id,
+                        ProductId = productVariant.Id,
                         ImageType = "Item image"
                     };
                     _context.Gallery.Add(gallery);

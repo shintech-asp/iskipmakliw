@@ -1,9 +1,11 @@
 ﻿using iskipmakliw.Data;
 using iskipmakliw.Models;
+using iskipmakliw.Models.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Security.Claims;
 
@@ -23,7 +25,29 @@ namespace iskipmakliw.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            var userId = int.Parse(User.FindFirst("UsersId")?.Value);
+
+            var data = _context.Product
+                .Select(p => new ClientViewModel
+                {
+                    ProductId = p.Id,
+                    Name = p.Name,
+
+                    // Pick the lowest variant price
+                    Price = p.ProductVariants
+                        .OrderBy(v => v.Price)
+                        .Select(v => v.Price)
+                        .FirstOrDefault(),
+
+                    // Pick the first image (if any)
+                    FirstImage = p.Gallery
+                        .OrderBy(g => g.Id)
+                        .Select(g => g.Image)
+                        .FirstOrDefault()
+                })
+                .ToList();
+
+            return View(data);
         }
 
         public IActionResult Account()
