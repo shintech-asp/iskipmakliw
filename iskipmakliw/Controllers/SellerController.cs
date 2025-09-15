@@ -44,7 +44,9 @@ namespace iskipmakliw.Controllers
             {
                 if (filter == null)
                 {
+                    product.pUsersId = int.Parse(User.FindFirst("UsersId")?.Value);
                     var newProduct = _context.Product.Add(product);
+                   
                     _context.SaveChanges();
                     TempData["success"] = "Product added successfully.";
                     return View(product);
@@ -62,16 +64,83 @@ namespace iskipmakliw.Controllers
             }
                 
         }
-        public IActionResult ProductEdit()
+        public IActionResult ProductEdit(int Id)
         {
-            return View();
+            var userId = int.Parse(User.FindFirst("UsersId")?.Value);
+            var product = _context.ProductVariants
+                        .Include(v => v.Product)
+                        .Include(v => v.Gallery)
+                        .FirstOrDefault(v => v.Id == Id);
+
+            if (product != null)
+            {
+                product.Gallery = _context.Gallery
+                    .Where(g => g.pUsersId == userId && g.pProductId == product.Id)
+                    .ToList();
+            }
+
+            return View(product);
+        }
+        [HttpPost]
+        public IActionResult ProductEdit(ProductVariants product, string ButtonType, int Id)
+        {
+            ModelState.Remove("Product");
+            if (ModelState.IsValid)
+            {
+                if(ButtonType == "Save")
+                {
+                    var existing = _context.ProductVariants.FirstOrDefault(p => p.Id == Id);
+
+                    if (existing != null)
+                    {
+                        // Update existing
+                        existing.ProductId = product.ProductId;
+                        existing.Material = product.Material;
+                        existing.Dimension = product.Dimension;
+                        existing.Color = product.Color;
+                        existing.Price = product.Price;
+                        existing.Quantity = product.Quantity;
+                        existing.Discount = product.Discount;
+
+                        _context.ProductVariants.Update(existing);
+                        TempData["success"] = "Item successfully updated";
+                        _context.SaveChanges();
+                    }
+                }else if(ButtonType == "Remove")
+                {
+                    var existing = _context.ProductVariants.FirstOrDefault(p => p.Id == Id);
+                    if (existing != null)
+                    {
+                        existing.isArchive = DateTime.Now;
+                        _context.ProductVariants.Update(existing);
+                        TempData["success"] = "Item successfully deleted";
+                        _context.SaveChanges();
+                        return RedirectToAction("Index");
+                    }
+
+                }
+            }
+            var userId = int.Parse(User.FindFirst("UsersId")?.Value);
+
+            var productVar = _context.ProductVariants
+                        .Include(v => v.Product)
+                        .Include(v => v.Gallery)
+                        .FirstOrDefault(v => v.Id == Id);
+
+            if (productVar != null)
+            {
+                productVar.Gallery = _context.Gallery
+                    .Where(g => g.pUsersId == userId && g.pProductId == productVar.Id)
+                    .ToList();
+            }
+            return View(productVar);
         }
         public IActionResult ProductList()
         {
             var userId = int.Parse(User.FindFirst("UsersId")?.Value);
 
             var data = _context.Product
-                        .Include(u => u.ProductVariants)
+                        .Include(u => u.ProductVariants.Where(g => g.isArchive == null))
                         .Include(g => g.Gallery)
                         .Where(d => d.pUsersId == userId)
                         .ToList();
@@ -83,10 +152,9 @@ namespace iskipmakliw.Controllers
             var userId = int.Parse(User.FindFirst("UsersId")?.Value);
 
             var data = _context.ProductVariants
-                           .Include(u => u.Product)
-                           .ThenInclude(g => g.Gallery)
-                           .Where(d => d.Product.Id == Id && d.Product.pUsersId == userId)
-                           .ToList();
+                    .Include(v => v.Product)
+                    .Where(u => u.ProductId == Id && u.Product.pUsersId == userId && u.isArchive == null)
+                    .ToList();
 
             var productName = _context.Product
                               .Where(n => n.pUsersId == userId && n.Id == Id)
@@ -100,27 +168,76 @@ namespace iskipmakliw.Controllers
             return View(ProductDetailsViewModel);
         }
         [HttpPost]
-        public IActionResult ProductDetails(ProductDetailsViewModel model)
+        public IActionResult ProductDetails(ProductDetailsViewModel model, IFormFile Image, int Id)
         {
-            //if (string.IsNullOrEmpty(model.VariantsJson))
-            //{
-            //    TempData["Error"] = "No variants were submitted.";
-            //    return RedirectToAction("ProductDetails", new { id = model.Product.Id });
-            //}
+            if (model?.ProductDetails == null)
+                return View(model);
 
-            //var variants = JsonConvert.DeserializeObject<List<ProductVariants>>(model.VariantsJson);
+            ModelState.Remove("Product");
+            ModelState.Remove("ProductVariants");
+            ModelState.Remove("ProductDetails.Product");
+            ModelState.Remove("ProductDetails.ProductId");
 
-            //foreach (var v in variants)
-            //{
-            //    v.ProductId = model.Product.Id;
-            //    _context.ProductVariants.Add(v);
-            //}
+            if (ModelState.IsValid)
+            {
+                ProductVariants productVariant;
 
-            //_context.SaveChanges();
+                if (model.ProductDetails.Id == 0)
+                {
+                    productVariant = new ProductVariants
+                    {
+                        ProductId = Id,
+                        Material = model.ProductDetails.Material,
+                        Dimension = model.ProductDetails.Dimension,
+                        Color = model.ProductDetails.Color,
+                        Price = model.ProductDetails.Price,
+                        Quantity = model.ProductDetails.Quantity,
+                        Discount = model.ProductDetails.Discount
+                    };
+                    _context.ProductVariants.Add(productVariant);
+                }
+                else
+                {
+                    productVariant = new ProductVariants
+                    {
+                        Id = model.ProductDetails.Id, // make sure Id is set
+                        ProductId = model.ProductDetails.Id,
+                        Material = model.ProductDetails.Material,
+                        Dimension = model.ProductDetails.Dimension,
+                        Color = model.ProductDetails.Color,
+                        Price = model.ProductDetails.Price,
+                        Quantity = model.ProductDetails.Quantity,
+                        Discount = model.ProductDetails.Discount
+                    };
+                    _context.ProductVariants.Update(productVariant);
+                }
 
-            //TempData["Success"] = "Variants added successfully.";
-            return View();
+                // Save once to ensure productVariant.Id is generated
+                _context.SaveChanges();
+
+                if (Image != null)
+                {
+                    using var ms = new MemoryStream();
+                    Image.CopyTo(ms);
+
+                    var gallery = new Gallery
+                    {
+                        Image = ms.ToArray(),
+                        pUsersId = int.Parse(User.FindFirst("UsersId")?.Value),
+                        pProductId = productVariant.Id,
+                        ImageType = "Item image"
+                    };
+                    _context.Gallery.Add(gallery);
+                    _context.SaveChanges();
+                }
+
+                return RedirectToAction("Index", "Seller");
+            }
+
+            return View(model);
         }
+
+
 
         public IActionResult Users()
         {

@@ -13,7 +13,7 @@ namespace iskipmakliw.Models
         public double Price { get; set; }
         public int Quantity { get; set; }
         public int? Discount { get; set; }
-        [NotMapped]
-        public IFormFile? UploadedImage { get; set; }
+        public ICollection<Gallery>? Gallery { get; set; }
+        public DateTime? isArchive { get; set; }
     }
 }

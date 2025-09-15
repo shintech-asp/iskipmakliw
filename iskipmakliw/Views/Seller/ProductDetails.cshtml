@@ -36,36 +36,51 @@
                         {
                             @foreach (var data in Model.ProductVariants)
                             {
-                                <tr role="row">
+                                    <tr role="row">
                                     <td>
-                                        <div class="d-flex justify-content-left align-items-center">
-                                            <div class="avatar  me-3">
-                                                @{
-                                                    var galleryItem = data.Product.Gallery?.FirstOrDefault();
-                                                }
-
-                                                @if (galleryItem?.Image != null)
-                                                {
-                                                    var base64Img = Convert.ToBase64String(galleryItem.Image);
-                                                    <img src="data:image/png;base64,@base64Img" alt="Avatar" width="64" height="64">
-                                                }
-                                                else
-                                                {
-                                                    <img src="~/src/assets/img/OakMartLogo.png" alt="Avatar" width="64" height="64">
-                                                }
-
-                                            </div>
-                                            <div class="d-flex flex-column">
-                                                <span class="text-truncate fw-bold">@data.Material</span>
-                                            </div>
+                                        <div class="d-flex flex-column">
+                                            <span class="text-truncate fw-bold">@data.Material</span>
                                         </div>
                                     </td>
-                                
                                     <td>@data.Dimension</td>
-                                    <td>@data.Color</td>
+                                        @if(data.Color == null)
+                                        {
+                                            <td>No Color</td>
+                                        }
+                                        else
+                                        {
+                                            <td>@data.Color</td>
+                                        }
                                     <td>@data.Price</td>
-                                    <td>@data.Quantity</td>
-                                    <td class="text-center">
+                                    <td>
+                                            <div class="d-flex justify-content-left align-items-center">
+                                                <div class="d-flex flex-column">
+                                                    <span class="text-truncate fw-bold">@data.Quantity</span>
+                                                </div>
+                                                <div class="badge  me-3">
+                                                    @{
+                                                        string badge;
+                                                        string cont;
+                                                        if(data.Quantity >= 10)
+                                                        {
+                                                            badge = "badge badge-success";
+                                                            cont = "Good stocks";
+                                                        }else if(data.Quantity < 10 && data.Quantity > 0)
+                                                        {
+                                                            badge = "badge badge-warning";
+                                                            cont = "Low stocks";
+                                                        }
+                                                        else
+                                                        {
+                                                            badge = "badge badge-danger";
+                                                            cont = "No stocks";
+                                                        }
+                                                    }
+                                                    <span class="@badge text-truncate fw-bold">@cont</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    <td class="">
                                         <div class="dropdown">
                                             <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
@@ -73,7 +88,7 @@
 
                                             <div class="dropdown-menu" aria-labelledby="dropdownMenuLink1">
                                                 <a class="dropdown-item" href="javascript:void(0);">View</a>
-                                                <a class="dropdown-item" href="javascript:void(0);">Edit</a>
+                                                <a class="dropdown-item" asp-controller="Seller" asp-action="ProductEdit" asp-route-Id="@data.Id">Edit</a>
                                                 <a class="dropdown-item" href="javascript:void(0);">Delete</a>
                                             </div>
                                         </div>
@@ -125,24 +140,7 @@
                                 </div>
 
                                 <label for="product-images">Upload Images</label>
-                                <div class="profile-image" hidden>
-
-                                    <div class="img-uploader-content">
-                                        <input type="file" class="filepond"
-                                               asp-for="@Model.ProductDetails.UploadedImage" accept="image/png, image/jpeg, image/gif" />
-                                    </div>
-
-                                </div>
-                                <div class="multiple-file-upload ">
-                                    <input type="file"
-                                            class="filepond file-upload-multiple"
-                                           asp-for="@Model.ProductDetails.UploadedImage"
-                                            data-allow-reorder="true"
-                                            data-max-file-size="3MB"
-                                            data-max-files="1"
-                                            id="gallery"
-                                            required>
-                                </div>
+                                <input type="file" class="form-control" name="Image"/>
 
                             </div>
 

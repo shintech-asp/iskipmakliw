@@ -388,9 +388,6 @@
                                 <li class="@(currentAction == "ProductAdd" ? "active" : "")">
                                     <a asp-controller="Seller" asp-action="ProductAdd"> Create Product </a>
                                 </li>
-                                <li class="@(currentAction == "ProductEdit" ? "active" : "")">
-                                    <a asp-controller="Seller" asp-action="ProductEdit"> Edit Product </a>
-                                </li>
                             </ul>
                         </li>
 
@@ -527,25 +524,25 @@
     <script>
           document.addEventListener("DOMContentLoaded", function () {
             @* Check if TempData has Success *@
-            @if (TempData["SuccessMessage"] != null)
+            @if (TempData["success"] != null)
             {
                     <text>
                         Swal.fire({
                             icon: 'success',
                             title: 'Success',
-                            text: '@TempData["SuccessMessage"]'
+                                text: '@TempData["success"]'
                         });
                     </text>
             }
 
             @* Check if TempData has Error *@
-            @if (TempData["ErrorMessage"] != null)
+            @if (TempData["error"] != null)
             {
                     <text>
                         Swal.fire({
                             icon: 'error',
                             title: 'Oops...',
-                            text: '@TempData["ErrorMessage"]'
+                                text: '@TempData["error"]'
                         });
                     </text>
             }

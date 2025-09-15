@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iskipmakliw.Data;
 
@@ -11,9 +12,11 @@ using iskipmakliw.Data;
 namespace iskipmakliw.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250915005714_RemoveFk")]
+    partial class RemoveFk
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,13 +87,10 @@ namespace iskipmakliw.Migrations
                     b.Property<int?>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ProductVariantsId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("UsersId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("pProductId")
+                    b.Property<int>("pProductId")
                         .HasColumnType("int");
 
                     b.Property<int>("pUsersId")
@@ -99,8 +99,6 @@ namespace iskipmakliw.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("ProductVariantsId");
 
                     b.HasIndex("UsersId");
 
@@ -234,9 +232,6 @@ namespace iskipmakliw.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("isArchive")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
@@ -360,10 +355,6 @@ namespace iskipmakliw.Migrations
                         .WithMany("Gallery")
                         .HasForeignKey("ProductId");
 
-                    b.HasOne("iskipmakliw.Models.ProductVariants", null)
-                        .WithMany("Gallery")
-                        .HasForeignKey("ProductVariantsId");
-
                     b.HasOne("iskipmakliw.Models.Users", null)
                         .WithMany("Gallery")
                         .HasForeignKey("UsersId");
@@ -425,11 +416,6 @@ namespace iskipmakliw.Migrations
                     b.Navigation("Gallery");
 
                     b.Navigation("ProductVariants");
-                });
-
-            modelBuilder.Entity("iskipmakliw.Models.ProductVariants", b =>
-                {
-                    b.Navigation("Gallery");
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.Users", b =>

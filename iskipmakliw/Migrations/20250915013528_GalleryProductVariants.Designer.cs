@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iskipmakliw.Data;
 
@@ -11,9 +12,11 @@ using iskipmakliw.Data;
 namespace iskipmakliw.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250915013528_GalleryProductVariants")]
+    partial class GalleryProductVariants
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -90,7 +93,7 @@ namespace iskipmakliw.Migrations
                     b.Property<int?>("UsersId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("pProductId")
+                    b.Property<int>("pProductId")
                         .HasColumnType("int");
 
                     b.Property<int>("pUsersId")
@@ -233,9 +236,6 @@ namespace iskipmakliw.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("isArchive")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
