@@ -39,12 +39,14 @@ namespace iskipmakliw.Controllers
         [HttpPost]
         public IActionResult ProductAdd(Product product)
         {
-            var filter = _context.Product.Where(u => u.Name == product.Name).FirstOrDefault();
+            var usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            var filter = _context.Product.Where(u => u.Name == product.Name && u.UsersId == usersId).FirstOrDefault();
+            ModelState.Remove("Users");
             if (ModelState.IsValid)
             {
                 if (filter == null)
                 {
-                    product.pUsersId = int.Parse(User.FindFirst("UsersId")?.Value);
+                    product.UsersId = usersId;
                     var newProduct = _context.Product.Add(product);
                    
                     _context.SaveChanges();
@@ -142,7 +144,7 @@ namespace iskipmakliw.Controllers
             var data = _context.Product
                         .Include(u => u.ProductVariants.Where(g => g.isArchive == null))
                         .Include(g => g.Gallery)
-                        .Where(d => d.pUsersId == userId)
+                        .Where(d => d.UsersId == userId)
                         .ToList();
 
             return View(data);
@@ -153,11 +155,11 @@ namespace iskipmakliw.Controllers
 
             var data = _context.ProductVariants
                     .Include(v => v.Product)
-                    .Where(u => u.ProductId == Id && u.Product.pUsersId == userId && u.isArchive == null)
+                    .Where(u => u.ProductId == Id && u.Product.UsersId == userId && u.isArchive == null)
                     .ToList();
 
             var productName = _context.Product
-                              .Where(n => n.pUsersId == userId && n.Id == Id)
+                              .Where(n => n.UsersId == userId && n.Id == Id)
                               .FirstOrDefault();
 
             var ProductDetailsViewModel = new ProductDetailsViewModel
@@ -224,7 +226,8 @@ namespace iskipmakliw.Controllers
                     {
                         Image = ms.ToArray(),
                         pUsersId = int.Parse(User.FindFirst("UsersId")?.Value),
-                        ProductId = productVariant.Id,
+                        ProductId = Id,
+                        ProductVariantsId = productVariant.Id,
                         ImageType = "Item image"
                     };
                     _context.Gallery.Add(gallery);

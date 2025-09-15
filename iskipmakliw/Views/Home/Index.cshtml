@@ -35,22 +35,33 @@
     @foreach(var data in Model)
     {
         <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-            <a class="card style-6" href="#">
+            <a class="card style-6" asp-action="Product" asp-controller="Home" asp-route-Id="@data.ProductId" asp-route-SellerId="@data.SellerId">
                 <span class="badge badge-primary">NEW</span>
                 @if (data.FirstImage != null)
                 {
                     var base64Cap = Convert.ToBase64String(data.FirstImage);
-                    <img src="data:image/png;base64,@base64Cap" class="card-img-top" alt="~."/>
+                    <img src="data:image/png;base64,@base64Cap"
+                         class="card-img-top img-fluid"
+                         style="min-height:200px; max-height: 200px; object-fit:contain;"
+                         alt="Product image" />
                 }
                 else
                 {
-                    <img src="~/src/assets/img/product-3.jpg" class="card-img-top" alt="~.">
+                    <img src="~/src/assets/img/OakMartLogo.png"
+                         class="card-img-top img-fluid"
+                         style="min-height:200px; max-height: 200px; object-fit:contain;"
+                         alt="Default product" />
                 }
+                <span class="badge badge-secondary mb-0">
+                    ₱@data.Price.ToString("N0")
+                </span>
                 <div class="card-footer">
                     <div class="row">
-                        <div class="col-12 mb-4">
+                        <div class="col-12 mb-2">
                             <b>@data.Name</b>
-                                <p class="text-success mb-0">@data.Price</p>
+                        </div>
+                        <div class="col-12 mb-4">
+                            <p class="fw-bold"><span class="fw-light">Seller</span><br />@data.SellerName</p>
                         </div>
                         <div class="col-3">
                             <button class="btn btn-secondary">Buy</button>

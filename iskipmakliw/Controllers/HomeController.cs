@@ -26,20 +26,18 @@ namespace iskipmakliw.Controllers
         public IActionResult Index()
         {
             var userId = int.Parse(User.FindFirst("UsersId")?.Value);
-
             var data = _context.Product
                 .Select(p => new ClientViewModel
                 {
                     ProductId = p.Id,
                     Name = p.Name,
-
-                    // Pick the lowest variant price
+                    SellerName = p.Users.Username,
+                    SellerId = p.UsersId,
                     Price = p.ProductVariants
                         .OrderBy(v => v.Price)
                         .Select(v => v.Price)
                         .FirstOrDefault(),
 
-                    // Pick the first image (if any)
                     FirstImage = p.Gallery
                         .OrderBy(g => g.Id)
                         .Select(g => g.Image)
@@ -162,9 +160,14 @@ namespace iskipmakliw.Controllers
 
         }
 
-        public IActionResult Product()
+        public IActionResult Product(int Id, int SellerId)
         {
-            return View();
+            var usersId = int.Parse(User.FindFirst("UsersId").Value);
+            var product = _context.Product
+                          .Include(u => u.ProductVariants)
+                          .ThenInclude(u => u.Gallery)
+                          .FirstOrDefault(p => p.Id == Id && p.UsersId == SellerId);
+            return View(product);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

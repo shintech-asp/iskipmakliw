@@ -2,6 +2,7 @@
     ViewData["Title"] = "Product Details";
     Layout = "_LayoutCustomer";
 }
+@model Product;
 <div class="row layout-top-spacing">
 
     <div class="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 mb-4">
@@ -14,31 +15,15 @@
                     <div id="main-slider" class="splide splide--fade splide--ltr splide--draggable is-active is-initialized">
                         <div class="splide__track" id="main-slider-track" style="padding-left: 0px; padding-right: 0px;">
                             <ul class="splide__list" id="main-slider-list">
-                                <li class="splide__slide is-active is-visible" id="main-slider-slide01" style="width: calc(100%); height: 556px; transition: opacity 400ms cubic-bezier(0.25, 1, 0.5, 1);" tabindex="0">
-                                    <a href="~/src/assets/img/ecommerce-1.jpg" class="glightbox">
-                                        <img alt="ecommerce" src="~/src/assets/img/ecommerce-1.jpg">
-                                    </a>
-                                </li>
-                                <li class="splide__slide is-next" id="main-slider-slide02" style="width: calc(100%); height: 556px; transition: opacity 400ms cubic-bezier(0.25, 1, 0.5, 1);" aria-hidden="true">
-                                    <a href="~/src/assets/img/ecommerce-2.jpg" class="glightbox" tabindex="-1">
-                                        <img alt="ecommerce" src="~/src/assets/img/ecommerce-2.jpg">
-                                    </a>
-                                </li>
-                                <li class="splide__slide" id="main-slider-slide03" style="width: calc(100%); height: 556px; transition: opacity 400ms cubic-bezier(0.25, 1, 0.5, 1);" aria-hidden="true">
-                                    <a href="~/src/assets/img/ecommerce-4.jpg" class="glightbox" tabindex="-1">
-                                        <img alt="ecommerce" src="~/src/assets/img/ecommerce-4.jpg">
-                                    </a>
-                                </li>
-                                <li class="splide__slide" id="main-slider-slide04" aria-hidden="true" style="width: calc(100%); height: 556px; transition: opacity 400ms cubic-bezier(0.25, 1, 0.5, 1);">
-                                    <a href="~/src/assets/img/ecommerce-5.jpg" class="glightbox" tabindex="-1">
-                                        <img alt="ecommerce" src="~/src/assets/img/ecommerce-5.jpg">
-                                    </a>
-                                </li>
-                                <li class="splide__slide" id="main-slider-slide05" style="width: calc(100%); height: 556px; transition: opacity 400ms cubic-bezier(0.25, 1, 0.5, 1);" aria-hidden="true">
-                                    <a href="~/src/assets/img/ecommerce-6.jpg" class="glightbox" tabindex="-1">
-                                        <img alt="ecommerce" src="~/src/assets/img/ecommerce-6.jpg">
-                                    </a>
-                                </li>
+                                @foreach(var data in Model.Gallery)
+                                {
+                                    var base64Img = Convert.ToBase64String(data.Image);
+                                    <li class="splide__slide is-active is-visible" id="main-slider-slide01" style="width: 100%; height: 556px; transition: opacity 400ms cubic-bezier(0.25, 1, 0.5, 1);" tabindex="0">
+                                        <a href="data:image/png;base64,@base64Img" class="glightbox">
+                                            <img alt="ecommerce" src="data:image/png;base64,@base64Img">
+                                        </a>
+                                    </li>
+                                }
                             </ul>
                         </div>
                     </div>
@@ -46,11 +31,11 @@
                     <div id="thumbnail-slider" class="splide splide--slide splide--ltr splide--draggable splide--nav is-active is-initialized">
                         <div class="splide__arrows"><button class="splide__arrow splide__arrow--prev" type="button" aria-controls="thumbnail-slider-track" aria-label="Go to last slide"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40"><path d="m15.5 0.932-4.3 4.38 14.5 14.6-14.5 14.5 4.3 4.4 14.6-14.6 4.4-4.3-4.4-4.4-14.6-14.6z"></path></svg></button><button class="splide__arrow splide__arrow--next" type="button" aria-controls="thumbnail-slider-track" aria-label="Next slide"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40"><path d="m15.5 0.932-4.3 4.38 14.5 14.6-14.5 14.5 4.3 4.4 14.6-14.6 4.4-4.3-4.4-4.4-14.6-14.6z"></path></svg></button></div><div class="splide__track" id="thumbnail-slider-track" style="padding-left: 0px; padding-right: 0px;">
                             <ul class="splide__list" id="thumbnail-slider-list" role="menu" aria-orientation="horizontal" style="transform: translateX(0px);">
-                                <li class="splide__slide is-active is-visible" id="thumbnail-slider-slide01" aria-label="Go to slide 1" aria-controls="main-slider" role="menuitem" style="margin-right: 10px; width: 104px; height: 58px; background: url(&quot;file:///C:/Users/sheen/OneDrive/Desktop/TEMPLATE/cork-html-and-laravel-admin-dashboard-v.3.9.0/cork-v3.9.0/html/src/assets/img/ecommerce-1.jpg&quot;) center center / cover no-repeat;" aria-current="true" tabindex="0"><img alt="ecommerce" src="~/src/assets/img/ecommerce-1.jpg" style="display: none;"></li>
-                                <li class="splide__slide is-visible is-next" id="thumbnail-slider-slide02" aria-label="Go to slide 2" aria-controls="main-slider" role="menuitem" tabindex="0" style="margin-right: 10px; width: 104px; height: 58px; background: url(&quot;file:///C:/Users/sheen/OneDrive/Desktop/TEMPLATE/cork-html-and-laravel-admin-dashboard-v.3.9.0/cork-v3.9.0/html/src/assets/img/ecommerce-2.jpg&quot;) center center / cover no-repeat;"><img alt="ecommerce" src="~/src/assets/img/ecommerce-2.jpg" style="display: none;"></li>
-                                <li class="splide__slide is-visible" id="thumbnail-slider-slide03" aria-label="Go to slide 3" aria-controls="main-slider" role="menuitem" tabindex="0" style="margin-right: 10px; width: 104px; height: 58px; background: url(&quot;file:///C:/Users/sheen/OneDrive/Desktop/TEMPLATE/cork-html-and-laravel-admin-dashboard-v.3.9.0/cork-v3.9.0/html/src/assets/img/ecommerce-4.jpg&quot;) center center / cover no-repeat;"><img alt="ecommerce" src="~/src/assets/img/ecommerce-4.jpg" style="display: none;"></li>
-                                <li class="splide__slide is-visible" id="thumbnail-slider-slide04" aria-label="Go to slide 4" aria-controls="main-slider" role="menuitem" tabindex="0" style="margin-right: 10px; width: 104px; height: 58px; background: url(&quot;file:///C:/Users/sheen/OneDrive/Desktop/TEMPLATE/cork-html-and-laravel-admin-dashboard-v.3.9.0/cork-v3.9.0/html/src/assets/img/ecommerce-5.jpg&quot;) center center / cover no-repeat;"><img alt="ecommerce" src="~/src/assets/img/ecommerce-5.jpg" style="display: none;"></li>
-                                <li class="splide__slide" id="thumbnail-slider-slide05" aria-label="Go to slide 5" aria-controls="main-slider" role="menuitem" style="margin-right: 10px; width: 104px; height: 58px; background: url(&quot;file:///C:/Users/sheen/OneDrive/Desktop/TEMPLATE/cork-html-and-laravel-admin-dashboard-v.3.9.0/cork-v3.9.0/html/src/assets/img/ecommerce-6.jpg&quot;) center center / cover no-repeat;" aria-hidden="true"><img alt="ecommerce" src="~/src/assets/img/ecommerce-6.jpg" style="display: none;"></li>
+                                @foreach(var data in Model.Gallery)
+                                {
+                                    var base64Img = Convert.ToBase64String(data.Image);
+                                    <li class="splide__slide is-active is-visible" id="thumbnail-slider-slide01" aria-label="Go to slide 1" aria-controls="main-slider" role="menuitem" style="margin-right: 10px; width: 104px; height: 58px; background: url(data:image/png;base64,@base64Img) center center / cover no-repeat;" aria-current="true" tabindex="0"><img alt="ecommerce" src="data:image/png;base64,@base64Img" style="display: none;"></li>
+                                }
                             </ul>
                         </div>
                     </div>
@@ -60,8 +45,14 @@
                 <div class="col-xxl-4 col-xl-5 col-lg-12 col-md-12 col-12 mt-xl-0 mt-5 align-self-center">
 
                     <div class="product-details-content">
-
-                        <span class="badge badge-light-danger mb-3">40% Sale off</span>
+                        @if (Model.ProductVariants.FirstOrDefault().Discount != null)
+                        {
+                            <span class="badge badge-light-danger mb-3">@Model.ProductVariants.FirstOrDefault().Discount% Sale off</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-light-success mb-3">Whole sale!</span>
+                        }
 
                         <h3 class="product-title mb-0">Cotton T-Shit</h3>
 
@@ -75,10 +66,19 @@
                             <div class="col-md-9 col-sm-9 col-9">
 
                                 <div class="pricing">
-
-                                    <span class="discounted-price">$20</span>
-                                    <span class="regular-price">$30</span>
-
+                                     @if (Model.ProductVariants.FirstOrDefault().Discount != null)
+                                    {
+                                        {
+                                            var discount = Model.ProductVariants.FirstOrDefault().Discount;
+                                            var price = Model.ProductVariants.FirstOrDefault().Price * (discount / 100);
+                                            <span class="discounted-price">@price</span>
+                                        }
+                                        <span class="regular-price">₱@Model.ProductVariants.FirstOrDefault().Price.ToString("N0")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="discounted-price">₱@Model.ProductVariants.FirstOrDefault().Price.ToString("N0")</span>
+                                    }
                                 </div>
 
                             </div>
@@ -98,27 +98,24 @@
                             <div class="col-xl-3 col-lg-6 col-sm-6 align-self-center">Color</div>
                             <div class="col-xl-9 col-lg-6 col-sm-6">
                                 <div class="color-options text-xl-end">
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" style="background-color: rgb(67, 97, 238);">
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" style="background-color: rgb(0, 150, 136);">
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault3" style="background-color: rgb(0, 142, 255);">
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault4" checked="" style="background-color: rgb(125, 48, 203);">
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault5" style="background-color: rgb(248, 83, 141);">
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault6" style="background-color: rgb(226, 160, 63);">
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault7" style="background-color: rgb(27, 46, 75);">
-                                    </div>
+                                    @foreach (var color in Model.ProductVariants)
+                                    {
+                                        {
+                                            var bgcolor = color.Color;
+                                            if (bgcolor != null)
+                                            {
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" style="background-color: brown">
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" style="background-color: grey">
+                                                </div>
+                                            }
+                                        }
+                                    }
                                 </div>
                             </div>
                         </div>
