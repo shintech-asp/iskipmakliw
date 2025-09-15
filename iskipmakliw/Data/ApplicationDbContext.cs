@@ -13,5 +13,7 @@ namespace iskipmakliw.Data
         public DbSet<Billings> Billings { get; set; }
         public DbSet<Plans> Plans { get; set; }
         public DbSet<Payments> Payments { get; set; }
+        public DbSet<Product> Product { get; set; }
+        public DbSet<ProductVariants> ProductVariants { get; set; }
     }
 }

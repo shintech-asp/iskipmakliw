@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Dashboard";
+    Layout = "_LayoutSeller";
 }
 @model Payments;
 @if (Model.Status == "Pending" || Model.Users?.UserDetails?.Status == "For approval" || Model.Users?.UserDetails?.Status == "Pending")

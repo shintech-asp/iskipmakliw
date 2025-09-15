@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Linq;
+using System.Security.Claims;
 
 namespace iskipmakliw.Controllers
 {
@@ -21,7 +22,7 @@ namespace iskipmakliw.Controllers
         [HttpGet]
         public IActionResult Checkout(int Id)
         {
-            int? userId = HttpContext.Session.GetInt32("UsersId");
+            int? userId = int.Parse(User.FindFirst("UsersId")?.Value);
             if (userId == null)
                 return RedirectToAction("Logout", "Account");
 
@@ -41,9 +42,9 @@ namespace iskipmakliw.Controllers
         [HttpPost]
         public async Task<IActionResult> PayNow(decimal totalAmount, string productNames, string paymentIds)
         {
-            var name = HttpContext.Session.GetString("Username") ?? "Guest";
-            var email = HttpContext.Session.GetString("Email") ?? "guest@example.com";
-            var contact = HttpContext.Session.GetString("ContactNumber") ?? "0000000000";
+            var name = User.FindFirst(ClaimTypes.Name)?.Value ?? "Guest";
+            var email = User.FindFirst(ClaimTypes.Email)?.Value ?? "guest@example.com";
+            var contact = User.FindFirst("ContactNumber")?.Value ?? "0000000000";
 
             var sessionJson = await _paymongo.CreateCheckoutSession(
                 totalAmount,

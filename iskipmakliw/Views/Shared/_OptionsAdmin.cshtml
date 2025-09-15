@@ -1,4 +1,5 @@
-﻿<li class="nav-item dropdown user-profile-dropdown  order-lg-0 order-1">
+﻿@using System.Security.Claims
+<li class="nav-item dropdown user-profile-dropdown  order-lg-0 order-1">
     <a href="javascript:void(0);" class="nav-link dropdown-toggle user" id="userProfileDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <div class="avatar-container">
             <div class="avatar avatar-sm avatar-indicators avatar-online">
@@ -14,8 +15,8 @@
                     &#x1F44B;
                 </div>
                 <div class="media-body">
-                    <h5>Shaun Park</h5>
-                    <p>Project Leader</p>
+                    <h5>@User.FindFirst(ClaimTypes.Name)?.Value</h5>
+                    <p>@User.FindFirst(ClaimTypes.Role)?.Value</p>
                 </div>
             </div>
         </div>

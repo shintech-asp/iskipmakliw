@@ -52,7 +52,7 @@ namespace iskipmakliw.Controllers
         {
             ModelState.Remove("Status");
             user.Status = "Pending";
-            user.UsersId = _httpContextAccessor.HttpContext.Session.GetInt32("UsersId") ?? 0;
+            user.UsersId =int.Parse(User.FindFirst("UsersId").Value);
 
             ModelState.Remove("UsersId");
             ModelState.Remove("Plans");
@@ -83,18 +83,15 @@ namespace iskipmakliw.Controllers
                 {
                     roleChange.Role = "Seller";
 
-                    HttpContext.Session.SetInt32("UsersId", roleChange.Id);
-                    HttpContext.Session.SetString("Username", roleChange.Username);
-                    HttpContext.Session.SetString("Email", roleChange.Email);
-                    HttpContext.Session.SetString("ContactNumber", roleChange.ContactNumber);
-                    HttpContext.Session.SetString("Role", roleChange.Role);
-                    HttpContext.Session.SetString("Status", roleChange.UserDetails?.Status ?? "N/A");
-
                     var claims = new List<Claim>
-                    {
-                        new Claim("UsersId", roleChange.Id.ToString()),
-                        new Claim(ClaimTypes.Role, roleChange.Role)
-                    };
+                {
+                    new Claim("UsersId", roleChange.Id.ToString()),
+                    new Claim(ClaimTypes.Name, roleChange.Username),
+                    new Claim(ClaimTypes.Email, roleChange.Email),
+                    new Claim("ContactNumber", roleChange.ContactNumber ?? ""),
+                    new Claim(ClaimTypes.Role, roleChange.Role),
+                    new Claim("Status", roleChange.UserDetails?.Status ?? "N/A")
+                };
 
                     var identity = new ClaimsIdentity(claims, "MyCookieAuth");
                     var principal = new ClaimsPrincipal(identity);

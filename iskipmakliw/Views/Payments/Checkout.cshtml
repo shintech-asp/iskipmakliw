@@ -1,14 +1,16 @@
-﻿@model List<iskipmakliw.Models.Payments>
-@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+﻿@using System.Security.Claims
+@model List<iskipmakliw.Models.Payments>
 
 @{
-    var name = HttpContextAccessor.HttpContext.Session.GetString("Username");
-    var email = HttpContextAccessor.HttpContext.Session.GetString("Email");
-    var contact = HttpContextAccessor.HttpContext.Session.GetString("ContactNumber");
+    var name = User.FindFirst(ClaimTypes.Name)?.Value;
+    var email = User.FindFirst(ClaimTypes.Email)?.Value;
+    var contact = User.FindFirst("ContactNumber")?.Value;
 
     var totalAmount = Model.Sum(p => p.Amount ?? 0);
     var paymentIds = string.Join(",", Model.Select(p => p.Id));
     var productNames = string.Join(", ", Model.Select(p => p.PaymentDetails));
+    ViewData["Title"] = "Checkout";
+    Layout = "_LayoutSeller";
 }
 
 <form method="post" asp-controller="Payments" asp-action="PayNow">

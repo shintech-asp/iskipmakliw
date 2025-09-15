@@ -38,32 +38,31 @@ namespace iskipmakliw.Controllers
 
             if (user != null)
             {
+                var payments = _context.Payments.Where(p => p.UsersId == user.Id).OrderByDescending(p => p.Id).FirstOrDefault();
                 var hasher = new PasswordHasher<Users>();
                 var result = hasher.VerifyHashedPassword(user, user.Password, users.Password);
 
                 if (result == PasswordVerificationResult.Success)
                 {
-                    // 🔹 Set session BEFORE redirect
-                    HttpContext.Session.SetInt32("UsersId", user.Id);
-                    HttpContext.Session.SetString("Username", user.Username);
-                    HttpContext.Session.SetString("Email", user.Email);
-                    HttpContext.Session.SetString("ContactNumber", user.ContactNumber);
-                    HttpContext.Session.SetString("Role", user.Role);
-                    HttpContext.Session.SetString("Status", user.UserDetails?.Status ?? "N/A");
-
-                    // 🔹 Add cookie authentication (optional but recommended)
                     var claims = new List<Claim>
-            {
-                new Claim("UsersId", user.Id.ToString()),
-                new Claim(ClaimTypes.Role, user.Role)
-            };
+                {
+                    new Claim("UsersId", user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim("ContactNumber", user.ContactNumber ?? ""),
+                    new Claim(ClaimTypes.Role, user.Role),
+                    new Claim("Status", user.UserDetails?.Status ?? "N/A"),
+                    new Claim("PaymentStatus", payments?.Status ?? "N/A")
+                };
 
                     var identity = new ClaimsIdentity(claims, "MyCookieAuth");
                     var principal = new ClaimsPrincipal(identity);
+
+                    // 🔹 Sign in with cookie auth
                     await HttpContext.SignInAsync("MyCookieAuth", principal);
 
-                    // 🔹 Redirect based on role
-                    switch (user.Role)
+                // 🔹 Redirect based on role
+                switch (user.Role)
                     {
                         case "Admin":
                             return RedirectToAction("Index", "Admin");

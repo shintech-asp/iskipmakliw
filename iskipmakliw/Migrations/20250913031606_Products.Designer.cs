@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iskipmakliw.Data;
 
@@ -11,9 +12,11 @@ using iskipmakliw.Data;
 namespace iskipmakliw.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250913031606_Products")]
+    partial class Products
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,7 +84,7 @@ namespace iskipmakliw.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ProductId")
+                    b.Property<int?>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<int>("UsersId")
@@ -180,17 +183,9 @@ namespace iskipmakliw.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("UsersId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("pUsersId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("Product");
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.ProductVariants", b =>
@@ -202,16 +197,15 @@ namespace iskipmakliw.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Color")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Dimension")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("Discount")
-                        .HasColumnType("int");
-
                     b.Property<string>("Material")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("Price")
@@ -227,7 +221,7 @@ namespace iskipmakliw.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductVariants");
+                    b.ToTable("ProductsVariants");
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.UserDetails", b =>
@@ -342,19 +336,15 @@ namespace iskipmakliw.Migrations
 
             modelBuilder.Entity("iskipmakliw.Models.Gallery", b =>
                 {
-                    b.HasOne("iskipmakliw.Models.Product", "Product")
+                    b.HasOne("iskipmakliw.Models.Product", null)
                         .WithMany("Gallery")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProductId");
 
                     b.HasOne("iskipmakliw.Models.Users", "Users")
                         .WithMany("Gallery")
                         .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Product");
 
                     b.Navigation("Users");
                 });
@@ -368,13 +358,6 @@ namespace iskipmakliw.Migrations
                         .IsRequired();
 
                     b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("iskipmakliw.Models.Product", b =>
-                {
-                    b.HasOne("iskipmakliw.Models.Users", null)
-                        .WithMany("Product")
-                        .HasForeignKey("UsersId");
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.ProductVariants", b =>
@@ -424,8 +407,6 @@ namespace iskipmakliw.Migrations
                     b.Navigation("Gallery");
 
                     b.Navigation("Payments");
-
-                    b.Navigation("Product");
 
                     b.Navigation("UserDetails");
                 });

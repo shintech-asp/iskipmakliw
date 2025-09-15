@@ -1,0 +1,210 @@
+﻿@using iskipmakliw.Models.ViewModels
+@{
+    ViewData["Title"] = "Product Details";
+    Layout = "_LayoutSeller";
+}
+@model ProductDetailsViewModel;
+<div class="row layout-top-spacing">
+
+    <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+        <div class="widget-content widget-content-area br-8">
+            <div id="ecommerce-list_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 no-footer">
+                <div class="dt--top-section">
+                    <div class="row p-3">
+                        <div class="col text-start">
+                            <h4>@Model.Product.Name </h4>
+                        </div>
+                        <div class="col text-end">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#variantModal">
+                                Add Variant
+                            </button>
+                        </div>
+                    </div>
+                    <table id="ecommerce-list" class="table dt-table-hover dataTable no-footer" style="width: 100%;" role="grid" aria-describedby="ecommerce-list_info">
+                        <thead>
+                            <tr role="row">
+                                <th tabindex="0" aria-controls="ecommerce-list" rowspan="1" colspan="1" aria-label="Product:" style="width: 239px;">Material</th>
+                                <th tabindex="0" aria-controls="ecommerce-list" rowspan="1" colspan="1" aria-label="Status: " style="width: 115px;">Dimension</th>
+                                <th tabindex="0" aria-controls="ecommerce-list" rowspan="1" colspan="1" aria-label="Action: " style="width: 70px;">Color</th>
+                                <th tabindex="0" aria-controls="ecommerce-list" rowspan="1" colspan="1" aria-label="Status: " style="width: 115px;">Price</th>
+                                <th tabindex="0" aria-controls="ecommerce-list" rowspan="1" colspan="1" aria-label="Action: " style="width: 70px;">Quantity</th>
+                                <th tabindex="0" aria-controls="ecommerce-list" rowspan="1" colspan="1" aria-label="Action: " style="width: 70px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @if (Model.ProductVariants.Count > 0)
+                        {
+                            @foreach (var data in Model.ProductVariants)
+                            {
+                                <tr role="row">
+                                    <td>
+                                        <div class="d-flex justify-content-left align-items-center">
+                                            <div class="avatar  me-3">
+                                                @{
+                                                    var galleryItem = data.Product.Gallery?.FirstOrDefault();
+                                                }
+
+                                                @if (galleryItem?.Image != null)
+                                                {
+                                                    var base64Img = Convert.ToBase64String(galleryItem.Image);
+                                                    <img src="data:image/png;base64,@base64Img" alt="Avatar" width="64" height="64">
+                                                }
+                                                else
+                                                {
+                                                    <img src="~/src/assets/img/OakMartLogo.png" alt="Avatar" width="64" height="64">
+                                                }
+
+                                            </div>
+                                            <div class="d-flex flex-column">
+                                                <span class="text-truncate fw-bold">@data.Material</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                
+                                    <td>@data.Dimension</td>
+                                    <td>@data.Color</td>
+                                    <td>@data.Price</td>
+                                    <td>@data.Quantity</td>
+                                    <td class="text-center">
+                                        <div class="dropdown">
+                                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                                            </a>
+
+                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink1">
+                                                <a class="dropdown-item" href="javascript:void(0);">View</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Edit</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-secondary">No item yet</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="variantModal" tabindex="-1" aria-labelledby="variantModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form asp-controller="Seller" asp-action="ProductDetails" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="row mb-4 layout-spacing layout-top-spacing">
+
+                        <div class="col-xxl-9 col-xl-12 col-lg-12 col-md-12 col-sm-12">
+
+                            <div class="widget-content widget-content-area ecommerce-create-section p-3">
+
+                                <div class="row mb-4">
+                                    <div class="col-sm-12">
+                                        <input type="text" class="form-control" id="inputEmail3" placeholder="Product Name" value="@Model.Product.Name" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-sm-12">
+                                        <label>Description</label>
+                                        <textarea class="form-control" rows="6" disabled>@Model.Product.Details</textarea>    
+                                    </div>
+                                </div>
+
+                                <label for="product-images">Upload Images</label>
+                                <div class="profile-image" hidden>
+
+                                    <div class="img-uploader-content">
+                                        <input type="file" class="filepond"
+                                               asp-for="@Model.ProductDetails.UploadedImage" accept="image/png, image/jpeg, image/gif" />
+                                    </div>
+
+                                </div>
+                                <div class="multiple-file-upload ">
+                                    <input type="file"
+                                            class="filepond file-upload-multiple"
+                                           asp-for="@Model.ProductDetails.UploadedImage"
+                                            data-allow-reorder="true"
+                                            data-max-file-size="3MB"
+                                            data-max-files="1"
+                                            id="gallery"
+                                            required>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-xxl-3 col-xl-12 col-lg-12 col-md-12 col-sm-12">
+
+                            <div class="row">
+                                <div class="col-xxl-12 col-xl-8 col-lg-8 col-md-7 mt-xxl-0 mt-4">
+                                    <div class="widget-content widget-content-area ecommerce-create-section p-3">
+                                        <div class="row">
+                                            <div class="col-xxl-12 col-md-6 mb-4">
+                                                <label for="proCode">Material</label>
+                                                <input type="text" class="form-control" id="proCode" asp-for="@Model.ProductDetails.Material" placeholder="Leave empty if none">
+                                            </div>
+                                            <div class="col-xxl-12 col-md-6 mb-4">
+                                                <label for="proSKU">Dimension / Sizes</label>
+                                                <input type="text" class="form-control" id="proSKU" asp-for="@Model.ProductDetails.Dimension">
+                                            </div>
+                                            <div class="col-xxl-12 col-md-6 mb-4">
+                                                <label for="proCode">Color</label>
+                                                <input type="text" class="form-control" id="proCode" asp-for="@Model.ProductDetails.Color" placeholder="Leave empty if none">
+                                            </div>
+                                            <div class="col-xxl-12 col-md-6 mb-4">
+                                                <label for="proCode">Quantity</label>
+                                                <input type="text" class="form-control" id="proCode" asp-for="@Model.ProductDetails.Quantity" placeholder="199">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xxl-12 col-xl-4 col-lg-4 col-md-5 mt-4">
+                                    <div class="widget-content widget-content-area ecommerce-create-section p-3">
+                                        <div class="row">
+                                            <div class="col-sm-12 mb-4">
+                                                <label for="regular-price">Regular Price</label>
+                                                <input type="text" class="form-control" id="regular-price" asp-for="@Model.ProductDetails.Price">
+                                            </div>
+                                            <div class="col-sm-12 mb-4">
+                                                <label for="sale-price">Discount</label>
+                                                <input type="text" class="form-control" id="sale-price" asp-for="@Model.ProductDetails.Discount" placeholder="Leave empty if none">
+                                            </div>
+                                            <div class="col-sm-12">
+                                                <button type="submit" class="btn btn-success w-100 _effect--ripple waves-effect waves-light">Add Product</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        FilePond.setOptions({
+            instantUpload: false, // don’t upload via AJAX
+            storeAsFile: true     // keep file in <input> so it posts with form
+        });
+        FilePond.create(document.getElementById('gallery'));
+    </script>
+}

@@ -1,377 +1,89 @@
 ﻿@{
     ViewData["Title"] = "Product";
-       
+    Layout = "_LayoutSeller";
 }
-
+@model List<Product>;
 <div class="row layout-top-spacing">
 
     <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
         <div class="widget-content widget-content-area br-8">
             <div id="ecommerce-list_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 no-footer">
-                <div class="dt--top-section"><div class="row"><div class="col-12 col-sm-6 d-flex justify-content-sm-start justify-content-center"><div class="dataTables_length" id="ecommerce-list_length"><label>Results :  <select name="ecommerce-list_length" aria-controls="ecommerce-list" class="form-control"><option value="7">7</option><option value="10">10</option><option value="20">20</option><option value="50">50</option></select></label></div></div><div class="col-12 col-sm-6 d-flex justify-content-sm-end justify-content-center mt-sm-0 mt-3"><div id="ecommerce-list_filter" class="dataTables_filter"><label><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><input type="search" class="form-control" placeholder="Search..." aria-controls="ecommerce-list"></label></div></div></div></div><div class="table-responsive">
+                <div class="dt--top-section"></div>
                     <table id="ecommerce-list" class="table dt-table-hover dataTable no-footer" style="width: 100%;" role="grid" aria-describedby="ecommerce-list_info">
                         <thead>
                             <tr role="row">
-                                <th class="checkbox-column sorting_asc" rowspan="1" colspan="1" aria-label="" style="width: 30px;">
-                                    <div class="form-check form-check-primary d-block new-control">
-                                        <input class="form-check-input chk-parent" type="checkbox" id="form-check-default">
-                                    </div>
-                                </th>
-                                <th class="sorting" tabindex="0" aria-controls="ecommerce-list" rowspan="1" colspan="1" aria-label="Product: activate to sort column ascending" style="width: 239px;">Product</th>
-                                <th class="sorting" tabindex="0" aria-controls="ecommerce-list" rowspan="1" colspan="1" aria-label="Added on: activate to sort column ascending" style="width: 105px;">Added on</th>
-                                <th class="sorting" tabindex="0" aria-controls="ecommerce-list" rowspan="1" colspan="1" aria-label="Status: activate to sort column ascending" style="width: 115px;">Status</th>
-                                <th class="sorting" tabindex="0" aria-controls="ecommerce-list" rowspan="1" colspan="1" aria-label="Price: activate to sort column ascending" style="width: 56px;">Price</th>
-                                <th class="no-content text-center sorting" tabindex="0" aria-controls="ecommerce-list" rowspan="1" colspan="1" aria-label="Action: activate to sort column ascending" style="width: 70px;">Action</th>
+                                <th tabindex="0" aria-controls="ecommerce-list" rowspan="1" colspan="1" aria-label="Product:" style="width: 239px;">Product</th>
+                                <th tabindex="0" aria-controls="ecommerce-list" rowspan="1" colspan="1" aria-label="Status: " style="width: 115px;">Status</th>
+                                <th tabindex="0" aria-controls="ecommerce-list" rowspan="1" colspan="1" aria-label="Action: " style="width: 70px;">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr role="row">
-                                <td class="sorting_1">
-                                    <div class="form-check form-check-primary d-block new-control">
-                                        <input class="form-check-input child-chk" type="checkbox" id="form-check-default">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-left align-items-center">
-                                        <div class="avatar  me-3">
-                                            <img src="../src/assets/img/product-3.jpg" alt="Avatar" width="64" height="64">
-                                        </div>
-                                        <div class="d-flex flex-column">
-                                            <span class="text-truncate fw-bold">Nike Green Shoes</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>2022/04/25</td>
-                                <td><span class="badge badge-danger">Out of stock</span></td>
-                                <td>$61</td>
-                                <td class="text-center">
-                                    <div class="dropdown">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                                        </a>
+                        @if (Model.Count > 0)
+                        {
+                            @foreach (var data in Model)
+                            {
+                                <tr role="row px-3">
+                                    <td>
+                                        <div class="d-flex justify-content-left align-items-center">
+                                            <div class="avatar  me-3">
+                                                @{
+                                                    var galleryItem = data.Gallery?.FirstOrDefault();
+                                                }
 
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink1">
-                                            <a class="dropdown-item" href="javascript:void(0);">View</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Edit</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                                                @if (galleryItem?.Image != null)
+                                                {
+                                                    var base64Img = Convert.ToBase64String(galleryItem.Image);
+                                                    <img src="data:image/png;base64,@base64Img" alt="Avatar" width="64" height="64">
+                                                }
+                                                else
+                                                {
+                                                    <img src="~/src/assets/img/OakMartLogo.png" alt="Avatar" width="64" height="64">
+                                                }
+
+                                            </div>
+                                            <div class="d-flex flex-column">
+                                                <span class="text-truncate fw-bold">@data.Name</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
+                                    </td>
+                                    @{
+                                        string badge;
+                                        string stock;
+                                        if (data.ProductVariants.Count == 0)
+                                        {
+                                            badge = "badge badge-danger";
+                                            stock = "No item";
+                                        }
+                                        else
+                                        {
+                                            badge = "badge badge-success";
+                                            stock = $"{data.ProductVariants.Count} in stock";
+                                        }
+                                    }
+                                    <td><span class="@badge">@stock</span></td>
+                                    <td class="text-center">
+                                        <div class="dropdown">
+                                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                                            </a>
+
+                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink1">
+                                                <a class="dropdown-item" asp-controller="Seller" asp-action="ProductDetails" asp-route-Id="@data.Id">View</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Edit</a>
+                                                <a class="dropdown-item">Delete</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="3">No item yet</td>
                             </tr>
-                            <tr role="row">
-                                <td class="sorting_1">
-                                    <div class="form-check form-check-primary d-block new-control">
-                                        <input class="form-check-input child-chk" type="checkbox" id="form-check-default">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-left align-items-center">
-                                        <div class="avatar  me-3">
-                                            <img src="../src/assets/img/product-8.jpg" alt="Avatar" width="64" height="64">
-                                        </div>
-                                        <div class="d-flex flex-column">
-                                            <span class="text-truncate fw-bold">Drone</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>2022/07/25</td>
-                                <td><span class="badge badge-warning">Low Stock</span></td>
-                                <td>$63</td>
-                                <td class="text-center">
-                                    <div class="dropdown">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink2" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                                        </a>
-
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink2">
-                                            <a class="dropdown-item" href="javascript:void(0);">View</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Edit</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr role="row">
-                                <td class="sorting_1">
-                                    <div class="form-check form-check-primary d-block new-control">
-                                        <input class="form-check-input child-chk" type="checkbox" id="form-check-default">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-left align-items-center">
-                                        <div class="avatar  me-3">
-                                            <img src="../src/assets/img/product-13.jpg" alt="Avatar" width="64" height="64">
-                                        </div>
-                                        <div class="d-flex flex-column">
-                                            <span class="text-truncate fw-bold">Smart Cleaner</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>2022/01/12</td>
-                                <td><span class="badge badge-success">In Stock</span></td>
-                                <td>$66</td>
-                                <td class="text-center">
-
-                                    <div class="dropdown">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink3" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                                        </a>
-
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink3">
-                                            <a class="dropdown-item" href="javascript:void(0);">View</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Edit</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                        </div>
-                                    </div>
-
-                                </td>
-                            </tr>
-                            <tr role="row">
-                                <td class="sorting_1">
-                                    <div class="form-check form-check-primary d-block new-control">
-                                        <input class="form-check-input child-chk" type="checkbox" id="form-check-default">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-left align-items-center">
-                                        <div class="avatar  me-3">
-                                            <img src="../src/assets/img/product-4.jpg" alt="Avatar" width="64" height="64">
-                                        </div>
-                                        <div class="d-flex flex-column">
-                                            <span class="text-truncate fw-bold">Camera</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>2022/03/29</td>
-                                <td><span class="badge badge-danger">Out of stock</span></td>
-                                <td>$22</td>
-                                <td class="text-center">
-
-                                    <div class="dropdown">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink4" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                                        </a>
-
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink4">
-                                            <a class="dropdown-item" href="javascript:void(0);">View</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Edit</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                        </div>
-                                    </div>
-
-                                </td>
-                            </tr>
-                            <tr role="row">
-                                <td class="sorting_1">
-                                    <div class="form-check form-check-primary d-block new-control">
-                                        <input class="form-check-input child-chk" type="checkbox" id="form-check-default">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-left align-items-center">
-                                        <div class="avatar  me-3">
-                                            <img src="../src/assets/img/product-5.jpg" alt="Avatar" width="64" height="64">
-                                        </div>
-                                        <div class="d-flex flex-column">
-                                            <span class="text-truncate fw-bold">Nike Shoes</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>2022/11/28</td>
-                                <td><span class="badge badge-warning">Low Stock</span></td>
-                                <td>$33</td>
-                                <td class="text-center">
-
-                                    <div class="dropdown">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink5" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                                        </a>
-
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink5">
-                                            <a class="dropdown-item" href="javascript:void(0);">View</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Edit</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                        </div>
-                                    </div>
-
-                                </td>
-                            </tr>
-                            <tr role="row">
-                                <td class="sorting_1">
-                                    <div class="form-check form-check-primary d-block new-control">
-                                        <input class="form-check-input child-chk" type="checkbox" id="form-check-default">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-left align-items-center">
-                                        <div class="avatar  me-3">
-                                            <img src="../src/assets/img/product-6.jpg" alt="Avatar" width="64" height="64">
-                                        </div>
-                                        <div class="d-flex flex-column">
-                                            <span class="text-truncate fw-bold">MicroPhone</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>2022/12/02</td>
-                                <td><span class="badge badge-success">In Stock</span></td>
-                                <td>$61</td>
-                                <td class="text-center">
-
-                                    <div class="dropdown">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink6" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                                        </a>
-
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink6">
-                                            <a class="dropdown-item" href="javascript:void(0);">View</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Edit</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                        </div>
-                                    </div>
-
-                                </td>
-                            </tr>
-                            <tr role="row">
-                                <td class="sorting_1">
-                                    <div class="form-check form-check-primary d-block new-control">
-                                        <input class="form-check-input child-chk" type="checkbox" id="form-check-default">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-left align-items-center">
-                                        <div class="avatar  me-3">
-                                            <img src="../src/assets/img/product-7.jpg" alt="Avatar" width="64" height="64">
-                                        </div>
-                                        <div class="d-flex flex-column">
-                                            <span class="text-truncate fw-bold">Monitor</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>2022/08/06</td>
-                                <td><span class="badge badge-success">In Stock</span></td>
-                                <td>$59</td>
-                                <td class="text-center">
-
-                                    <div class="dropdown">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink7" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                                        </a>
-
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink7">
-                                            <a class="dropdown-item" href="javascript:void(0);">View</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Edit</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                        </div>
-                                    </div>
-
-                                </td>
-                            </tr>
-                            <tr role="row">
-                                <td class="sorting_1">
-                                    <div class="form-check form-check-primary d-block new-control">
-                                        <input class="form-check-input child-chk" type="checkbox" id="form-check-default">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-left align-items-center">
-                                        <div class="avatar  me-3">
-                                            <img src="../src/assets/img/product-1.jpg" alt="Avatar" width="64" height="64">
-                                        </div>
-                                        <div class="d-flex flex-column">
-                                            <span class="text-truncate fw-bold">Shoes</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>2022/10/14</td>
-                                <td><span class="badge badge-warning">Low Stock</span></td>
-                                <td>$55</td>
-                                <td class="text-center">
-
-                                    <div class="dropdown">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink8" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                                        </a>
-
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink8">
-                                            <a class="dropdown-item" href="javascript:void(0);">View</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Edit</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                        </div>
-                                    </div>
-
-                                </td>
-                            </tr>
-                            <tr role="row">
-                                <td class="sorting_1">
-                                    <div class="form-check form-check-primary d-block new-control">
-                                        <input class="form-check-input child-chk" type="checkbox" id="form-check-default">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-left align-items-center">
-                                        <div class="avatar  me-3">
-                                            <img src="../src/assets/img/product-9.jpg" alt="Avatar" width="64" height="64">
-                                        </div>
-                                        <div class="d-flex flex-column">
-                                            <span class="text-truncate fw-bold">Speakers</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>2022/09/15</td>
-                                <td><span class="badge badge-success">In Stock</span></td>
-                                <td>$39</td>
-                                <td class="text-center">
-
-                                    <div class="dropdown">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink9" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                                        </a>
-
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink9">
-                                            <a class="dropdown-item" href="javascript:void(0);">View</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Edit</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                        </div>
-                                    </div>
-
-                                </td>
-                            </tr>
-                            <tr role="row">
-                                <td class="sorting_1">
-                                    <div class="form-check form-check-primary d-block new-control">
-                                        <input class="form-check-input child-chk" type="checkbox" id="form-check-default">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-left align-items-center">
-                                        <div class="avatar  me-3">
-                                            <img src="../src/assets/img/product-10.jpg" alt="Avatar" width="64" height="64">
-                                        </div>
-                                        <div class="d-flex flex-column">
-                                            <span class="text-truncate fw-bold">XBox</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>2022/12/13</td>
-                                <td><span class="badge badge-danger">Out of stock</span></td>
-                                <td>$23</td>
-                                <td class="text-center">
-
-                                    <div class="dropdown">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink10" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                                        </a>
-
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink10">
-                                            <a class="dropdown-item" href="javascript:void(0);">View</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Edit</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                        </div>
-                                    </div>
-
-                                </td>
-                            </tr>
-                        </tbody>
+                        }
+                    </tbody>
                     </table>
                 </div><div class="dt--bottom-section d-sm-flex justify-content-sm-between text-center"><div class="dt--pages-count  mb-sm-0 mb-3"><div class="dataTables_info" id="ecommerce-list_info" role="status" aria-live="polite">Showing page 1 of 2</div></div><div class="dt--pagination"><div class="dataTables_paginate paging_simple_numbers" id="ecommerce-list_paginate"><ul class="pagination"><li class="paginate_button page-item previous disabled" id="ecommerce-list_previous"><a href="#" aria-controls="ecommerce-list" data-dt-idx="0" tabindex="0" class="page-link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></a></li><li class="paginate_button page-item active"><a href="#" aria-controls="ecommerce-list" data-dt-idx="1" tabindex="0" class="page-link">1</a></li><li class="paginate_button page-item "><a href="#" aria-controls="ecommerce-list" data-dt-idx="2" tabindex="0" class="page-link">2</a></li><li class="paginate_button page-item next" id="ecommerce-list_next"><a href="#" aria-controls="ecommerce-list" data-dt-idx="3" tabindex="0" class="page-link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li></ul></div></div></div>
             </div>
