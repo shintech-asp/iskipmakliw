@@ -28,23 +28,31 @@ namespace iskipmakliw.Controllers
         [RedirectIfAuthenticated]
         public async Task<IActionResult> Login(Users users)
         {
-            if (string.IsNullOrEmpty(users.Email) || string.IsNullOrEmpty(users.Password))
+            try
             {
-                ModelState.AddModelError("", "Invalid username or password");
-                return View(users);
-            }
-
-            var user = _context.Users.Include(u => u.UserDetails).FirstOrDefault(u => u.Email == users.Email);
-
-            if (user != null)
-            {
-                var payments = _context.Payments.Where(p => p.UsersId == user.Id).OrderByDescending(p => p.Id).FirstOrDefault();
-                var hasher = new PasswordHasher<Users>();
-                var result = hasher.VerifyHashedPassword(user, user.Password, users.Password);
-
-                if (result == PasswordVerificationResult.Success)
+                if (string.IsNullOrEmpty(users.Email) || string.IsNullOrEmpty(users.Password))
                 {
-                    var claims = new List<Claim>
+                    ModelState.AddModelError("", "Invalid username or password");
+                    return View(users);
+                }
+
+                var user = _context.Users
+                    .Include(u => u.UserDetails)
+                    .FirstOrDefault(u => u.Email == users.Email);
+
+                if (user != null)
+                {
+                    var payments = _context.Payments
+                        .Where(p => p.UsersId == user.Id)
+                        .OrderByDescending(p => p.Id)
+                        .FirstOrDefault();
+
+                    var hasher = new PasswordHasher<Users>();
+                    var result = hasher.VerifyHashedPassword(user, user.Password, users.Password);
+
+                    if (result == PasswordVerificationResult.Success)
+                    {
+                        var claims = new List<Claim>
                 {
                     new Claim("UsersId", user.Id.ToString()),
                     new Claim(ClaimTypes.Name, user.Username),
@@ -55,27 +63,31 @@ namespace iskipmakliw.Controllers
                     new Claim("PaymentStatus", payments?.Status ?? "N/A")
                 };
 
-                    var identity = new ClaimsIdentity(claims, "MyCookieAuth");
-                    var principal = new ClaimsPrincipal(identity);
+                        var identity = new ClaimsIdentity(claims, "MyCookieAuth");
+                        var principal = new ClaimsPrincipal(identity);
 
-                    // 🔹 Sign in with cookie auth
-                    await HttpContext.SignInAsync("MyCookieAuth", principal);
+                        await HttpContext.SignInAsync("MyCookieAuth", principal);
 
-                // 🔹 Redirect based on role
-                switch (user.Role)
-                    {
-                        case "Admin":
-                            return RedirectToAction("Index", "Admin");
-                        case "Customer":
-                            return RedirectToAction("Index", "Home");
-                        case "Seller":
-                            return RedirectToAction("Index", "Seller");
+                        // 🔹 Redirect based on role
+                        switch (user.Role)
+                        {
+                            case "Admin":
+                                return RedirectToAction("Index", "Admin");
+                            case "Customer":
+                                return RedirectToAction("Index", "Home");
+                            case "Seller":
+                                return RedirectToAction("Index", "Seller");
+                        }
                     }
                 }
-            }
 
-            ModelState.AddModelError("", "Invalid username or password");
-            return View(users);
+                ModelState.AddModelError("", "Invalid username or password");
+                return View(users);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index", "Error");
+            }
         }
 
         public async Task<IActionResult> Logout()

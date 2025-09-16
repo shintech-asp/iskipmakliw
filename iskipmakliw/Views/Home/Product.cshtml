@@ -7,7 +7,7 @@
 
     <div class="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 mb-4">
 
-        <div class="widget-content widget-content-area br-8">
+        <div class="widget-content widget-content-area br-8 p-4">
 
             <div class="row justify-content-center">
                 <div class="col-xxl-5 col-xl-6 col-lg-7 col-md-7 col-sm-9 col-12 pe-3">
@@ -54,7 +54,7 @@
                             <span class="badge badge-light-success mb-3">Whole sale!</span>
                         }
 
-                        <h3 class="product-title mb-0">Cotton T-Shit</h3>
+                        <h3 class="product-title mb-0">@Model.Name</h3>
 
                         <div class="review mb-4">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
@@ -66,19 +66,22 @@
                             <div class="col-md-9 col-sm-9 col-9">
 
                                 <div class="pricing">
-                                     @if (Model.ProductVariants.FirstOrDefault().Discount != null)
+                                    @if (Model.ProductVariants.FirstOrDefault()?.Discount != null && Model.ProductVariants.FirstOrDefault()?.Discount > 0)
                                     {
-                                        {
-                                            var discount = Model.ProductVariants.FirstOrDefault().Discount;
-                                            var price = Model.ProductVariants.FirstOrDefault().Price * (discount / 100);
-                                            <span class="discounted-price">@price</span>
-                                        }
-                                        <span class="regular-price">₱@Model.ProductVariants.FirstOrDefault().Price.ToString("N0")</span>
+                                        var discount = Model.ProductVariants.FirstOrDefault().Discount ?? 0;
+                                        var price = Model.ProductVariants.FirstOrDefault().Price;
+                                        var discountedPrice = price - (price * discount / 100);
+
+                                        <span class="discounted-price">₱@discountedPrice.ToString("N0")</span>
+                                        <span class="regular-price text-muted" style="text-decoration: line-through;">
+                                            ₱@price.ToString("N0")
+                                        </span>
                                     }
                                     else
                                     {
                                         <span class="discounted-price">₱@Model.ProductVariants.FirstOrDefault().Price.ToString("N0")</span>
                                     }
+
                                 </div>
 
                             </div>
@@ -98,24 +101,25 @@
                             <div class="col-xl-3 col-lg-6 col-sm-6 align-self-center">Color</div>
                             <div class="col-xl-9 col-lg-6 col-sm-6">
                                 <div class="color-options text-xl-end">
-                                    @foreach (var color in Model.ProductVariants)
-                                    {
+                                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                                        @foreach (var color in Model.ProductVariants.Select((variant, index) => new { variant, index }))
                                         {
-                                            var bgcolor = color.Color;
-                                            if (bgcolor != null)
+                                            var bgcolor = color.variant.Color;
+                                            var radioId = $"btnradio{color.index}"; // unique id per loop iteration
+
+                                            if (!string.IsNullOrEmpty(bgcolor))
                                             {
-                                                <div class="form-check form-check-inline">
-                                                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" style="background-color: brown">
-                                                </div>
+                                                <input type="radio" class="btn-check" name="btnradio" id="@radioId" value="@bgcolor">
+                                                <label class="btn btn-sm btn-outline-secondary" for="@radioId">@bgcolor</label>
                                             }
                                             else
                                             {
-                                                <div class="form-check form-check-inline">
-                                                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" style="background-color: grey">
-                                                </div>
+                                                <input type="radio" class="btn-check" name="btnradio" id="@radioId" value="Default">
+                                                <label class="btn btn-sm btn-outline-secondary" for="@radioId">Default</label>
                                             }
                                         }
-                                    }
+
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -124,23 +128,50 @@
                             <div class="col-xl-9 col-lg-6 col-sm-6 align-self-center">Size</div>
                             <div class="col-xl-3 col-lg-6 col-sm-6 align-self-center">
                                 <select class="form-select form-control-sm" aria-label="Default select example">
-                                    <option value="S">S</option>
-                                    <option value="M">M</option>
-                                    <option value="L" selected="">L</option>
-                                    <option value="XL">XL</option>
-                                    <option value="2XL">2XL</option>
+                                    @foreach(var data in Model.ProductVariants)
+                                    {
+                                        <option value="@data.Dimension">@data.Dimension</option>
+                                    }
                                 </select>
-                                <a href="javascript:void(0);" class="product-helpers text-end d-block mt-2">Size Chart</a>
                             </div>
                         </div>
+
+                        @{
+                            int totalQuantity = 0;
+                            foreach (var data in Model.ProductVariants)
+                            {
+                                totalQuantity += data.Quantity;
+                            }
+
+                            string quan = totalQuantity + " pcs left";
+                            string text;
+
+                            if (totalQuantity >= 10)
+                            {
+                                text = "text-success";
+                            }
+                            else if (totalQuantity <= 9 && totalQuantity >= 2)
+                            {
+                                text = "text-warning";
+                            }
+                            else // 0 or 1
+                            {
+                                text = "text-danger";
+                            }
+                        }
 
                         <div class="row quantity-selector mb-4">
                             <div class="col-xl-6 col-lg-6 col-sm-6 mt-sm-3">Quantity</div>
                             <div class="col-xl-6 col-lg-6 col-sm-6">
-                                <div class="input-group bootstrap-touchspin bootstrap-touchspin-injected"><input id="demo1" type="text" value="1" name="demo1" class="form-control"></div>
-                                <p class="text-danger product-helpers text-end mt-2">Low Stock</p>
+                                <div class="input-group bootstrap-touchspin bootstrap-touchspin-injected">
+                                    <input id="demo1" type="number" value="1" name="demo1"
+                                           class="form-control"
+                                           max="@totalQuantity" min="1" />
+                                </div>
+                                <p class="@text product-helpers text-end mt-2">@quan</p>
                             </div>
                         </div>
+
 
                         <hr class="mb-5 mt-4">
 

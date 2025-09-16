@@ -8,5 +8,6 @@
         public string Name { get; set; }
         public double Price { get; set; }
         public byte[] FirstImage { get; set; }
+        public ICollection<ProductVariants>? ProductVariants { get; set; }
     }
 }

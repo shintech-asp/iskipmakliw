@@ -4,8 +4,6 @@ using iskipmakliw.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using System.Linq;
 using System.Security.Claims;
 
 namespace iskipmakliw.Controllers
@@ -13,89 +11,113 @@ namespace iskipmakliw.Controllers
     [Authorize(Roles = "Seller")]
     public class SellerController : Controller
     {
-        ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
         public SellerController(ApplicationDbContext context)
         {
             _context = context;
         }
+
         public IActionResult Index()
         {
-            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
-            var user = _context.Payments.Include(p => p.Users)
-                            .ThenInclude(u => u.UserDetails)
-                            .ThenInclude(u => u.Plans)
-                            .Where(u => u.Users.Id == usersId)
-                            .FirstOrDefault();
-            return View(user);
+            try
+            {
+                int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+                var user = _context.Payments.Include(p => p.Users)
+                                .ThenInclude(u => u.UserDetails)
+                                .ThenInclude(u => u.Plans)
+                                .FirstOrDefault(u => u.Users.Id == usersId);
+
+                return View(user);
+            }
+            catch (Exception)
+            {
+                return RedirectToAction("Index", "Error");
+            }
         }
+
         public IActionResult Chats()
         {
-            return View();
+            try { return View(); }
+            catch (Exception) { return RedirectToAction("Index", "Error"); }
         }
+
         public IActionResult ProductAdd()
         {
-            return View();
+            try { return View(); }
+            catch (Exception) { return RedirectToAction("Index", "Error"); }
         }
+
         [HttpPost]
         public IActionResult ProductAdd(Product product)
         {
-            var usersId = int.Parse(User.FindFirst("UsersId")?.Value);
-            var filter = _context.Product.Where(u => u.Name == product.Name && u.UsersId == usersId).FirstOrDefault();
-            ModelState.Remove("Users");
-            if (ModelState.IsValid)
+            try
             {
-                if (filter == null)
+                var usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+                var filter = _context.Product.FirstOrDefault(u => u.Name == product.Name && u.UsersId == usersId);
+                ModelState.Remove("Users");
+
+                if (ModelState.IsValid)
                 {
-                    product.UsersId = usersId;
-                    var newProduct = _context.Product.Add(product);
-                   
-                    _context.SaveChanges();
-                    TempData["success"] = "Product added successfully.";
-                    return View(product);
+                    if (filter == null)
+                    {
+                        product.UsersId = usersId;
+                        _context.Product.Add(product);
+                        _context.SaveChanges();
+
+                        TempData["success"] = "Product added successfully.";
+                        return RedirectToAction("ProductList");
+                    }
+                    else
+                    {
+                        TempData["error"] = "Product already exists.";
+                        return View();
+                    }
                 }
-                else
-                {
-                    TempData["error"] = "Product already exists.";
-                    return View();
-                }
-            }
-            else
-            {
-                TempData["error"] = "Fill up all the fields";
+                TempData["error"] = "Fill up all the fields.";
                 return View();
             }
-                
+            catch (Exception)
+            {
+                return RedirectToAction("Index", "Error");
+            }
         }
+
         public IActionResult ProductEdit(int Id)
         {
-            var userId = int.Parse(User.FindFirst("UsersId")?.Value);
-            var product = _context.ProductVariants
-                        .Include(v => v.Product)
-                        .Include(v => v.Gallery)
-                        .FirstOrDefault(v => v.Id == Id);
-
-            if (product != null)
+            try
             {
-                product.Gallery = _context.Gallery
-                    .Where(g => g.pUsersId == userId && g.ProductId == product.Id)
-                    .ToList();
-            }
+                var product = _context.ProductVariants
+                            .Include(v => v.Product)
+                            .Include(v => v.Gallery)
+                            .FirstOrDefault(v => v.Id == Id);
 
-            return View(product);
+                return View(product);
+            }
+            catch (Exception)
+            {
+                return RedirectToAction("Index", "Error");
+            }
         }
+
         [HttpPost]
         public IActionResult ProductEdit(ProductVariants product, string ButtonType, int Id)
         {
-            ModelState.Remove("Product");
-            if (ModelState.IsValid)
+            try
             {
-                if(ButtonType == "Save")
+                ModelState.Remove("Product");
+
+                if (ModelState.IsValid)
                 {
                     var existing = _context.ProductVariants.FirstOrDefault(p => p.Id == Id);
 
-                    if (existing != null)
+                    if (existing == null)
                     {
-                        // Update existing
+                        TempData["error"] = "Product variant not found.";
+                        return RedirectToAction("ProductList");
+                    }
+
+                    if (ButtonType == "Save")
+                    {
                         existing.ProductId = product.ProductId;
                         existing.Material = product.Material;
                         existing.Dimension = product.Dimension;
@@ -105,158 +127,191 @@ namespace iskipmakliw.Controllers
                         existing.Discount = product.Discount;
 
                         _context.ProductVariants.Update(existing);
-                        TempData["success"] = "Item successfully updated";
                         _context.SaveChanges();
+
+                        TempData["success"] = "Item successfully updated";
                     }
-                }else if(ButtonType == "Remove")
-                {
-                    var existing = _context.ProductVariants.FirstOrDefault(p => p.Id == Id);
-                    if (existing != null)
+                    else if (ButtonType == "Remove")
                     {
                         existing.isArchive = DateTime.Now;
                         _context.ProductVariants.Update(existing);
-                        TempData["success"] = "Item successfully deleted";
                         _context.SaveChanges();
-                        return RedirectToAction("Index");
+
+                        TempData["success"] = "Item successfully deleted";
+                        return RedirectToAction("ProductList");
                     }
-
                 }
+
+                var productVar = _context.ProductVariants
+                            .Include(v => v.Product)
+                            .Include(v => v.Gallery)
+                            .FirstOrDefault(v => v.Id == Id);
+
+                return View(productVar);
             }
-            var userId = int.Parse(User.FindFirst("UsersId")?.Value);
-
-            var productVar = _context.ProductVariants
-                        .Include(v => v.Product)
-                        .Include(v => v.Gallery)
-                        .FirstOrDefault(v => v.Id == Id);
-
-            if (productVar != null)
+            catch (Exception)
             {
-                productVar.Gallery = _context.Gallery
-                    .Where(g => g.pUsersId == userId && g.ProductId == productVar.Id)
-                    .ToList();
+                return RedirectToAction("Index", "Error");
             }
-            return View(productVar);
         }
+
         public IActionResult ProductList()
         {
-            var userId = int.Parse(User.FindFirst("UsersId")?.Value);
+            try
+            {
+                var userId = int.Parse(User.FindFirst("UsersId")?.Value);
 
-            var data = _context.Product
-                        .Include(u => u.ProductVariants.Where(g => g.isArchive == null))
-                        .Include(g => g.Gallery)
-                        .Where(d => d.UsersId == userId)
-                        .ToList();
+                var data = _context.Product
+                            .Include(u => u.ProductVariants.Where(g => g.isArchive == null))
+                            .Include(g => g.Gallery)
+                            .Where(d => d.UsersId == userId)
+                            .ToList();
 
-            return View(data);
+                return View(data);
+            }
+            catch (Exception)
+            {
+                return RedirectToAction("Index", "Error");
+            }
         }
+
         public IActionResult ProductDetails(int Id)
         {
-            var userId = int.Parse(User.FindFirst("UsersId")?.Value);
-
-            var data = _context.ProductVariants
-                    .Include(v => v.Product)
-                    .Where(u => u.ProductId == Id && u.Product.UsersId == userId && u.isArchive == null)
-                    .ToList();
-
-            var productName = _context.Product
-                              .Where(n => n.UsersId == userId && n.Id == Id)
-                              .FirstOrDefault();
-
-            var ProductDetailsViewModel = new ProductDetailsViewModel
+            try
             {
-                Product = productName,
-                ProductVariants = data
-            };
-            return View(ProductDetailsViewModel);
+                var userId = int.Parse(User.FindFirst("UsersId")?.Value);
+
+                var data = _context.ProductVariants
+                        .Include(v => v.Product)
+                        .Where(u => u.ProductId == Id && u.Product.UsersId == userId && u.isArchive == null)
+                        .ToList();
+
+                var productName = _context.Product
+                                  .FirstOrDefault(n => n.UsersId == userId && n.Id == Id);
+
+                var viewModel = new ProductDetailsViewModel
+                {
+                    Product = productName,
+                    ProductVariants = data
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception)
+            {
+                return RedirectToAction("Index", "Error");
+            }
         }
+
         [HttpPost]
         public IActionResult ProductDetails(ProductDetailsViewModel model, IFormFile Image, int Id)
         {
-            if (model?.ProductDetails == null)
-                return View(model);
-
-            ModelState.Remove("Product");
-            ModelState.Remove("ProductVariants");
-            ModelState.Remove("ProductDetails.Product");
-            ModelState.Remove("ProductDetails.ProductId");
-
-            if (ModelState.IsValid)
+            try
             {
-                ProductVariants productVariant;
+                if (model?.ProductDetails == null)
+                    return View(model);
 
-                if (model.ProductDetails.Id == 0)
+                ModelState.Remove("Product");
+                ModelState.Remove("ProductVariants");
+                ModelState.Remove("ProductDetails.Product");
+                ModelState.Remove("ProductDetails.ProductId");
+
+                if (ModelState.IsValid)
                 {
-                    productVariant = new ProductVariants
-                    {
-                        ProductId = Id,
-                        Material = model.ProductDetails.Material,
-                        Dimension = model.ProductDetails.Dimension,
-                        Color = model.ProductDetails.Color,
-                        Price = model.ProductDetails.Price,
-                        Quantity = model.ProductDetails.Quantity,
-                        Discount = model.ProductDetails.Discount
-                    };
-                    _context.ProductVariants.Add(productVariant);
-                }
-                else
-                {
-                    productVariant = new ProductVariants
-                    {
-                        Id = model.ProductDetails.Id, // make sure Id is set
-                        ProductId = model.ProductDetails.Id,
-                        Material = model.ProductDetails.Material,
-                        Dimension = model.ProductDetails.Dimension,
-                        Color = model.ProductDetails.Color,
-                        Price = model.ProductDetails.Price,
-                        Quantity = model.ProductDetails.Quantity,
-                        Discount = model.ProductDetails.Discount
-                    };
-                    _context.ProductVariants.Update(productVariant);
-                }
+                    ProductVariants productVariant;
 
-                // Save once to ensure productVariant.Id is generated
-                _context.SaveChanges();
-
-                if (Image != null)
-                {
-                    using var ms = new MemoryStream();
-                    Image.CopyTo(ms);
-
-                    var gallery = new Gallery
+                    if (model.ProductDetails.Id == 0)
                     {
-                        Image = ms.ToArray(),
-                        pUsersId = int.Parse(User.FindFirst("UsersId")?.Value),
-                        ProductId = Id,
-                        ProductVariantsId = productVariant.Id,
-                        ImageType = "Item image"
-                    };
-                    _context.Gallery.Add(gallery);
+                        // New variant
+                        productVariant = new ProductVariants
+                        {
+                            ProductId = Id,
+                            Material = model.ProductDetails.Material,
+                            Dimension = model.ProductDetails.Dimension,
+                            Color = model.ProductDetails.Color,
+                            Price = model.ProductDetails.Price,
+                            Quantity = model.ProductDetails.Quantity,
+                            Discount = model.ProductDetails.Discount
+                        };
+                        _context.ProductVariants.Add(productVariant);
+                        TempData["success"] = "Item successfully added";
+                    }
+                    else
+                    {
+                        // Update existing
+                        productVariant = _context.ProductVariants.FirstOrDefault(p => p.Id == model.ProductDetails.Id);
+
+                        if (productVariant == null)
+                        {
+                            TempData["error"] = "Variant not found.";
+                            return RedirectToAction("ProductDetails", new { Id });
+                        }
+
+                        productVariant.ProductId = Id;
+                        productVariant.Material = model.ProductDetails.Material;
+                        productVariant.Dimension = model.ProductDetails.Dimension;
+                        productVariant.Color = model.ProductDetails.Color;
+                        productVariant.Price = model.ProductDetails.Price;
+                        productVariant.Quantity = model.ProductDetails.Quantity;
+                        productVariant.Discount = model.ProductDetails.Discount;
+
+                        _context.ProductVariants.Update(productVariant);
+                        TempData["success"] = "Item successfully updated";
+                    }
+
                     _context.SaveChanges();
+
+                    // Add image if uploaded
+                    if (Image != null)
+                    {
+                        using var ms = new MemoryStream();
+                        Image.CopyTo(ms);
+
+                        var gallery = new Gallery
+                        {
+                            Image = ms.ToArray(),
+                            pUsersId = int.Parse(User.FindFirst("UsersId")?.Value),
+                            ProductId = Id,
+                            ProductVariantsId = productVariant.Id,
+                            ImageType = "Item image"
+                        };
+                        _context.Gallery.Add(gallery);
+                        _context.SaveChanges();
+                    }
+
+                    return RedirectToAction("ProductDetails", new { Id });
                 }
 
-                return RedirectToAction("Index", "Seller");
+                return View(model);
             }
-
-            return View(model);
+            catch (Exception)
+            {
+                return RedirectToAction("Index", "Error");
+            }
         }
-
-
 
         public IActionResult Users()
         {
-            return View();
+            try { return View(); }
+            catch (Exception) { return RedirectToAction("Index", "Error"); }
         }
+
         public IActionResult Reports()
         {
-            return View();
+            try { return View(); }
+            catch (Exception) { return RedirectToAction("Index", "Error"); }
         }
+
         public IActionResult StoreSettings()
         {
-            return View();
+            try { return View(); }
+            catch (Exception) { return RedirectToAction("Index", "Error"); }
         }
+
         public IActionResult Orders()
         {
-            return View();
+            try { return View(); }
+            catch (Exception) { return RedirectToAction("Index", "Error"); }
         }
     }
 }

@@ -34,44 +34,48 @@
 <div class="row">
     @foreach(var data in Model)
     {
-        <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-            <a class="card style-6" asp-action="Product" asp-controller="Home" asp-route-Id="@data.ProductId" asp-route-SellerId="@data.SellerId">
-                <span class="badge badge-primary">NEW</span>
-                @if (data.FirstImage != null)
-                {
-                    var base64Cap = Convert.ToBase64String(data.FirstImage);
-                    <img src="data:image/png;base64,@base64Cap"
-                         class="card-img-top img-fluid"
-                         style="min-height:200px; max-height: 200px; object-fit:contain;"
-                         alt="Product image" />
-                }
-                else
-                {
-                    <img src="~/src/assets/img/OakMartLogo.png"
-                         class="card-img-top img-fluid"
-                         style="min-height:200px; max-height: 200px; object-fit:contain;"
-                         alt="Default product" />
-                }
-                <span class="badge badge-secondary mb-0">
-                    ₱@data.Price.ToString("N0")
-                </span>
-                <div class="card-footer">
-                    <div class="row">
-                        <div class="col-12 mb-2">
-                            <b>@data.Name</b>
-                        </div>
-                        <div class="col-12 mb-4">
-                            <p class="fw-bold"><span class="fw-light">Seller</span><br />@data.SellerName</p>
-                        </div>
-                        <div class="col-3">
-                            <button class="btn btn-secondary">Buy</button>
+        if (data.ProductVariants.Count != 0)
+        {
+            <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
+                <a class="card style-6" asp-action="Product" asp-controller="Home" asp-route-Id="@data.ProductId" asp-route-SellerId="@data.SellerId">
+                    <span class="badge badge-primary">NEW</span>
+                    @if (data.FirstImage != null)
+                    {
+                        var base64Cap = Convert.ToBase64String(data.FirstImage);
+                        <img src="data:image/png;base64,@base64Cap"
+                             class="card-img-top img-fluid"
+                             style="min-height:200px; max-height: 200px; object-fit:contain;"
+                             alt="Product image" />
+                    }
+                    else
+                    {
+                        <img src="~/src/assets/img/OakMartLogo.png"
+                             class="card-img-top img-fluid"
+                             style="min-height:200px; max-height: 200px; object-fit:contain;"
+                             alt="Default product" />
+                    }
+                    <span class="badge badge-secondary mb-0">
+                        ₱@data.Price.ToString("N0")
+                    </span>
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <b>@data.Name</b>
                             </div>
-                        <div class="col-9 text-end">
-                            <button class="btn btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></button>
+                            <div class="col-12 mb-4">
+                                <p class="fw-bold"><span class="fw-light">Seller</span><br />@data.SellerName</p>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-secondary">Buy</button>
+                            </div>
+                            <div class="col-9 text-end">
+                                <button class="btn btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </a>
-        </div>
+                </a>
+            </div>
+        }
+        
     }
 </div>

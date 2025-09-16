@@ -1,64 +1,132 @@
 ﻿using iskipmakliw.Data;
+using iskipmakliw.Filters;
 using iskipmakliw.Models;
-using Microsoft.AspNetCore.Authentication;
+using iskipmakliw.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using iskipmakliw.Filters;
-using System.Security.Claims;
 
 namespace iskipmakliw.Controllers
 {
     [RedirectIfAuthenticated]
     public class IndexController : Controller
     {
-        ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
+
         public IndexController(ApplicationDbContext context)
         {
             _context = context;
         }
+
         public IActionResult Index()
         {
-            return View();
+            try
+            {
+                var data = _context.Product
+                    .Select(p => new ClientViewModel
+                    {
+                        ProductId = p.Id,
+                        Name = p.Name,
+                        SellerName = p.Users.Username,
+                        SellerId = p.UsersId,
+                        Price = p.ProductVariants
+                            .OrderBy(v => v.Price)
+                            .Select(v => v.Price)
+                            .FirstOrDefault(),
+                        FirstImage = p.Gallery
+                            .OrderBy(g => g.Id)
+                            .Select(g => g.Image)
+                            .FirstOrDefault(),
+                        ProductVariants = p.ProductVariants.ToList()
+                    })
+                    .ToList();
+
+                return View(data);
+            }
+            catch (Exception)
+            {
+                return RedirectToAction("Error");
+            }
         }
+
         public IActionResult Product()
+        {
+            try
+            {
+                return View();
+            }
+            catch (Exception)
+            {
+                return RedirectToAction("Error");
+            }
+        }
+
+        public IActionResult Error()
         {
             return View();
         }
+
         [HttpGet]
         public IActionResult Signup()
         {
-            return View();
+            try
+            {
+                return View();
+            }
+            catch (Exception)
+            {
+                return RedirectToAction("Error");
+            }
         }
+
         [HttpPost]
         public IActionResult Signup(Users users, string Confirm)
         {
-            users.Role = "Customer";
-            ModelState.Remove("Role");
-            if (ModelState.IsValid &&(Confirm == users.Password))
+            try
             {
-                var existingUser = _context.Users.FirstOrDefault(u => u.Email == users.Email);
-                if (existingUser != null)
+                users.Role = "Customer";
+                ModelState.Remove("Role");
+
+                if (ModelState.IsValid && (Confirm == users.Password))
                 {
-                    ViewBag.Error = "Email already in use";
-                    return View(users);
+                    var existingUser = _context.Users.FirstOrDefault(u => u.Email == users.Email);
+                    if (existingUser != null)
+                    {
+                        ViewBag.Error = "Email already in use";
+                        return View(users);
+                    }
+
+                    var hasher = new PasswordHasher<Users>();
+                    users.Password = hasher.HashPassword(users, users.Password);
+
+                    _context.Users.Add(users);
+                    _context.SaveChanges();
+
+                    return RedirectToAction("Login", "Account");
                 }
-                var hasher = new PasswordHasher<Users>();
-                users.Password = hasher.HashPassword(users, users.Password);
-                _context.Users.Add(users);
-                _context.SaveChanges();
-                return RedirectToAction("Login", "Account");
-            }else if(Confirm != users.Password)
-            {
-                ViewBag.Error = "Password and Confirm Password do not match";
+                else if (Confirm != users.Password)
+                {
+                    ViewBag.Error = "Password and Confirm Password do not match";
+                }
+
+                return View(users);
             }
-            return View(users);
+            catch (Exception)
+            {
+                return RedirectToAction("Error");
+            }
         }
-        
+
         public IActionResult Account()
         {
-            return View();
+            try
+            {
+                return View();
+            }
+            catch (Exception)
+            {
+                return RedirectToAction("Error");
+            }
         }
-       
     }
 }

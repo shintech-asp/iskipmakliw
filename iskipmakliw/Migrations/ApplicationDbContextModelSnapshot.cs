@@ -62,7 +62,7 @@ namespace iskipmakliw.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("Billings");
+                    b.ToTable("Billings", (string)null);
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.Gallery", b =>
@@ -101,7 +101,7 @@ namespace iskipmakliw.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("Gallery");
+                    b.ToTable("Gallery", (string)null);
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.Payments", b =>
@@ -139,7 +139,7 @@ namespace iskipmakliw.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.Plans", b =>
@@ -169,7 +169,7 @@ namespace iskipmakliw.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Plans");
+                    b.ToTable("Plans", (string)null);
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.Product", b =>
@@ -195,7 +195,7 @@ namespace iskipmakliw.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("Product");
+                    b.ToTable("Product", (string)null);
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.ProductVariants", b =>
@@ -235,7 +235,7 @@ namespace iskipmakliw.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductVariants");
+                    b.ToTable("ProductVariants", (string)null);
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.UserDetails", b =>
@@ -292,7 +292,7 @@ namespace iskipmakliw.Migrations
                     b.HasIndex("UsersId")
                         .IsUnique();
 
-                    b.ToTable("UserDetails");
+                    b.ToTable("UserDetails", (string)null);
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.Users", b =>
@@ -334,7 +334,7 @@ namespace iskipmakliw.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.Billings", b =>
