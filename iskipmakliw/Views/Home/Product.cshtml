@@ -2,25 +2,51 @@
     ViewData["Title"] = "Product Details";
     Layout = "_LayoutCustomer";
 }
-@model Product;
+@model Product
+
+@{
+    // ✅ Build variant data for JS
+    var variantData = Model.ProductVariants
+        .Select(v => new
+        {
+            Color = string.IsNullOrEmpty(v.Color) ? "Default" : v.Color,
+            Size = v.Dimension,
+            Quantity = v.Quantity,
+            Price = v.Price,
+            Discount = v.Discount ?? 0
+        })
+        .ToList();
+
+    var jsonVariants = System.Text.Json.JsonSerializer.Serialize(variantData);
+
+    // ✅ Build unique colors for the buttons
+    var colorGroups = variantData
+        .GroupBy(v => v.Color)
+        .Select(g => g.First())
+        .ToList();
+
+    // ✅ Get first variant for initial display
+    var firstVariant = variantData.FirstOrDefault();
+    var initialPrice = firstVariant?.Price ?? 0;
+    var initialDiscount = firstVariant?.Discount ?? 0;
+    var initialFinalPrice = initialDiscount > 0 ? initialPrice - (initialPrice * initialDiscount / 100) : initialPrice;
+}
+
 <div class="row layout-top-spacing">
-
     <div class="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 mb-4">
-
         <div class="widget-content widget-content-area br-8 p-4">
-
             <div class="row justify-content-center">
+                <!-- ✅ Image Gallery -->
                 <div class="col-xxl-5 col-xl-6 col-lg-7 col-md-7 col-sm-9 col-12 pe-3">
-                    <!-- Swiper -->
-                    <div id="main-slider" class="splide splide--fade splide--ltr splide--draggable is-active is-initialized">
-                        <div class="splide__track" id="main-slider-track" style="padding-left: 0px; padding-right: 0px;">
-                            <ul class="splide__list" id="main-slider-list">
-                                @foreach(var data in Model.Gallery)
+                    <div id="main-slider" class="splide">
+                        <div class="splide__track">
+                            <ul class="splide__list">
+                                @foreach (var data in Model.Gallery)
                                 {
                                     var base64Img = Convert.ToBase64String(data.Image);
-                                    <li class="splide__slide is-active is-visible" id="main-slider-slide01" style="width: 100%; height: 556px; transition: opacity 400ms cubic-bezier(0.25, 1, 0.5, 1);" tabindex="0">
+                                    <li class="splide__slide">
                                         <a href="data:image/png;base64,@base64Img" class="glightbox">
-                                            <img alt="ecommerce" src="data:image/png;base64,@base64Img">
+                                            <img src="data:image/png;base64,@base64Img" alt="ecommerce">
                                         </a>
                                     </li>
                                 }
@@ -28,26 +54,31 @@
                         </div>
                     </div>
 
-                    <div id="thumbnail-slider" class="splide splide--slide splide--ltr splide--draggable splide--nav is-active is-initialized">
-                        <div class="splide__arrows"><button class="splide__arrow splide__arrow--prev" type="button" aria-controls="thumbnail-slider-track" aria-label="Go to last slide"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40"><path d="m15.5 0.932-4.3 4.38 14.5 14.6-14.5 14.5 4.3 4.4 14.6-14.6 4.4-4.3-4.4-4.4-14.6-14.6z"></path></svg></button><button class="splide__arrow splide__arrow--next" type="button" aria-controls="thumbnail-slider-track" aria-label="Next slide"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40"><path d="m15.5 0.932-4.3 4.38 14.5 14.6-14.5 14.5 4.3 4.4 14.6-14.6 4.4-4.3-4.4-4.4-14.6-14.6z"></path></svg></button></div><div class="splide__track" id="thumbnail-slider-track" style="padding-left: 0px; padding-right: 0px;">
-                            <ul class="splide__list" id="thumbnail-slider-list" role="menu" aria-orientation="horizontal" style="transform: translateX(0px);">
-                                @foreach(var data in Model.Gallery)
+                    <div id="thumbnail-slider" class="splide splide--nav">
+                        <div class="splide__track">
+                            <ul class="splide__list">
+                                @foreach (var data in Model.Gallery)
                                 {
                                     var base64Img = Convert.ToBase64String(data.Image);
-                                    <li class="splide__slide is-active is-visible" id="thumbnail-slider-slide01" aria-label="Go to slide 1" aria-controls="main-slider" role="menuitem" style="margin-right: 10px; width: 104px; height: 58px; background: url(data:image/png;base64,@base64Img) center center / cover no-repeat;" aria-current="true" tabindex="0"><img alt="ecommerce" src="data:image/png;base64,@base64Img" style="display: none;"></li>
+                                    <li class="splide__slide"
+                                        style="width: 104px; height: 58px; background: url(data:image/png;base64,@base64Img) center center / cover no-repeat;">
+                                    </li>
                                 }
                             </ul>
                         </div>
                     </div>
-
                 </div>
 
+                <!-- ✅ Product Details -->
                 <div class="col-xxl-4 col-xl-5 col-lg-12 col-md-12 col-12 mt-xl-0 mt-5 align-self-center">
-
                     <div class="product-details-content">
-                        @if (Model.ProductVariants.FirstOrDefault().Discount != null)
+
+                        <!-- ✅ Discount / Badge -->
+                        @if (initialDiscount > 0)
                         {
-                            <span class="badge badge-light-danger mb-3">@Model.ProductVariants.FirstOrDefault().Discount% Sale off</span>
+                            <span class="badge badge-light-danger mb-3">
+                                @initialDiscount% Sale Off
+                            </span>
                         }
                         else
                         {
@@ -56,153 +87,108 @@
 
                         <h3 class="product-title mb-0">@Model.Name</h3>
 
-                        <div class="review mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                            <span class="rating-score">4.88 <span class="rating-count">(200 Reviews)</span></span>
+                        <!-- ✅ Pricing -->
+                        <div class="pricing">
+                            <span id="priceDisplay" class="discounted-price">
+                                ₱@initialFinalPrice.ToString("N0")
+                            </span>
+                            <span id="regularPrice" class="regular-price text-muted"
+                                  style="@(initialDiscount > 0 ? "" : "display:none;") text-decoration: line-through;">
+                                ₱@initialPrice.ToString("N0")
+                            </span>
                         </div>
 
-                        <div class="row">
+                        <hr class="mb-4" />
 
-                            <div class="col-md-9 col-sm-9 col-9">
-
-                                <div class="pricing">
-                                    @if (Model.ProductVariants.FirstOrDefault()?.Discount != null && Model.ProductVariants.FirstOrDefault()?.Discount > 0)
-                                    {
-                                        var discount = Model.ProductVariants.FirstOrDefault().Discount ?? 0;
-                                        var price = Model.ProductVariants.FirstOrDefault().Price;
-                                        var discountedPrice = price - (price * discount / 100);
-
-                                        <span class="discounted-price">₱@discountedPrice.ToString("N0")</span>
-                                        <span class="regular-price text-muted" style="text-decoration: line-through;">
-                                            ₱@price.ToString("N0")
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="discounted-price">₱@Model.ProductVariants.FirstOrDefault().Price.ToString("N0")</span>
-                                    }
-
-                                </div>
-
-                            </div>
-                            <div class="col-md-3 col-sm-3 col-3 text-end">
-                                <div class="product-share">
-                                    <button class="btn btn-light-success btn-icon btn-rounded _effect--ripple waves-effect waves-light">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <hr class="mb-4">
-
+                        <!-- ✅ Color Buttons -->
                         <div class="row color-swatch mb-4">
                             <div class="col-xl-3 col-lg-6 col-sm-6 align-self-center">Color</div>
                             <div class="col-xl-9 col-lg-6 col-sm-6">
-                                <div class="color-options text-xl-end">
-                                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                                        @foreach (var color in Model.ProductVariants.Select((variant, index) => new { variant, index }))
-                                        {
-                                            var bgcolor = color.variant.Color;
-                                            var radioId = $"btnradio{color.index}"; // unique id per loop iteration
-
-                                            if (!string.IsNullOrEmpty(bgcolor))
-                                            {
-                                                <input type="radio" class="btn-check" name="btnradio" id="@radioId" value="@bgcolor">
-                                                <label class="btn btn-sm btn-outline-secondary" for="@radioId">@bgcolor</label>
-                                            }
-                                            else
-                                            {
-                                                <input type="radio" class="btn-check" name="btnradio" id="@radioId" value="Default">
-                                                <label class="btn btn-sm btn-outline-secondary" for="@radioId">Default</label>
-                                            }
-                                        }
-
-                                    </div>
+                                <div class="btn-group" role="group">
+                                    @foreach (var color in colorGroups.Select((c, i) => new { c, i }))
+                                    {
+                                        var radioId = $"color{color.i}";
+                                        <input type="radio" class="btn-check color-option"
+                                               name="color"
+                                               id="@radioId"
+                                               data-color="@color.c.Color"
+                                               @(color.i == 0 ? "checked" : "")>
+                                        <label class="btn btn-sm btn-outline-secondary" for="@radioId">
+                                            @color.c.Color
+                                        </label>
+                                    }
                                 </div>
                             </div>
                         </div>
 
+                        <!-- ✅ Size Dropdown -->
                         <div class="row size-selector mb-4">
-                            <div class="col-xl-9 col-lg-6 col-sm-6 align-self-center">Size</div>
-                            <div class="col-xl-3 col-lg-6 col-sm-6 align-self-center">
-                                <select class="form-select form-control-sm" aria-label="Default select example">
-                                    @foreach(var data in Model.ProductVariants)
-                                    {
-                                        <option value="@data.Dimension">@data.Dimension</option>
-                                    }
+                            <div class="col-xl-3 col-lg-6 col-sm-6 align-self-center">Size</div>
+                            <div class="col-xl-9 col-lg-6 col-sm-6 align-self-center">
+                                <select id="sizeSelector" class="form-select form-control-sm">
+                                    <option disabled selected>Choose size</option>
                                 </select>
                             </div>
                         </div>
 
-                        @{
-                            int totalQuantity = 0;
-                            foreach (var data in Model.ProductVariants)
-                            {
-                                totalQuantity += data.Quantity;
-                            }
-
-                            string quan = totalQuantity + " pcs left";
-                            string text;
-
-                            if (totalQuantity >= 10)
-                            {
-                                text = "text-success";
-                            }
-                            else if (totalQuantity <= 9 && totalQuantity >= 2)
-                            {
-                                text = "text-warning";
-                            }
-                            else // 0 or 1
-                            {
-                                text = "text-danger";
-                            }
-                        }
-
-                        <div class="row quantity-selector mb-4">
+                        <!-- ✅ Quantity -->
+                        <div class="row mb-4">
                             <div class="col-xl-6 col-lg-6 col-sm-6 mt-sm-3">Quantity</div>
                             <div class="col-xl-6 col-lg-6 col-sm-6">
-                                <div class="input-group bootstrap-touchspin bootstrap-touchspin-injected">
-                                    <input id="demo1" type="number" value="1" name="demo1"
-                                           class="form-control"
-                                           max="@totalQuantity" min="1" />
+                                <div class="input-group quantity-control">
+                                    <button class="btn btn-outline-secondary btn-sm" type="button"
+                                            onclick="document.getElementById('demo1').stepDown()">
+                                        -
+                                    </button>
+                                    <input id="demo1" type="number" class="form-control text-center" value="1" min="1" max="1">
+                                    <button class="btn btn-outline-secondary btn-sm" type="button"
+                                            onclick="document.getElementById('demo1').stepUp()">
+                                        +
+                                    </button>
                                 </div>
-                                <p class="@text product-helpers text-end mt-2">@quan</p>
+                                <p id="stockInfo" class="product-helpers text-end mt-2 text-warning">
+                                    Select a color and size
+                                </p>
                             </div>
                         </div>
 
+                        <hr class="mb-5 mt-4" />
 
-                        <hr class="mb-5 mt-4">
-
+                        <!-- ✅ Action Buttons -->
                         <div class="action-button text-center">
-
                             <div class="row">
-
                                 <div class="col-xxl-7 col-xl-7 col-sm-6 mb-sm-0 mb-3">
-                                    <button class="btn btn-primary w-100 btn-lg _effect--ripple waves-effect waves-light"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg> <span class="btn-text-inner">Add To Cart</span></button>
+                                    <button class="btn btn-primary w-100 btn-lg">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                             fill="none" stroke="currentColor" stroke-width="2"
+                                             stroke-linecap="round" stroke-linejoin="round"
+                                             class="feather feather-shopping-cart">
+                                            <circle cx="9" cy="21" r="1"></circle>
+                                            <circle cx="20" cy="21" r="1"></circle>
+                                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                                        </svg>
+                                        <span>Add To Cart</span>
+                                    </button>
                                 </div>
-
                                 <div class="col-xxl-5 col-xl-5 col-sm-6">
-                                    <button class="btn btn-success w-100 btn-lg _effect--ripple waves-effect waves-light">Buy Now</button>
+                                    <button class="btn btn-success w-100 btn-lg">Buy Now</button>
                                 </div>
-
                             </div>
-
                         </div>
 
                         <div class="secure-info mt-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shield"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                 fill="none" stroke="currentColor" stroke-width="2"
+                                 stroke-linecap="round" stroke-linejoin="round"
+                                 class="feather feather-shield">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
                             <p>Safe and Secure Payments. Easy returns. 100% Authentic products.</p>
                         </div>
-
                     </div>
-
                 </div>
             </div>
-
         </div>
-
     </div>
 
     <div class="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 mb-4">
@@ -549,3 +535,76 @@
     </div>
 
 </div>
+@section Scripts {
+    <script>
+        const variants = @Html.Raw(jsonVariants);
+        const colorRadios = document.querySelectorAll(".color-option");
+        const sizeSelector = document.getElementById("sizeSelector");
+        const priceDisplay = document.getElementById("priceDisplay");
+        const regularPrice = document.getElementById("regularPrice");
+        const stockInfo = document.getElementById("stockInfo");
+        const quantityInput = document.getElementById("demo1");
+
+        function updateSizes(selectedColor) {
+            sizeSelector.innerHTML = '<option disabled selected>Choose size</option>';
+
+            const sizes = variants.filter(v => v.Color === selectedColor);
+            sizes.forEach(v => {
+                const opt = document.createElement("option");
+                opt.value = v.Size;
+                opt.textContent = v.Size;
+                opt.dataset.quantity = v.Quantity;
+                opt.dataset.price = v.Price;
+                opt.dataset.discount = v.Discount;
+                sizeSelector.appendChild(opt);
+            });
+
+            stockInfo.textContent = "Select a size";
+            stockInfo.className = "product-helpers text-end mt-2 text-warning";
+            priceDisplay.textContent = "₱0";
+            regularPrice.style.display = "none";
+        }
+
+        colorRadios.forEach(radio => {
+            radio.addEventListener("change", e => {
+                updateSizes(e.target.dataset.color);
+            });
+        });
+
+        sizeSelector.addEventListener("change", function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const quantity = parseInt(selectedOption.dataset.quantity);
+            const price = parseFloat(selectedOption.dataset.price);
+            const discount = parseFloat(selectedOption.dataset.discount);
+
+            // ✅ Price update
+            if (discount > 0) {
+                const discountedPrice = price - (price * discount / 100);
+                priceDisplay.textContent = `₱${discountedPrice.toLocaleString()}`;
+                regularPrice.textContent = `₱${price.toLocaleString()}`;
+                regularPrice.style.display = "inline";
+            } else {
+                priceDisplay.textContent = `₱${price.toLocaleString()}`;
+                regularPrice.style.display = "none";
+            }
+
+            // ✅ Stock info
+            let stockClass = "text-success";
+            if (quantity <= 1) stockClass = "text-danger";
+            else if (quantity < 10) stockClass = "text-warning";
+
+            stockInfo.textContent = `${quantity} pcs left`;
+            stockInfo.className = `product-helpers text-end mt-2 ${stockClass}`;
+
+            // ✅ Quantity input
+            quantityInput.max = quantity;
+            quantityInput.value = quantity > 0 ? 1 : 0;
+            quantityInput.disabled = quantity <= 0;
+        });
+
+        // ✅ Auto-select first color on load
+        if (colorRadios.length > 0) {
+            updateSizes(colorRadios[0].dataset.color);
+        }
+    </script>
+}

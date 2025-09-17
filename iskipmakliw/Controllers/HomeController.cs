@@ -166,8 +166,8 @@ namespace iskipmakliw.Controllers
             try
             {
                 var product = _context.Product
-                              .Include(u => u.ProductVariants.Where(u => u.isArchive != null))
-                              .ThenInclude(u => u.Gallery.Where(u => u.ProductVariants.isArchive != null))
+                              .Include(u => u.ProductVariants.Where(u => u.isArchive == null))
+                              .ThenInclude(u => u.Gallery.Where(u => u.ProductVariants.isArchive == null))
                               .FirstOrDefault(p => p.Id == Id && p.UsersId == SellerId);
 
                 if (product == null)

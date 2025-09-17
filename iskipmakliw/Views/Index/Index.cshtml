@@ -36,7 +36,7 @@
         if (data.ProductVariants.Count != 0)
         {
             <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
-                <a class="card style-6" asp-action="Product" asp-controller="Home" asp-route-Id="@data.ProductId" asp-route-SellerId="@data.SellerId">
+                <a class="card style-6" asp-action="Login" asp-controller="Account">
                     <span class="badge badge-primary">NEW</span>
                     @if (data.FirstImage != null)
                     {

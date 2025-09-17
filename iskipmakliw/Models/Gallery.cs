@@ -11,8 +11,6 @@ namespace iskipmakliw.Models
         // FK to Product
         public int ProductId { get; set; }
         public Product Product { get; set; }
-
-        // Optional: FK to ProductVariants (if you want images per variant)
         public int? ProductVariantsId { get; set; }
         public ProductVariants ProductVariants { get; set; }
     }
