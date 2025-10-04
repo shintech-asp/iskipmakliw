@@ -2,7 +2,7 @@
     ViewData["Title"] = "Registration";
     Layout = "_LayoutCustomer";
 }
-@model UserDetails;
+@model List<Plans>;
 <div class="row layout-top-spacing" id="cancel-row">
     <div id="wizard_Default" class="col-lg-12 layout-spacing">
         <div class="statbox widget box box-shadow">
@@ -54,7 +54,7 @@
                                     <div class="statbox widget box box-shadow">
                                         <div class="mb-3">
                                             <label class="form-label">Type of ID: </label>
-                                            <select class="form-select" asp-for="TypeId">
+                                            <select class="form-select" name="TypeId">
                                                 <option value="Drivers License">Drivers License</option>
                                                 <option value="PhilSys">PhilSys</option>
                                                 <option value="Passport">Passport</option>
@@ -66,14 +66,14 @@
 
                                             <div class="img-uploader-content">
                                                 <input type="file" class="filepond"
-                                                       asp-for="GovernmentIdFile" accept="image/png, image/jpeg, image/gif" />
+                                                   name="GovernmentIdFile" accept="image/png, image/jpeg, image/gif" />
                                             </div>
 
                                         </div>
                                         <div class="multiple-file-upload mt-5">
                                             <input type="file"
                                                    class="filepond file-upload-multiple"
-                                                   asp-for="GovernmentIdFile"
+                                                    name="GovernmentIdFile"
                                                    data-allow-reorder="true"
                                                    data-max-file-size="3MB"
                                                    data-max-files="1"
@@ -116,14 +116,14 @@
 
                                         <div class="img-uploader-content">
                                         <input type="file" class="filepond"
-                                               asp-for="CapturedIdFile" accept="image/png, image/jpeg, image/gif" />
+                                               name="CapturedIdFile" accept="image/png, image/jpeg, image/gif" />
                                         </div>
 
                                     </div>
                                     <div class="multiple-file-upload mt-5">
                                         <input type="file"
                                                class="filepond file-upload-multiple"
-                                               asp-for="CapturedIdFile"
+                                               name="CapturedIdFile"
                                                data-allow-reorder="true"
                                                data-max-file-size="3MB"
                                                data-max-files="1"
@@ -140,19 +140,19 @@
                                 <div class="row">
                                     <div class="col-12">
                                         <label for="defaultInputAddress" class="form-label">Name on Card</label>
-                                        <input asp-for="CardName" type="text" class="form-control" id="defaultInputAddress" placeholder="John Dela Cruz">
+                                        <input name="CardName" type="text" class="form-control" id="defaultInputAddress" placeholder="John Dela Cruz">
                                     </div>
                                     <div class="col-12">
                                         <label for="defaultInputAddress2" class="form-label">Card Number</label>
-                                        <input asp-for="CardNumber" type="text" class="form-control" id="defaultInputAddress2" maxlength="12" pattern="\d{12}" inputmode="numeric">
+                                        <input name="CardNumber" type="text" class="form-control" id="defaultInputAddress2" maxlength="12" pattern="\d{12}" inputmode="numeric">
                                     </div>
                                     <div class="col-md-6">
                                         <label for="defaultInputCity" class="form-label">Expiry Date</label>
-                                        <input asp-for="ExpirationDate" type="month" class="form-control" id="defaultInputCity" placeholder="MM/YY">
+                                        <input name="ExpirationDate" type="month" class="form-control" id="defaultInputCity" placeholder="MM/YY">
                                     </div>
                                     <div class="col-md-6">
                                         <label for="defaultInputCity" class="form-label">CVV</label>
-                                        <input asp-for="Cvv" type="text" class="form-control" id="defaultInputCity" maxlength="3" pattern="\d{3}" inputmode="numeric">
+                                        <input name="Cvv" type="text" class="form-control" id="defaultInputCity" maxlength="3" pattern="\d{3}" inputmode="numeric">
                                     </div>
                                 </div>
                                 <div class="button-action mt-5">
@@ -166,131 +166,60 @@
 
                                             <div class="pricing-table-2 ">
 
-                                                <!-- Billing Cycle  -->
-                                                <div class="billing-cycle-radios mt-5">
-
-                                                    <div class="switch form-switch-custom switch-inline form-switch-primary inner-label-toggle show">
-                                                    <div class="input-checkbox">
-                                                        <span class="switch-chk-label label-left">Monthly</span>
-
-                                                        <!-- Hidden input bound to your model -->
-                                                        <input type="hidden" asp-for="Subscription" id="subscriptionHidden" value="Monthly" />
-
-                                                        <!-- Your toggle switch -->
-                                                        <input type="checkbox"
-                                                               class="switch-input"
-                                                               role="switch"
-                                                               id="toggle-1"
-                                                               onchange="document.getElementById('subscriptionHidden').value = this.checked ? 'Yearly' : 'Monthly';
-                                                                           this.checked
-                                                                               ? this.closest('.inner-label-toggle')?.classList.add('show')
-                                                                               : this.closest('.inner-label-toggle')?.classList.remove('show');
-                                                                       " />
-                                                        <span class="switch-chk-label label-right">Yearly</span>
-                                                    </div>
-
-                                                    </div>
-
-                                                </div>
-
                                                 <!-- Pricing Plans Container -->
                                                 <div class="pricing-plans-container mt-5 billed-yearly">
                                                     <!-- Plan -->
-                                                    <div class="pricing-plan mb-5">
 
-                                                        <span class="badge badge-pill badge-warning show">45% Off</span>
+                                                    @foreach(var data in Model)
+                                                    {
+                                                        @if(data.Id != 1)
+                                                    {
+                                                        <div class="pricing-plan mb-5 recommanded">
+                                                            @{
+                                                                string recommend;
+                                                                if (data.Discount != 0)
+                                                                {
+                                                                    <span class="badge badge-pill badge-warning show">@data.Discount% Off</span>
+                                                                }
+                                                                <div class="pricing-header-section">
+                                                                    <div class="pricing-header">
+                                                                        <h3>@data.PlanName</h3>
+                                                                        @if (data.PlanName == "Annual")
+                                                                        {
+                                                                            <p>Recommended</p>
+                                                                        }
+                                                                    </div>
+                                                                    <div class="pricing-header-pricing">
+                                                                        <p class="pricing yearly-pricing">
+                                                                            @String.Format(new System.Globalization.CultureInfo("en-PH"), "{0:C}", data.Price)
+                                                                        </p>
 
-                                                        <div class="pricing-header-section">
-                                                            <div class="pricing-header">
-                                                                <h3>Basic</h3>
-                                                                <p>Most Popular</p>
+                                                                        <p class="sub-title monthly-pricing-label">@data.PlanName</p>
+                                                                    </div>
+                                                                </div>
+                                                            }
+
+
+
+
+
+                                                            <div class="pricing-plan-features mb-4">
+                                                                <ul>
+                                                                    <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> Unlimited</li>
+                                                                    <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 3d Modeling for customer</li>
+                                                                    <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> Featured products</li>
+                                                                    @{
+                                                                        double? total = data.Price - (data.Price * (data.Discount / 100.0));
+                                                                    }
+                                                                    <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> For just @total pesos \ @data.PlanName</li>
+                                                                </ul>
                                                             </div>
-
-                                                            <div class="pricing-header-pricing">
-                                                                <p class="pricing monthly-pricing">$ 9.50</p>
-                                                                <p class="pricing yearly-pricing">$ 5.50</p>
-                                                                <p class="sub-title monthly-pricing-label">Per month</p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="pricing-plan-features mb-4">
-                                                            <ul>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 100MB Storage</li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 1 Guests + 2.50 per extra seat</li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 100 Automations/mo</li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 1 Domains</li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 6 Month Update</li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 48 Hours Support</li>
-                                                            </ul>
-                                                        </div>
-                                                        <div class="text-center">
-                                                        <input asp-for="PlansId" class="form-check-input" type="radio" id="offer3" value="1">
-                                                        </div>
-                                                    </div>
-                                                    <!-- Plan -->
-                                                    <div class="pricing-plan mb-5 recommanded">
-
-                                                        <span class="badge badge-pill badge-warning show">45% Off</span>
-
-                                                        <div class="pricing-header-section">
-                                                            <div class="pricing-header">
-                                                                <h3>Plus</h3>
-                                                                <p>Recommended</p>
-                                                            </div>
-
-                                                            <div class="pricing-header-pricing">
-                                                                <p class="pricing monthly-pricing">$ 19.50</p>
-                                                                <p class="pricing yearly-pricing">$ 9.50</p>
-                                                                <p class="sub-title monthly-pricing-label">Per month</p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="pricing-plan-features mb-4">
-                                                            <ul>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> Unlimited</li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 5 Guests + 2 per extra seat</li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 1000 Automations/mo</li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 5 Domains</li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 1 Year Update</li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 24 Hours Support</li>
-                                                            </ul>
-                                                        </div>
-                                                        <div class="text-center">
-                                                        <input asp-for="PlansId" value="1" class="form-check-input" type="radio" id="offer3" value="2">
-                                                        </div>
-                                                    </div>
-                                                    <!-- Plan -->
-                                                    <div class="pricing-plan mb-5">
-
-                                                        <span class="badge badge-pill badge-warning show">45% Off</span>
-
-                                                        <div class="pricing-header-section">
-                                                            <div class="pricing-header">
-                                                                <h3>Business</h3>
-                                                                <p>Best Value</p>
-                                                            </div>
-
-                                                            <div class="pricing-header-pricing">
-                                                                <p class="pricing monthly-pricing">$ 29.50</p>
-                                                                <p class="pricing yearly-pricing">$ 19.50</p>
-                                                                <p class="sub-title monthly-pricing-label">Per month</p>
+                                                            <div class="text-center">
+                                                                <input name="PlansId" class="form-check-input" type="radio" id="offer3" value="@data.Id">
                                                             </div>
                                                         </div>
-
-                                                        <div class="pricing-plan-features mb-4">
-                                                            <ul>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> Unlimited</li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 10 Guests + 5 per extra seat</li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 20k Automations/mo </li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 10 Domains</li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 2 Year Update</li>
-                                                                <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> Priority Support</li>
-                                                            </ul>
-                                                        </div>
-                                                        <div class="text-center">
-                                                        <input asp-for="PlansId" value="1" class="form-check-input" type="radio" id="offer3" value="3">
-                                                        </div>
-                                                    </div>
+                                                    }
+                                                    }
                                                 </div>
 
                                             </div>
@@ -315,70 +244,102 @@
 @section Scripts {
     <script>
         const video = document.getElementById('camera');
-        const canvas = document.getElementById('snapshot');
-        const ctx = canvas.getContext('2d');
-        const captureBtn = document.getElementById('capture');
-        const capturedImg = document.getElementById('capturedImg');
-        const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+const canvas = document.getElementById('snapshot');
+const ctx = canvas.getContext('2d');
+const captureBtn = document.getElementById('capture');
+const capturedImg = document.getElementById('capturedImg');
+const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
 
-        let stream;
+let stream;
 
-        // Start the camera
-        function startCamera() {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(s => {
-                    stream = s;
-                    video.srcObject = s;
-                })
-                .catch(err => console.error("Camera error:", err));
-        }
+// Start the camera
+function startCamera() {
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(s => {
+            stream = s;
+            video.srcObject = s;
+        })
+        .catch(err => console.error("Camera error:", err));
+}
 
-        // Stop the camera
-        function stopCamera() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                video.srcObject = null;
-                stream = null;
-            }
-        }
+// Stop the camera
+function stopCamera() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+        stream = null;
+    }
+}
 
-        // Start camera on page load
-        startCamera();
+// Start camera on page load
+startCamera();
 
-        // ✅ Configure FilePond globally so files submit with form
-        FilePond.setOptions({
-            instantUpload: false, // don’t upload via AJAX
-            storeAsFile: true     // keep file in <input> so it posts with form
-        });
+// ✅ Configure FilePond globally
+FilePond.setOptions({
+    server: null,  // Disable server processing
+    instantUpload: false,
+    allowMultiple: false,
+    maxFiles: 1
+});
 
-        // Init FilePond on #idPicture
-        const pond = FilePond.create(document.getElementById('idPicture'));
-        FilePond.create(document.getElementById('govPicture'));
-        // Capture photo
-        captureBtn.addEventListener('click', () => {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            capturedImg.src = canvas.toDataURL("image/png");
-            previewModal.show();
-        });
+// Create FilePond instances
+const pondGov = FilePond.create(document.getElementById('govPicture'), {
+    name: 'GovernmentIdFile',  // ✅ Explicitly set the name
+    storeAsFile: true
+});
 
-        // Retake
-        document.getElementById('retake').addEventListener('click', () => {
+const pondId = FilePond.create(document.getElementById('idPicture'), {
+    name: 'CapturedIdFile',  // ✅ Explicitly set the name
+    storeAsFile: true
+});
+
+// Capture photo
+captureBtn.addEventListener('click', () => {
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    capturedImg.src = canvas.toDataURL("image/png");
+    previewModal.show();
+});
+
+// Retake
+document.getElementById('retake').addEventListener('click', () => {
+    previewModal.hide();
+    startCamera();
+});
+
+// Accept → add captured image into FilePond
+document.getElementById('accept').addEventListener('click', () => {
+    fetch(capturedImg.src)
+        .then(res => res.blob())
+        .then(blob => {
+            const file = new File([blob], "capture.png", { type: "image/png" });
+            
+            // Add captured photo to CapturedIdFile only
+            pondId.removeFiles();
+            pondId.addFile(file);
+
             previewModal.hide();
-            startCamera();
+            stopCamera();
+            $("#cameraDiv").hide();
         });
+});
 
-        // Accept → add to FilePond
-        document.getElementById('accept').addEventListener('click', () => {
-            fetch(capturedImg.src)
-                .then(res => res.blob())
-                .then(blob => {
-                    const file = new File([blob], "capture.png", { type: "image/png" });
-                    pond.removeFiles();
-                    pond.addFile(file);
-                    previewModal.hide();
-                    stopCamera();
-                    $("#cameraDiv").hide();
-                });
-        });
+// ✅ IMPORTANT: Before form submission, ensure FilePond processes files
+const form = document.querySelector('form');
+form.addEventListener('submit', function(e) {
+    // Check if files are present
+    const govFiles = pondGov.getFiles();
+    const idFiles = pondId.getFiles();
+    
+    console.log('Gov files:', govFiles);
+    console.log('ID files:', idFiles);
+    
+    // If no files, you might want to prevent submission
+    if (govFiles.length === 0 || idFiles.length === 0) {
+        e.preventDefault();
+        alert('Please upload both required files');
+        return false;
+    }
+});
     </script>
 }
+

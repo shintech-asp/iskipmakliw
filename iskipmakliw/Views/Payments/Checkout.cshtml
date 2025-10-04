@@ -1,14 +1,14 @@
 ﻿@using System.Security.Claims
-@model List<iskipmakliw.Models.Payments>
+@model iskipmakliw.Models.Users
 
 @{
     var name = User.FindFirst(ClaimTypes.Name)?.Value;
     var email = User.FindFirst(ClaimTypes.Email)?.Value;
     var contact = User.FindFirst("ContactNumber")?.Value;
 
-    var totalAmount = Model.Sum(p => p.Amount ?? 0);
-    var paymentIds = string.Join(",", Model.Select(p => p.Id));
-    var productNames = string.Join(", ", Model.Select(p => p.PaymentDetails));
+    var totalAmount = Model.Payments.Sum(p => p.Amount ?? 0);
+    var paymentIds = string.Join(",", Model.Payments.Select(p => p.Id));
+    var productNames = string.Join(", ", Model.Payments.Select(p => p.PaymentDetails));
     ViewData["Title"] = "Checkout";
     Layout = "_LayoutSeller";
 }
@@ -40,13 +40,13 @@
                                                             <img class="company-logo w-25" src="~/src/assets/img/OakMartLogo.png" alt="company">
                                                             <h3 class="in-heading align-self-center">OakMart</h3>
                                                         </div>
-                                                        <p class="inv-street-addr mt-3">@Model.FirstOrDefault().Users.UserDetails.Plans.PlanName</p>
-                                                        <p class="inv-email-address">@Model.FirstOrDefault().Users.Email</p>
-                                                        <p class="inv-email-address">@Model.FirstOrDefault().Users.ContactNumber</p>
+                                                        <p class="inv-street-addr mt-3">@Model.Subscription.FirstOrDefault().Plans.PlanName</p>
+                                                        <p class="inv-email-address">@Model.Email</p>
+                                                        <p class="inv-email-address">@Model.ContactNumber</p>
                                                     </div>
 
                                                     <div class="col-sm-6 text-sm-end">
-                                                        <p class="inv-list-number mt-sm-3 pb-sm-2 mt-4"><span class="inv-title">Invoice : </span> <span class="inv-number">#@Model.FirstOrDefault().Id</span></p>
+                                                        <p class="inv-list-number mt-sm-3 pb-sm-2 mt-4"><span class="inv-title">Invoice : </span> <span class="inv-number">#@Model.Payments.FirstOrDefault().Id</span></p>
                                                         <p class="inv-created-date mt-sm-5 mt-3"><span class="inv-title">Invoice Date : </span> <span class="inv-date">@DateTime.Now</span></p>
                                                         <p class="inv-due-date"><span class="inv-title">Due Date : </span> <span class="inv-date">@DateTime.Now</span></p>
                                                     </div>
@@ -67,9 +67,9 @@
                                                     </div>
 
                                                     <div class="col-xl-8 col-lg-7 col-md-6 col-sm-4">
-                                                        <p class="inv-customer-name">@Model.FirstOrDefault().Users.Username</p>
-                                                        <p class="inv-email-address">@Model.FirstOrDefault().Users.Email</p>
-                                                        <p class="inv-email-address">@Model.FirstOrDefault().Users.ContactNumber</p>
+                                                        <p class="inv-customer-name">@Model.Username</p>
+                                                        <p class="inv-email-address">@Model.Email</p>
+                                                        <p class="inv-email-address">@Model.ContactNumber</p>
                                                     </div>
 
                                                     <div class="col-xl-4 col-lg-5 col-md-6 col-sm-8 col-12 order-sm-0 order-1 text-sm-end">
@@ -81,20 +81,8 @@
                                             </div>
 
                                             @{
-                                                var subs = Model.FirstOrDefault().Users.UserDetails.Subscription;
-                                                int discount;
-                                                double? amount;
-                                                if (subs.ToLower() == "yearly")
-                                                {
-                                                    discount = 20;
-                                                    amount = Model.FirstOrDefault().Users.UserDetails.Plans.Price * 12;
-                                                }
-                                                else
-                                                {
-                                                    discount = 0;
-                                                    amount = Model.FirstOrDefault().Amount;
-                                                }
-                                                var discountPrice = amount * (discount / 100);
+                                                var subs = Model.Subscription.FirstOrDefault().Plans.PlanName;
+                                                double? discountPrice = Model.Subscription.FirstOrDefault().Plans.Price * Model.Subscription.FirstOrDefault().Plans.Discount / 100;
                                             }
                                             <div class="inv--product-table-section">
                                                 <div class="table-responsive">
@@ -108,7 +96,7 @@
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            @foreach(var data in Model)
+                                                            @foreach(var data in Model.Payments)
                                                             {
                                                                 int number = 1;
                                                                 <tr>
@@ -136,7 +124,7 @@
                                                                     <p class="">Sub Total :</p>
                                                                 </div>
                                                                 <div class="col-sm-4 col-5">
-                                                                    <p class="">@amount</p>
+                                                                    <p class="">@Model.Subscription.FirstOrDefault().Plans.Price</p>
                                                                 </div>
                                                                 <div class="col-sm-8 col-7">
                                                                     <p class=" discount-rate">Shipping :</p>
@@ -145,7 +133,7 @@
                                                                     <p class="">$0</p>
                                                                 </div>
                                                                 <div class="col-sm-8 col-7">
-                                                                    <p class=" discount-rate">Discount %@discount :</p>
+                                                                    <p class=" discount-rate">Discount %@Model.Subscription.FirstOrDefault().Plans.Discount :</p>
                                                                 </div>
                                                                 <div class="col-sm-4 col-5">
                                                                     <p class="">@discountPrice</p>
@@ -154,7 +142,7 @@
                                                                     <h4 class="">Grand Total :</h4>
                                                                 </div>
                                                                 <div class="col-sm-4 col-5 grand-total-amount mt-3">
-                                                                    <h4 class="">@Model.FirstOrDefault().Amount</h4>
+                                                                    <h4 class="">@Model.Payments.FirstOrDefault().Amount</h4>
                                                                 </div>
                                                             </div>
                                                         </div>

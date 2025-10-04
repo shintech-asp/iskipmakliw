@@ -21,11 +21,15 @@ namespace iskipmakliw.Controllers
         public IActionResult Index()
         {
             int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
-            var user = _context.Payments.Include(p => p.Users)
-                            .ThenInclude(u => u.UserDetails)
+            var user = _context.Users
+                        .Include(u => u.UserDetails)
+                        .Include(u => u.Subscription)
                             .ThenInclude(u => u.Plans)
-                            .Where(u => u.Users.Id == usersId)
-                            .FirstOrDefault();
+                        .Include(u => u.Payments)
+                        .Include(u => u.Product)
+                        .Include(u => u.Billings)
+                        .Where(u => u.Id == usersId)
+                        .FirstOrDefault();
             return View(user);
         }
         public IActionResult Chats()
@@ -50,18 +54,18 @@ namespace iskipmakliw.Controllers
                     var newProduct = _context.Product.Add(product);
                    
                     _context.SaveChanges();
-                    TempData["success"] = "Product added successfully.";
+                    TempData["Success"] = "Product added successfully.";
                     return View(product);
                 }
                 else
                 {
-                    TempData["error"] = "Product already exists.";
+                    TempData["Error"] = "Product already exists.";
                     return View();
                 }
             }
             else
             {
-                TempData["error"] = "Fill up all the fields";
+                TempData["Error"] = "Fill up all the fields";
                 return View();
             }
                 
@@ -71,16 +75,7 @@ namespace iskipmakliw.Controllers
             var userId = int.Parse(User.FindFirst("UsersId")?.Value);
             var product = _context.ProductVariants
                         .Include(v => v.Product)
-                        .Include(v => v.Gallery)
                         .FirstOrDefault(v => v.Id == Id);
-
-            if (product != null)
-            {
-                product.Gallery = _context.Gallery
-                    .Where(g => g.pUsersId == userId && g.ProductId == product.Id)
-                    .ToList();
-            }
-
             return View(product);
         }
         [HttpPost]
@@ -105,8 +100,9 @@ namespace iskipmakliw.Controllers
                         existing.Discount = product.Discount;
 
                         _context.ProductVariants.Update(existing);
-                        TempData["success"] = "Item successfully updated";
                         _context.SaveChanges();
+                        TempData["Success"] = "Item successfully updated";
+                        return RedirectToAction("Index");
                     }
                 }else if(ButtonType == "Remove")
                 {
@@ -115,8 +111,8 @@ namespace iskipmakliw.Controllers
                     {
                         existing.isArchive = DateTime.Now;
                         _context.ProductVariants.Update(existing);
-                        TempData["success"] = "Item successfully deleted";
                         _context.SaveChanges();
+                        TempData["Success"] = "Item successfully deleted";
                         return RedirectToAction("Index");
                     }
 
@@ -126,15 +122,7 @@ namespace iskipmakliw.Controllers
 
             var productVar = _context.ProductVariants
                         .Include(v => v.Product)
-                        .Include(v => v.Gallery)
                         .FirstOrDefault(v => v.Id == Id);
-
-            if (productVar != null)
-            {
-                productVar.Gallery = _context.Gallery
-                    .Where(g => g.pUsersId == userId && g.ProductId == productVar.Id)
-                    .ToList();
-            }
             return View(productVar);
         }
         public IActionResult ProductList()
@@ -143,7 +131,6 @@ namespace iskipmakliw.Controllers
 
             var data = _context.Product
                         .Include(u => u.ProductVariants.Where(g => g.isArchive == null))
-                        .Include(g => g.Gallery)
                         .Where(d => d.UsersId == userId)
                         .ToList();
 
@@ -200,40 +187,38 @@ namespace iskipmakliw.Controllers
                 }
                 else
                 {
-                    productVariant = new ProductVariants
-                    {
-                        Id = model.ProductDetails.Id, // make sure Id is set
-                        ProductId = model.ProductDetails.Id,
-                        Material = model.ProductDetails.Material,
-                        Dimension = model.ProductDetails.Dimension,
-                        Color = model.ProductDetails.Color,
-                        Price = model.ProductDetails.Price,
-                        Quantity = model.ProductDetails.Quantity,
-                        Discount = model.ProductDetails.Discount
-                    };
-                    _context.ProductVariants.Update(productVariant);
+                    productVariant = _context.ProductVariants.FirstOrDefault(v => v.Id == model.ProductDetails.Id);
+                    if (productVariant == null) return NotFound();
+
+                    productVariant.Material = model.ProductDetails.Material;
+                    productVariant.Dimension = model.ProductDetails.Dimension;
+                    productVariant.Color = model.ProductDetails.Color;
+                    productVariant.Price = model.ProductDetails.Price;
+                    productVariant.Quantity = model.ProductDetails.Quantity;
+                    productVariant.Discount = model.ProductDetails.Discount;
                 }
 
-                // Save once to ensure productVariant.Id is generated
-                _context.SaveChanges();
+                _context.SaveChanges(); // save here so productVariant.Id is available
 
-                if (Image != null)
+                // ✅ Save uploaded image as file path
+                if (Image != null && Image.Length > 0)
                 {
-                    using var ms = new MemoryStream();
-                    Image.CopyTo(ms);
+                    var fileName = $"product_{Guid.NewGuid()}{Path.GetExtension(Image.FileName)}";
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", fileName);
 
-                    var gallery = new Gallery
+                    using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        Image = ms.ToArray(),
-                        pUsersId = int.Parse(User.FindFirst("UsersId")?.Value),
-                        ProductId = Id,
-                        ProductVariantsId = productVariant.Id,
-                        ImageType = "Item image"
-                    };
-                    _context.Gallery.Add(gallery);
+                        Image.CopyTo(stream);
+                    }
+
+                    // Save relative path to DB
+                    productVariant.ProductImage = $"/uploads/{fileName}";
+
+                    _context.ProductVariants.Update(productVariant);
                     _context.SaveChanges();
                 }
 
+                TempData["Success"] = "Item successfully added";
                 return RedirectToAction("Index", "Seller");
             }
 

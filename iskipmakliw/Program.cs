@@ -7,7 +7,12 @@ var builder = WebApplication.CreateBuilder(args);
 // ============================================
 // Services
 // ============================================
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
 
 // Session
 builder.Services.AddSession(options =>
@@ -61,6 +66,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
     DbInitializer.Seed(db);
+    db.UpdateExpiredSubscriptionsOnStartup();
+    db.SaveChanges();
 }
 
 

@@ -1,5 +1,6 @@
 ﻿using iskipmakliw.Data;
 using iskipmakliw.Models;
+using iskipmakliw.Models.DTO;
 using iskipmakliw.Models.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -8,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Text.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace iskipmakliw.Controllers
 {
@@ -37,11 +40,8 @@ namespace iskipmakliw.Controllers
                         .OrderBy(v => v.Price)
                         .Select(v => v.Price)
                         .FirstOrDefault(),
+                    Image = p.ProductVariants.FirstOrDefault().ProductImage
 
-                    FirstImage = p.Gallery
-                        .OrderBy(g => g.Id)
-                        .Select(g => g.Image)
-                        .FirstOrDefault()
                 })
                 .ToList();
 
@@ -67,31 +67,58 @@ namespace iskipmakliw.Controllers
         [HttpGet]
         public IActionResult BecomeSeller()
         {
-            return View();
+            var data = _context.Plans.ToList();
+            return View(data);
         }
         [HttpPost]
-        public IActionResult BecomeSeller(UserDetails user)
+        public IActionResult BecomeSeller(UserDetails user, int PlansId)
         {
             ModelState.Remove("Status");
             user.Status = "Pending";
-            user.UsersId =int.Parse(User.FindFirst("UsersId").Value);
+            user.UsersId = int.Parse(User.FindFirst("UsersId").Value);
 
             ModelState.Remove("UsersId");
             ModelState.Remove("Plans");
             ModelState.Remove("Users");
-            if (user.GovernmentIdFile != null)
+            ModelState.Remove("GovernmentIdPath");
+            ModelState.Remove("CapturedIdPath");
+
+            // Define upload folder
+            string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+
+            if (!Directory.Exists(uploadPath))
             {
-                using var ms = new MemoryStream();
-                user.GovernmentIdFile.CopyTo(ms);
-                user.GovernmentId = ms.ToArray();
+                Directory.CreateDirectory(uploadPath);
             }
 
-            // Convert CapturedIdFile to byte[]
-            if (user.CapturedIdFile != null)
+            // Save GovernmentIdFile to disk
+            if (user.GovernmentIdFile != null && user.GovernmentIdFile.Length > 0)
             {
-                using var ms = new MemoryStream();
-                user.CapturedIdFile.CopyTo(ms);
-                user.CapturedId = ms.ToArray();
+                string govFileName = $"gov_{Guid.NewGuid()}{Path.GetExtension(user.GovernmentIdFile.FileName)}";
+                string govFilePath = Path.Combine(uploadPath, govFileName);
+
+                using (var stream = new FileStream(govFilePath, FileMode.Create))
+                {
+                    user.GovernmentIdFile.CopyTo(stream);
+                }
+
+                // Save relative path in DB
+                user.GovernmentIdPath = $"/uploads/{govFileName}";
+            }
+
+            // Save CapturedIdFile to disk
+            if (user.CapturedIdFile != null && user.CapturedIdFile.Length > 0)
+            {
+                string capFileName = $"cap_{Guid.NewGuid()}.png";
+                string capFilePath = Path.Combine(uploadPath, capFileName);
+
+                using (var stream = new FileStream(capFilePath, FileMode.Create))
+                {
+                    user.CapturedIdFile.CopyTo(stream);
+                }
+
+                // Save relative path in DB
+                user.CapturedIdPath = $"/uploads/{capFileName}";
             }
 
             if (ModelState.IsValid)
@@ -106,14 +133,14 @@ namespace iskipmakliw.Controllers
                     roleChange.Role = "Seller";
 
                     var claims = new List<Claim>
-                {
-                    new Claim("UsersId", roleChange.Id.ToString()),
-                    new Claim(ClaimTypes.Name, roleChange.Username),
-                    new Claim(ClaimTypes.Email, roleChange.Email),
-                    new Claim("ContactNumber", roleChange.ContactNumber ?? ""),
-                    new Claim(ClaimTypes.Role, roleChange.Role),
-                    new Claim("Status", roleChange.UserDetails?.Status ?? "N/A")
-                };
+            {
+                new Claim("UsersId", roleChange.Id.ToString()),
+                new Claim(ClaimTypes.Name, roleChange.Username),
+                new Claim(ClaimTypes.Email, roleChange.Email),
+                new Claim("ContactNumber", roleChange.ContactNumber ?? ""),
+                new Claim(ClaimTypes.Role, roleChange.Role),
+                new Claim("Status", roleChange.UserDetails?.Status ?? "N/A")
+            };
 
                     var identity = new ClaimsIdentity(claims, "MyCookieAuth");
                     var principal = new ClaimsPrincipal(identity);
@@ -121,33 +148,28 @@ namespace iskipmakliw.Controllers
                     HttpContext.SignInAsync("MyCookieAuth", principal);
                 }
 
-                // Get plan
-                var plan = _context.Plans.FirstOrDefault(u => u.Id == user.PlansId);
+                // Get plan and add payment/subscription
+                var plan = _context.Plans.FirstOrDefault(u => u.Id == PlansId);
                 if (plan != null)
                 {
-                    if (user.Subscription == "Monthly")
+                    double? amount = plan.Price - (plan.Price * (plan.Discount / 100.0));
+
+                    _context.Payments.Add(new Payments
                     {
-                        _context.Payments.Add(new Payments
-                        {
-                            Amount = plan.Price,
-                            PaymentDetails = "Subscription",
-                            Status = "Pending",
-                            UsersId = user.UsersId,
-                            DueDate = DateTime.Now.AddMonths(1)
-                        });
-                    }
-                    else if (user.Subscription == "Yearly")
+                        Amount = amount,
+                        PaymentDetails = "Subscription",
+                        Status = "Pending",
+                        UsersId = user.UsersId,
+                        DueDate = DateTime.Now.AddMonths(1)
+                    });
+
+                    _context.Subscription.Add(new Models.Subscription
                     {
-                        var discountedPrice = plan.Price - (plan.Price * (plan.Discount / 100.0));
-                        _context.Payments.Add(new Payments
-                        {
-                            Amount = discountedPrice * 12, // yearly subscription
-                            PaymentDetails = "Subscription",
-                            Status = "Pending",
-                            UsersId = user.UsersId,
-                            DueDate = DateTime.Now.AddMonths(1)
-                        });
-                    }
+                        UsersId = user.UsersId,
+                        PlansId = PlansId,
+                        Expiration = null,
+                        Status = "Pending",
+                    });
                 }
 
                 _context.SaveChanges();
@@ -155,19 +177,30 @@ namespace iskipmakliw.Controllers
                 return RedirectToAction("Index", "Seller");
             }
 
-            ViewBag.Error = "There was an error with your submission. Please try again.";
+            TempData["Error"] = "There was an error with your submission. Please try again.";
             return View(user);
-
         }
 
         public IActionResult Product(int Id, int SellerId)
         {
-            var usersId = int.Parse(User.FindFirst("UsersId").Value);
             var product = _context.Product
-                          .Include(u => u.ProductVariants)
-                          .ThenInclude(u => u.Gallery)
-                          .FirstOrDefault(p => p.Id == Id && p.UsersId == SellerId);
+                        .Include(p => p.ProductVariants.Where(u => u.isArchive == null))
+                        .FirstOrDefault(p => p.Id == Id);
+
+            var variantDtos = product.ProductVariants.Select(v => new ProductVariantDto
+            {
+                Id = v.Id,
+                Color = v.Color,
+                Size = v.Dimension,
+                Price = v.Price,
+                Stock = v.Quantity,
+                ProductImage = v.ProductImage,
+                Discount = v.Discount
+            }).ToList();
+
+            ViewBag.ProductVariantsJson = JsonSerializer.Serialize(variantDtos);
             return View(product);
+
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

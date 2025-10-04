@@ -2,177 +2,205 @@
     ViewData["Title"] = "Product Details";
     Layout = "_LayoutCustomer";
 }
-@model Product;
+@model Product
+
 <div class="row layout-top-spacing">
-
     <div class="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 mb-4">
-
         <div class="widget-content widget-content-area br-8">
-
             <div class="row justify-content-center">
-                <div class="col-xxl-5 col-xl-6 col-lg-7 col-md-7 col-sm-9 col-12 pe-3">
-                    <!-- Swiper -->
-                    <div id="main-slider" class="splide splide--fade splide--ltr splide--draggable is-active is-initialized">
-                        <div class="splide__track" id="main-slider-track" style="padding-left: 0px; padding-right: 0px;">
-                            <ul class="splide__list" id="main-slider-list">
-                                @foreach(var data in Model.Gallery)
-                                {
-                                    var base64Img = Convert.ToBase64String(data.Image);
-                                    <li class="splide__slide is-active is-visible" id="main-slider-slide01" style="width: 100%; height: 556px; transition: opacity 400ms cubic-bezier(0.25, 1, 0.5, 1);" tabindex="0">
-                                        <a href="data:image/png;base64,@base64Img" class="glightbox">
-                                            <img alt="ecommerce" src="data:image/png;base64,@base64Img">
-                                        </a>
-                                    </li>
-                                }
-                            </ul>
+
+                <!-- Product Image Slider -->
+                <div class="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 mb-4 py-4">
+                    <div class="widget-content widget-content-area br-8">
+                        <div class="row justify-content-center">
+                            <div class="col-xxl-5 col-xl-6 col-lg-7 col-md-7 col-sm-9 col-12 pe-3">
+
+                                <!-- Main Slider -->
+                                <div id="main-slider" class="splide splide--fade splide--ltr splide--draggable is-active is-initialized">
+                                    <div class="splide__track" id="main-slider-track" style="padding-left: 0px; padding-right: 0px;">
+                                        <ul class="splide__list" id="main-slider-list">
+                                            @foreach (var data in Model.ProductVariants)
+                                            {
+                                                var imgSrc = string.IsNullOrEmpty(data.ProductImage)
+                                                ? Url.Content("~/src/assets/img/OakMartLogo.png")
+                                                : data.ProductImage;
+
+                                                <li class="splide__slide is-active is-visible"
+                                                    style="width: 100%; height: 556px; transition: opacity 400ms cubic-bezier(0.25, 1, 0.5, 1);"
+                                                    tabindex="0">
+                                                    <a href="@imgSrc" class="glightbox">
+                                                        <img alt="ecommerce" src="@imgSrc" />
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <!-- Thumbnail Slider -->
+                                <div id="thumbnail-slider" class="splide splide--slide splide--ltr splide--draggable splide--nav is-active is-initialized">
+                                    <div class="splide__arrows">
+                                        <button class="splide__arrow splide__arrow--prev"
+                                                type="button"
+                                                aria-controls="thumbnail-slider-track"
+                                                aria-label="Previous slide">
+                                            ◀
+                                        </button>
+                                        <button class="splide__arrow splide__arrow--next"
+                                                type="button"
+                                                aria-controls="thumbnail-slider-track"
+                                                aria-label="Next slide">
+                                            ▶
+                                        </button>
+                                    </div>
+                                    <div class="splide__track" id="thumbnail-slider-track">
+                                        <ul class="splide__list" id="thumbnail-slider-list" role="menu" aria-orientation="horizontal">
+                                            @foreach (var data in Model.ProductVariants)
+                                            {
+                                                var thumbSrc = string.IsNullOrEmpty(data.ProductImage)
+                                                ? Url.Content("~/src/assets/img/OakMartLogo.png")
+                                                : data.ProductImage;
+
+                                                <li class="splide__slide is-active is-visible"
+                                                    aria-label="Go to slide"
+                                                    aria-controls="main-slider"
+                                                    role="menuitem"
+                                                    style="margin-right: 10px; width: 104px; height: 58px; background: url(@thumbSrc) center center / no-repeat;"
+                                                    tabindex="0">
+                                                    <img alt="ecommerce" src="@thumbSrc" style="display:none;" />
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xxl-4 col-xl-5 col-lg-12 col-md-12 col-12 mt-xl-0 mt-5 align-self-center">
+
+                                <div class="product-details-content">
+                                    <span id="discountBadge" class="badge mb-3">@Model.ProductVariants.FirstOrDefault().Discount% Sale off</span>
+
+                                    <h3 class="product-title mb-0">@Model.Name</h3>
+
+                                    <div class="review mb-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                        <span class="rating-score">4.88 <span class="rating-count">(200 Reviews)</span></span>
+                                    </div>
+
+                                    <div class="row">
+
+                                        <div class="col-md-9 col-sm-9 col-9">
+
+
+                                            <div class="pricing my-3">
+                                                <span id="discountedPrice" class="discounted-price text-danger h4">₱@Model.ProductVariants.FirstOrDefault().Price.ToString("N0")</span>
+                                                <span id="regularPrice" class="regular-price text-muted text-decoration-line-through ms-2"></span>
+                                            </div>
+
+
+                                        </div>
+                                        <div class="col-md-3 col-sm-3 col-3 text-end">
+                                            <div class="product-share">
+                                                <button class="btn btn-light-success btn-icon btn-rounded _effect--ripple waves-effect waves-light">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <hr class="mb-4">
+
+
+                                    <!-- Color Selector -->
+                                    <div class="row color-swatch mb-4">
+                                        <div class="col-3 align-self-center">Color</div>
+                                        <div class="col-9">
+                                            <div class="btn-group" role="group" id="colorOptions">
+                                                @foreach (var colorGroup in Model.ProductVariants.GroupBy(v => v.Color))
+                                                {
+                                                    var color = colorGroup.Key;
+                                                    var id = $"color-{color}";
+                                                    <input type="radio"
+                                                           class="btn-check color-radio"
+                                                           name="color"
+                                                           id="@id"
+                                                           value="@color"
+                                                           autocomplete="off" />
+                                                    <label class="btn btn-outline-secondary" for="@id">
+                                                        @color
+                                                    </label>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Size Selector -->
+                                    <div class="row size-selector mb-4">
+                                        <div class="col-3 align-self-center">Size</div>
+                                        <div class="col-9">
+                                            <div class="btn-group" role="group" id="sizeOptions">
+                                                @foreach (var sizeGroup in Model.ProductVariants.GroupBy(v => v.Dimension))
+                                                {
+                                                    var size = sizeGroup.Key;
+                                                    var id = $"size-{size}";
+                                                    var safeId = $"size-{size.Replace(" ", "-")}";
+                                                    <input type="radio" class="btn-check size-radio"
+                                                           name="size"
+                                                           id="@safeId"
+                                                           value="@size" />
+                                                    <label class="btn btn-outline-primary" for="@safeId">
+                                                        @size
+                                                    </label>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Quantity -->
+                                    <div class="row quantity-selector mb-4">
+                                        <div class="col-6 align-self-center">Quantity</div>
+                                        <div class="col-6">
+                                            <input type="number" class="form-control" id="quantityInput" min="1" value="1" />
+                                            <p id="stockMessage" class="text-info mt-2"></p>
+                                        </div>
+                                    </div>
+
+                                    <hr class="mb-5 mt-4">
+
+                                    <div class="action-button text-center">
+
+                                        <div class="row">
+
+                                            <div class="col-xxl-7 col-xl-7 col-sm-6 mb-sm-0 mb-3">
+                                                <button class="btn btn-primary w-100 btn-lg _effect--ripple waves-effect waves-light"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg> <span class="btn-text-inner">Add To Cart</span></button>
+                                            </div>
+
+                                            <div class="col-xxl-5 col-xl-5 col-sm-6">
+                                                <button class="btn btn-success w-100 btn-lg _effect--ripple waves-effect waves-light">Buy Now</button>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div class="secure-info mt-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shield"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                        <p>Safe and Secure Payments. Easy returns. 100% Authentic products.</p>
+                                    </div>
+
+                                </div>
+
+                            </div>
                         </div>
                     </div>
-
-                    <div id="thumbnail-slider" class="splide splide--slide splide--ltr splide--draggable splide--nav is-active is-initialized">
-                        <div class="splide__arrows"><button class="splide__arrow splide__arrow--prev" type="button" aria-controls="thumbnail-slider-track" aria-label="Go to last slide"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40"><path d="m15.5 0.932-4.3 4.38 14.5 14.6-14.5 14.5 4.3 4.4 14.6-14.6 4.4-4.3-4.4-4.4-14.6-14.6z"></path></svg></button><button class="splide__arrow splide__arrow--next" type="button" aria-controls="thumbnail-slider-track" aria-label="Next slide"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40"><path d="m15.5 0.932-4.3 4.38 14.5 14.6-14.5 14.5 4.3 4.4 14.6-14.6 4.4-4.3-4.4-4.4-14.6-14.6z"></path></svg></button></div><div class="splide__track" id="thumbnail-slider-track" style="padding-left: 0px; padding-right: 0px;">
-                            <ul class="splide__list" id="thumbnail-slider-list" role="menu" aria-orientation="horizontal" style="transform: translateX(0px);">
-                                @foreach(var data in Model.Gallery)
-                                {
-                                    var base64Img = Convert.ToBase64String(data.Image);
-                                    <li class="splide__slide is-active is-visible" id="thumbnail-slider-slide01" aria-label="Go to slide 1" aria-controls="main-slider" role="menuitem" style="margin-right: 10px; width: 104px; height: 58px; background: url(data:image/png;base64,@base64Img) center center / cover no-repeat;" aria-current="true" tabindex="0"><img alt="ecommerce" src="data:image/png;base64,@base64Img" style="display: none;"></li>
-                                }
-                            </ul>
-                        </div>
-                    </div>
-
                 </div>
 
-                <div class="col-xxl-4 col-xl-5 col-lg-12 col-md-12 col-12 mt-xl-0 mt-5 align-self-center">
+                <!-- Product Details -->
 
-                    <div class="product-details-content">
-                        @if (Model.ProductVariants.FirstOrDefault().Discount != null)
-                        {
-                            <span class="badge badge-light-danger mb-3">@Model.ProductVariants.FirstOrDefault().Discount% Sale off</span>
-                        }
-                        else
-                        {
-                            <span class="badge badge-light-success mb-3">Whole sale!</span>
-                        }
-
-                        <h3 class="product-title mb-0">Cotton T-Shit</h3>
-
-                        <div class="review mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                            <span class="rating-score">4.88 <span class="rating-count">(200 Reviews)</span></span>
-                        </div>
-
-                        <div class="row">
-
-                            <div class="col-md-9 col-sm-9 col-9">
-
-                                <div class="pricing">
-                                     @if (Model.ProductVariants.FirstOrDefault().Discount != null)
-                                    {
-                                        {
-                                            var discount = Model.ProductVariants.FirstOrDefault().Discount;
-                                            var price = Model.ProductVariants.FirstOrDefault().Price * (discount / 100);
-                                            <span class="discounted-price">@price</span>
-                                        }
-                                        <span class="regular-price">₱@Model.ProductVariants.FirstOrDefault().Price.ToString("N0")</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="discounted-price">₱@Model.ProductVariants.FirstOrDefault().Price.ToString("N0")</span>
-                                    }
-                                </div>
-
-                            </div>
-                            <div class="col-md-3 col-sm-3 col-3 text-end">
-                                <div class="product-share">
-                                    <button class="btn btn-light-success btn-icon btn-rounded _effect--ripple waves-effect waves-light">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <hr class="mb-4">
-
-                        <div class="row color-swatch mb-4">
-                            <div class="col-xl-3 col-lg-6 col-sm-6 align-self-center">Color</div>
-                            <div class="col-xl-9 col-lg-6 col-sm-6">
-                                <div class="color-options text-xl-end">
-                                    @foreach (var color in Model.ProductVariants)
-                                    {
-                                        {
-                                            var bgcolor = color.Color;
-                                            if (bgcolor != null)
-                                            {
-                                                <div class="form-check form-check-inline">
-                                                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" style="background-color: brown">
-                                                </div>
-                                            }
-                                            else
-                                            {
-                                                <div class="form-check form-check-inline">
-                                                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" style="background-color: grey">
-                                                </div>
-                                            }
-                                        }
-                                    }
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row size-selector mb-4">
-                            <div class="col-xl-9 col-lg-6 col-sm-6 align-self-center">Size</div>
-                            <div class="col-xl-3 col-lg-6 col-sm-6 align-self-center">
-                                <select class="form-select form-control-sm" aria-label="Default select example">
-                                    <option value="S">S</option>
-                                    <option value="M">M</option>
-                                    <option value="L" selected="">L</option>
-                                    <option value="XL">XL</option>
-                                    <option value="2XL">2XL</option>
-                                </select>
-                                <a href="javascript:void(0);" class="product-helpers text-end d-block mt-2">Size Chart</a>
-                            </div>
-                        </div>
-
-                        <div class="row quantity-selector mb-4">
-                            <div class="col-xl-6 col-lg-6 col-sm-6 mt-sm-3">Quantity</div>
-                            <div class="col-xl-6 col-lg-6 col-sm-6">
-                                <div class="input-group bootstrap-touchspin bootstrap-touchspin-injected"><input id="demo1" type="text" value="1" name="demo1" class="form-control"></div>
-                                <p class="text-danger product-helpers text-end mt-2">Low Stock</p>
-                            </div>
-                        </div>
-
-                        <hr class="mb-5 mt-4">
-
-                        <div class="action-button text-center">
-
-                            <div class="row">
-
-                                <div class="col-xxl-7 col-xl-7 col-sm-6 mb-sm-0 mb-3">
-                                    <button class="btn btn-primary w-100 btn-lg _effect--ripple waves-effect waves-light"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg> <span class="btn-text-inner">Add To Cart</span></button>
-                                </div>
-
-                                <div class="col-xxl-5 col-xl-5 col-sm-6">
-                                    <button class="btn btn-success w-100 btn-lg _effect--ripple waves-effect waves-light">Buy Now</button>
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div class="secure-info mt-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shield"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                            <p>Safe and Secure Payments. Easy returns. 100% Authentic products.</p>
-                        </div>
-
-                    </div>
-
-                </div>
             </div>
-
         </div>
-
     </div>
+
 
     <div class="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 mb-4">
 
@@ -518,3 +546,93 @@
     </div>
 
 </div>
+@section Scripts {
+    <script>
+        // Product variants from server
+        var productVariants = @Html.Raw(ViewBag.ProductVariantsJson);
+
+        const mainImage = document.getElementById("mainImage");
+        const quantityInput = document.getElementById("quantityInput");
+        const stockMessage = document.getElementById("stockMessage");
+        const discountedPrice = document.getElementById("discountedPrice");
+        const regularPrice = document.getElementById("regularPrice");
+        const discountBadge = document.getElementById("discountBadge");
+
+        function updateDetails(variant) {
+            if (!variant) return;
+
+            // --- Price calculation ---
+            if (variant.Discount && variant.Discount > 0) {
+                let discountAmount = variant.Price * (variant.Discount / 100);
+                let finalPrice = variant.Price - discountAmount;
+
+                discountedPrice.textContent = "₱" + finalPrice.toLocaleString();
+                regularPrice.textContent = "₱" + variant.Price.toLocaleString();
+                discountBadge.textContent = variant.Discount + "% Sale off";
+                discountBadge.className = "badge badge-light-danger mb-3";
+            } else {
+                discountedPrice.textContent = "₱" + variant.Price.toLocaleString();
+                regularPrice.textContent = "";
+                discountBadge.textContent = "Whole Sale";
+                discountBadge.className = "badge badge-light-success mb-3";
+            }
+
+            // --- Stock calculation ---
+            let totalStock = variant.Stock || 0;
+            quantityInput.max = totalStock;
+
+            if (totalStock === 0) {
+                stockMessage.textContent = "Out of Stock";
+                stockMessage.className = "text-danger mt-2";
+            } else if (totalStock <= 5) {
+                stockMessage.textContent = `Only ${totalStock} left in stock!`;
+                stockMessage.className = "text-warning mt-2";
+            } else {
+                stockMessage.textContent = `In Stock: ${totalStock}`;
+                stockMessage.className = "text-success mt-2";
+            }
+        }
+
+        // --- Handle color selection ---
+        document.querySelectorAll(".color-radio").forEach(radio => {
+            radio.addEventListener("change", function () {
+                let selectedColor = this.value;
+
+                let variants = productVariants.filter(v => v.Color === selectedColor);
+
+                // Reset all size radios
+                document.querySelectorAll(".size-radio").forEach(sizeRadio => {
+                    sizeRadio.checked = false; // ✅ clear selection
+                    let variant = variants.find(v => v.Size === sizeRadio.value);
+                    sizeRadio.disabled = !variant;
+                });
+
+                // Update image
+                if (variants[0]?.ProductImage) {
+                    mainImage.src = variants[0].ProductImage;
+                }
+
+                // Clear price & stock until size is selected
+                discountedPrice.textContent = "";
+                regularPrice.textContent = "";
+                stockMessage.textContent = "Select a size to see stock & price";
+                stockMessage.className = "text-muted mt-2";
+            });
+        });
+
+        // --- Handle size selection ---
+        document.addEventListener("change", function (e) {
+            if (e.target.classList.contains("size-radio")) {
+                let selectedColor = document.querySelector(".color-radio:checked")?.value;
+                let selectedSize = e.target.value;
+
+                let variant = productVariants.find(v => v.Color === selectedColor && v.Size === selectedSize);
+                if (variant) {
+                    updateDetails(variant);
+                }
+            }
+        });
+    </script>
+}
+
+

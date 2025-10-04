@@ -37,10 +37,9 @@
         <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
             <a class="card style-6" asp-action="Product" asp-controller="Home" asp-route-Id="@data.ProductId" asp-route-SellerId="@data.SellerId">
                 <span class="badge badge-primary">NEW</span>
-                @if (data.FirstImage != null)
+                @if (data.Image != null)
                 {
-                    var base64Cap = Convert.ToBase64String(data.FirstImage);
-                    <img src="data:image/png;base64,@base64Cap"
+                    <img src="@data.Image"
                          class="card-img-top img-fluid"
                          style="min-height:200px; max-height: 200px; object-fit:contain;"
                          alt="Product image" />

@@ -39,7 +39,7 @@ namespace iskipmakliw.Controllers
             var data = _context.Payments
                             .Include(p => p.Users)
                             .ThenInclude(u => u.UserDetails)
-                            .ThenInclude(u => u.Plans)
+                            //.ThenInclude(u => u.Plans)
                             .Where(u => u.Users.Id == Id)
                             .FirstOrDefault();
             return View(data);

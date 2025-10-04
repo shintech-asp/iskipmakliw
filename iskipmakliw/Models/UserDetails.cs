@@ -7,8 +7,8 @@ namespace iskipmakliw.Models
     {
         public int Id { get; set; }
         public string TypeId { get; set; }
-        public byte[]? GovernmentId { get; set; }
-        public byte[]? CapturedId { get; set; }
+        public string GovernmentIdPath { get; set; }
+        public string CapturedIdPath { get; set; }
         public string CardName { get; set; }
         public string CardNumber { get; set; }
         public int Cvv { get; set; }
@@ -17,12 +17,8 @@ namespace iskipmakliw.Models
         // Foreign keys
         public int UsersId { get; set; }
         public Users Users { get; set; }
-        public int? PlansId { get; set; }
-        public Plans Plans { get; set; }
 
         public string? Status { get; set; }
-        public string? Subscription { get; set; }
-        public int? SubscriptionDuration { get; set; }
 
         // Uploads (ignored in DB)
         [NotMapped]

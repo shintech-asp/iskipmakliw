@@ -32,8 +32,8 @@ namespace iskipmakliw.Data
                 context.SaveChanges();
             }
             if (!context.Plans.Any(u => u.PlanName == "Basic"
-                         || u.PlanName == "Plus"
-                         || u.PlanName == "Business"))
+                         || u.PlanName == "Monthly"
+                         || u.PlanName == "Annual"))
             {
                 var plans = new List<Plans>
                     {
@@ -41,22 +41,22 @@ namespace iskipmakliw.Data
                         {
                             PlanName = "Basic",
                             PlanDetails = "For individuals starting out",
-                            Price = 999,
-                            Discount = 20
+                            Price = 0,
+                            Discount = 0
                         },
                         new Plans
                         {
-                            PlanName = "Plus",
-                            PlanDetails = "For growing users",
+                            PlanName = "Monthly",
+                            PlanDetails = "Monthly subscription that includes 3d modeling and full access of our features.",
                             Price = 1999,
-                            Discount = 15
+                            Discount = 10
                         },
                         new Plans
                         {
-                            PlanName = "Business",
-                            PlanDetails = "For teams and enterprises",
-                            Price = 4999,
-                            Discount = 10
+                            PlanName = "Annual",
+                            PlanDetails = "Annual subscription that includes 3d modeling and full access of our features.",
+                            Price = 20999,
+                            Discount = 20
                         }
                     };
 

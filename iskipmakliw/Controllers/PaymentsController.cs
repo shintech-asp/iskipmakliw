@@ -1,5 +1,7 @@
 ﻿using iskipmakliw.Data;
+using iskipmakliw.Models;
 using iskipmakliw.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -26,12 +28,15 @@ namespace iskipmakliw.Controllers
             if (userId == null)
                 return RedirectToAction("Logout", "Account");
 
-            var payments = _context.Payments
-                            .Include(p => p.Users)
-                            .ThenInclude(u => u.UserDetails)
-                            .ThenInclude(u => u.Plans)
-                            .Where(p => p.UsersId == userId && p.Status == "Pending" && p.Id == Id && p.DueDate >= DateTime.Now)
-                            .ToList();
+            var payments = _context.Users
+                            .Include(u => u.UserDetails)
+                            .Include(u => u.Subscription)
+                                .ThenInclude(u => u.Plans)
+                            .Include(u => u.Payments)
+                            .Include(u => u.Product)
+                            .Include(u => u.Billings)
+                            .Where(u => u.Id == userId)
+                            .FirstOrDefault();
             if(payments == null)
             {
                 return RedirectToAction("Index", "Seller");
@@ -75,6 +80,7 @@ namespace iskipmakliw.Controllers
 
         public async Task<IActionResult> Success()
         {
+            var userId = int.Parse(User.FindFirst("UsersId")?.Value);
             var sessionId = TempData["SessionId"]?.ToString();
             if (string.IsNullOrEmpty(sessionId))
             {
@@ -107,21 +113,29 @@ namespace iskipmakliw.Controllers
                         _ => "Pending"
                     };
                 }
-
-                // Get user details of the first payment
-                var userId = paymentsData.FirstOrDefault()?.UsersId;
-                if (userId != null)
-                {
-                    var userDetails = await _context.UserDetails.FirstOrDefaultAsync(u => u.UsersId == userId);
-                    if (userDetails != null)
-                    {
-                        userDetails.Status = "For approval";
-                    }
-                }
-
+                
                 await _context.SaveChangesAsync();
             }
+            var user = _context.Users
+                        .Include(u => u.UserDetails)
+                        .Include(u => u.Payments)
+                        .FirstOrDefault(u => u.Id == userId);
+            var claims = new List<Claim>
+                {
+                    new Claim("UsersId", user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim("ContactNumber", user.ContactNumber ?? ""),
+                    new Claim(ClaimTypes.Role, user.Role),
+                    new Claim("Status", user.UserDetails?.Status ?? "N/A"),
+                    new Claim("PaymentStatus", user?.Payments.FirstOrDefault().Status ?? "N/A")
+                };
 
+            var identity = new ClaimsIdentity(claims, "MyCookieAuth");
+            var principal = new ClaimsPrincipal(identity);
+
+            // 🔹 Sign in with cookie auth
+            await HttpContext.SignInAsync("MyCookieAuth", principal);
             ViewBag.PaymentStatus = status ?? "unknown";
             return View();
         }
