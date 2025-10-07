@@ -58,7 +58,20 @@ namespace iskipmakliw.Controllers
         }
         public IActionResult Cart()
         {
-            return View();
+            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            var data = _context.Cart
+                        .Include(u => u.ProductVariants)
+                            .ThenInclude(u => u.Product)
+                                .ThenInclude(u => u.Users)
+                                    .ThenInclude(u => u.UserDetails)
+                        .Include(u => u.Users)
+                        .Where(u => u.UsersId == usersId)
+                        .ToList();
+            var groupedCart = data
+                            .GroupBy(c => c.ProductVariants.Product.Users.Username)
+                            .ToDictionary(g => g.Key, g => g.ToList());
+
+            return View(groupedCart);
         }
         public IActionResult Customization()
         {
@@ -181,6 +194,40 @@ namespace iskipmakliw.Controllers
             return View(user);
         }
 
+        [HttpPost]
+        public IActionResult Product(int Id, Cart model)
+        {
+            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            if (model.ProductVariantsId == 0 || model.ProductVariantsId == null)
+            {
+                TempData["Error"] = "Please select a product variant.";
+                return RedirectToAction("Product", new { Id = Id });
+            }
+            var checkCart = _context.Cart.Where(u => u.ProductVariantsId == model.ProductVariantsId && u.UsersId == usersId).FirstOrDefault();
+            if(checkCart == null)
+            {
+                var cart = new Cart
+                {
+                    UsersId = usersId,
+                    ProductVariantsId = model.ProductVariantsId,
+                    Quantity = model.Quantity
+
+                };
+
+                _context.Cart.Add(cart);
+                TempData["Success"] = "Product added to the cart!";
+            }
+            else
+            {
+                checkCart.Quantity += model.Quantity;
+                TempData["Success"] = "Product added to the cart!";
+                _context.Cart.Update(checkCart);
+            }
+
+            _context.SaveChanges();
+            return RedirectToAction("Cart");
+        }
+
         public IActionResult Product(int Id, int SellerId)
         {
             var product = _context.Product
@@ -207,6 +254,110 @@ namespace iskipmakliw.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+        [HttpPost]
+        public async Task<IActionResult> Profile(int submissionType, Users user, Billings billing, string PaymentType, string PaymentContactNumber, string HolderName, string? NewPassword, string? ConfirmPassword)
+        {
+            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            var hasher = new PasswordHasher<Users>();
+            if (submissionType == 1)
+            {
+                var userDetails = _context.Users
+                                .Include(u => u.Payments)
+                                .Include(u => u.UserDetails)
+                                .FirstOrDefault(u => u.Id == usersId);
+                if (user.Username != null && user.Email != null && user.ContactNumber != null)
+                {
+                    userDetails.Username = user.Username;
+                    userDetails.Email = user.Email;
+                    userDetails.ContactNumber = user.ContactNumber;
+
+                    if (user.Password != null)
+                    {
+                        if (!string.IsNullOrEmpty(NewPassword) &&
+                            NewPassword == ConfirmPassword &&
+                            hasher.VerifyHashedPassword(userDetails, userDetails.Password, user.Password) == PasswordVerificationResult.Success)
+                        {
+                            userDetails.Password = hasher.HashPassword(userDetails, NewPassword);
+                        }
+                        else if (NewPassword != ConfirmPassword)
+                        {
+                            TempData["Error"] = "Password do not match!";
+                        }
+                        else if(hasher.VerifyHashedPassword(userDetails, userDetails.Password, user.Password) == PasswordVerificationResult.Failed)
+                        {
+                            TempData["Error"] = "Old password incorrect!";
+                        }
+                    }
+                    
+                    TempData["Success"] = "Details successfully changed!";
+                    _context.Users.Update(userDetails);
+                    _context.SaveChanges();
+                    var claims = new List<Claim>
+                {
+                    new Claim("UsersId", userDetails.Id.ToString()),
+                    new Claim(ClaimTypes.Name, userDetails.Username),
+                    new Claim(ClaimTypes.Email, userDetails.Email),
+                    new Claim("ContactNumber", userDetails.ContactNumber ?? ""),
+                    new Claim(ClaimTypes.Role, userDetails.Role),
+                    new Claim("Status", userDetails.UserDetails?.Status ?? "N/A"),
+                    new Claim("PaymentStatus", userDetails.Payments?.FirstOrDefault()?.Status ?? "N/A")
+                };
+
+                    var identity = new ClaimsIdentity(claims, "MyCookieAuth");
+                    var principal = new ClaimsPrincipal(identity);
+
+                    await HttpContext.SignInAsync("MyCookieAuth", principal);
+                }
+                else
+                {
+                    TempData["Error"] = "Please fill up all the fields required!";
+                }
+                
+            }else if(submissionType == 2)
+            {
+                if(billing.Zip != null 
+                    && billing.LandMark != null 
+                    && billing.Latitude != null 
+                    && billing.Longitude != null 
+                    && billing.Name != null 
+                    && billing.ContactNumber != null 
+                    && billing.Address != null 
+                    && billing.City != null 
+                    && billing.Country != null)
+                {
+                    billing.UsersId = usersId;
+                    _context.Billings.Add(billing);
+                    _context.SaveChanges();
+                    TempData["Success"] = "Billing address added successfully!";
+                }
+                else
+                {
+                    TempData["Error"] = "Please fill up all the fields required!";
+                }
+            }else if(submissionType == 3)
+            {
+                if(PaymentType != null
+                    && PaymentContactNumber != null
+                    && HolderName != null)
+                {
+                    var paymentMethod = new PaymentMethod
+                    {
+                        Type = PaymentType,
+                        Number = PaymentContactNumber,
+                        HolderName = HolderName,
+                        UsersId = usersId
+                    };
+                    _context.PaymentMethod.Add(paymentMethod);
+                    _context.SaveChanges();
+                    TempData["Success"] = "Payment method added successfully!";
+                }
+                else
+                {
+                    TempData["Error"] = "Please fill up all the fields required!";
+                }
+            }
+                return RedirectToAction("Index");
         }
     }
 }

@@ -101,6 +101,7 @@
     <link rel="stylesheet" type="text/css" href="~/src/assets/css/dark/forms/switches.css">
     <link href="~/src/assets/css/dark/users/account-setting.css" rel="stylesheet" type="text/css">
     <link href="~/src/assets/css/dark/components/list-group.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body class="alt-menu">
     <!-- BEGIN LOADER -->
@@ -487,8 +488,8 @@
     <script src="~/src/plugins/src/notification/snackbar/snackbar.min.js"></script>
     <script src="~/src/assets/js/users/account-settings.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-
         var getSwithchInput = document.querySelector('#toggle-1');
         var pricingContainer = document.querySelector('.pricing-plans-container')
 
@@ -508,29 +509,31 @@
                 });
             }
             })
+    </script>
+    <script>
         document.addEventListener("DOMContentLoaded", function () {
             @if (TempData["Success"] != null)
             {
-                                <text>
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Success!',
-                                        text: '@TempData["Success"]',
-                                        showConfirmButton: false,
-                                        timer: 2000
-                                    });
-                                </text>
+                    <text>
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: '@TempData["Success"]',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                    </text>
             }
             @if (TempData["Error"] != null)
             {
-                                <text>
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Oops...',
-                                        text: '@TempData["Error"]',
-                                        confirmButtonColor: '#d33'
-                                    });
-                                </text>
+                    <text>
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: '@TempData["Error"]',
+                            confirmButtonColor: '#d33'
+                        });
+                    </text>
             }
         });
     </script>

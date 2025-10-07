@@ -1,7 +1,25 @@
-﻿@{
+﻿@using System.Security.Claims
+@{
     ViewData["Title"] = "Account Settings";
     Layout = "_LayoutCustomer";
 }
+<style>
+    .section.general-info.payment-info {
+        overflow: visible !important;
+    }
+
+    #map {
+        height: 500px !important;
+        width: 100% !important;
+        min-height: 500px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .leaflet-container {
+        height: 100% !important;
+    }
+</style>
 <div class="account-settings-container layout-top-spacing">
 
     <div class="account-content">
@@ -16,18 +34,16 @@
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="animated-underline-profile-tab" data-bs-toggle="tab" href="#animated-underline-profile" role="tab" aria-controls="animated-underline-profile" aria-selected="false" tabindex="-1"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-dollar-sign"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Payment Details</button>
                     </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="animated-underline-contact-tab" data-bs-toggle="tab" href="#animated-underline-contact" role="tab" aria-controls="animated-underline-contact" aria-selected="false" tabindex="-1"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> Danger Zone</button>
-                    </li>
                 </ul>
             </div>
         </div>
 
-        <div class="tab-content" id="animateLineContent-4">
-            <div class="tab-pane fade show active" id="animated-underline-home" role="tabpanel" aria-labelledby="animated-underline-home-tab">
-                <div class="row">
-                    <div class="col-xl-12 col-lg-12 col-md-12 layout-spacing">
-                        <form class="section general-info">
+        <form class="section general-info" id="profileForm" asp-action="Profile" asp-controller="Home" method="post">
+            <input type="hidden" id="submissionType" name="submissionType" value="" />
+            <div class="tab-content" id="animateLineContent-4">
+                <div class="tab-pane fade show active" id="animated-underline-home" role="tabpanel" aria-labelledby="animated-underline-home-tab">
+                    <div class="row">
+                        <div class="col-xl-12 col-lg-12 col-md-12 layout-spacing">
                             <div class="info">
                                 <h6 class="">General Information</h6>
                                 <div class="row">
@@ -44,80 +60,56 @@
                                             <div class="col-xl-10 col-lg-12 col-md-8 mt-md-0 mt-4">
                                                 <div class="form">
                                                     <div class="row">
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-12">
                                                             <div class="form-group">
-                                                                <label for="fullName">Full Name</label>
-                                                                <input type="text" class="form-control mb-3" id="fullName" placeholder="Full Name" value="Jimmy Turner">
+                                                                <label for="fullName">User Name</label>
+                                                                <input type="text" class="form-control mb-3" id="fullName" name="Username" placeholder="Full Name" value="@User.FindFirst(ClaimTypes.Name)?.Value">
                                                             </div>
                                                         </div>
 
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label for="profession">Profession</label>
-                                                                <input type="text" class="form-control mb-3" id="profession" placeholder="Designer" value="Web Developer">
+                                                                <label for="profession">Email</label>
+                                                                <input type="text" class="form-control mb-3" id="profession" name="Email" value="@User.FindFirst(ClaimTypes.Email)?.Value ">
                                                             </div>
                                                         </div>
 
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label for="country">Country</label>
-                                                                <select class="form-select mb-3" id="country">
-                                                                    <option>All Countries</option>
-                                                                    <option selected="">United States</option>
-                                                                    <option>India</option>
-                                                                    <option>Japan</option>
-                                                                    <option>China</option>
-                                                                    <option>Brazil</option>
-                                                                    <option>Norway</option>
-                                                                    <option>Canada</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label for="address">Address</label>
-                                                                <input type="text" class="form-control mb-3" id="address" placeholder="Address" value="New York">
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label for="location">Location</label>
-                                                                <input type="text" class="form-control mb-3" id="location" placeholder="Location">
-                                                            </div>
-                                                        </div>
                                                         <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label for="phone">Phone</label>
-                                                                <input type="text" class="form-control mb-3" id="phone" placeholder="Write your phone number here" value="+1 (530) 555-12121">
+                                                                <input type="text" class="form-control mb-3" id="phone" name="ContactNumber" placeholder="Write your phone number here" value="@User.FindFirst("ContactNumber")?.Value">
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-6">
+
+                                                    </div>
+                                                    <br />
+                                                    <h5>Change Password</h5>
+                                                    <div class="row">
+                                                        <div class="col-md-12">
                                                             <div class="form-group">
-                                                                <label for="email">Email</label>
-                                                                <input type="text" class="form-control mb-3" id="email" placeholder="Write your email here" value="Jimmy@gmail.com">
+                                                                <label for="fullName">Current Password</label>
+                                                                <input type="password" class="form-control mb-3" name="Password">
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-6">
+
+                                                        <div class="col-md-12">
                                                             <div class="form-group">
-                                                                <label for="website1">Website</label>
-                                                                <input type="text" class="form-control mb-3" id="website1" placeholder="Enter URL">
+                                                                <label for="profession">New Password</label>
+                                                                <input type="password" class="form-control mb-3" name="NewPassword">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <div class="form-group">
+                                                                <label for="profession">Confirm New Password</label>
+                                                                <input type="password" class="form-control mb-3" name="ConfirmPassword">
                                                             </div>
                                                         </div>
 
-                                                        <div class="col-md-12 mt-1">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" value="" id="customCheck1">
-                                                                <label class="form-check-label" for="customCheck1">Make this my default address</label>
-                                                            </div>
+                                                    </div>
+                                                    <div class="col-md-12 mt-1">
+                                                        <div class="form-group text-end">
+                                                            <button type="button" class="btn btn-secondary _effect--ripple waves-effect waves-light" id="ProfileSave">Save</button>
                                                         </div>
-
-                                                        <div class="col-md-12 mt-1">
-                                                            <div class="form-group text-end">
-                                                                <button class="btn btn-secondary _effect--ripple waves-effect waves-light">Save</button>
-                                                            </div>
-                                                        </div>
-
                                                     </div>
 
                                                 </div>
@@ -126,360 +118,379 @@
                                     </div>
                                 </div>
                             </div>
-                        </form>
-                    </div>
-
-                    <div class="col-xl-12 col-lg-12 col-md-12 layout-spacing">
-                        <form id="social" class="section social">
-                            <div class="info">
-                                <h5 class="">Social</h5>
-                                <div class="row">
-
-                                    <div class="col-md-11 mx-auto">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="input-group social-linkedin mb-3">
-                                                    <span class="input-group-text me-3" id="linkedin"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-linkedin"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></span>
-                                                    <input type="text" class="form-control" placeholder="Linkedin Username" aria-label="Username" aria-describedby="linkedin" value="jimmy_turner">
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-6">
-                                                <div class="input-group social-tweet mb-3">
-                                                    <span class="input-group-text me-3" id="tweet"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-twitter"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></span>
-                                                    <input type="text" class="form-control" placeholder="Twitter Username" aria-label="Username" aria-describedby="tweet" value="@@jTurner">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-11 mx-auto">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="input-group social-fb mb-3">
-                                                    <span class="input-group-text me-3" id="fb"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-facebook"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></span>
-                                                    <input type="text" class="form-control" placeholder="Facebook Username" aria-label="Username" aria-describedby="fb" value="Jimmy Turner">
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-6">
-                                                <div class="input-group social-github mb-3">
-                                                    <span class="input-group-text me-3" id="github"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></span>
-                                                    <input type="text" class="form-control" placeholder="Github Username" aria-label="Username" aria-describedby="github" value="@@TurnerJimmy">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="tab-pane fade" id="animated-underline-profile" role="tabpanel" aria-labelledby="animated-underline-profile-tab">
-                <div class="row">
-                    <div class="col-xl-6 col-lg-12 col-md-12 layout-spacing">
-                        <div class="section general-info payment-info">
-                            <div class="info">
-                                <h6 class="">Billing Address</h6>
-                                <p>Changes to your <span class="text-success">Billing</span> information will take effect starting with scheduled payment and will be refelected on your next invoice.</p>
+                <div class="tab-pane fade" id="animated-underline-profile" role="tabpanel" aria-labelledby="animated-underline-profile-tab">
+                    <div class="row">
+                        <div class="col-xl-6 col-lg-12 col-md-12 layout-spacing">
+                            <div class="section general-info payment-info">
+                                <div class="info">
+                                    <h6 class="">Billing Address</h6>
+                                    <p>Changes to your <span class="text-success">Billing</span> information will take effect starting with scheduled payment and will be refelected on your next invoice.</p>
 
-                                <div class="list-group mt-4">
-                                    <label class="list-group-item">
-                                        <div class="d-flex w-100">
-                                            <div class="billing-radio me-2">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="billingAddress" id="billingAddress1" checked="">
-                                                </div>
-                                            </div>
-                                            <div class="billing-content">
-                                                <div class="fw-bold">Address #1</div>
-                                                <p>2249 Caynor Circle, New Brunswick, New Jersey</p>
-                                            </div>
-                                            <div class="billing-edit align-self-center ms-auto">
-                                                <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
-                                            </div>
-                                        </div>
-                                    </label>
-
-                                    <label class="list-group-item">
-                                        <div class="d-flex w-100">
-                                            <div class="billing-radio me-2">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="billingAddress" id="billingAddress2">
-                                                </div>
-                                            </div>
-                                            <div class="billing-content">
-                                                <div class="fw-bold">Address #2</div>
-                                                <p>4262 Leverton Cove Road, Springfield, Massachusetts</p>
-                                            </div>
-                                            <div class="billing-edit align-self-center ms-auto">
-                                                <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
-                                            </div>
-                                        </div>
-                                    </label>
-                                    <label class="list-group-item">
-                                        <div class="d-flex w-100">
-                                            <div class="billing-radio me-2">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="billingAddress" id="billingAddress3">
-                                                </div>
-                                            </div>
-                                            <div class="billing-content">
-                                                <div class="fw-bold">Address #3</div>
-                                                <p>2692 Berkshire Circle, Knoxville, Tennessee</p>
-                                            </div>
-                                            <div class="billing-edit align-self-center ms-auto">
-                                                <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-
-                                <button class="btn btn-secondary mt-4 add-address _effect--ripple waves-effect waves-light">Add Address</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-6 col-lg-12 col-md-12 layout-spacing">
-                        <div class="section general-info payment-info">
-                            <div class="info">
-                                <h6 class="">Payment Method</h6>
-                                <p>Changes to your <span class="text-success">Payment Method</span> information will take effect starting with scheduled payment and will be refelected on your next invoice.</p>
-
-                                <div class="list-group mt-4">
-
-                                    <label class="list-group-item">
-                                        <div class="d-flex w-100">
-                                            <div class="billing-radio me-2">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMethod1">
-                                                </div>
-                                            </div>
-                                            <div class="payment-card">
-                                                <img src="../src/assets/img/card-mastercard.svg" class="align-self-center me-3" alt="americanexpress">
-                                            </div>
-                                            <div class="billing-content">
-                                                <div class="fw-bold">Mastercard</div>
-                                                <p>XXXX XXXX XXXX 9704</p>
-                                            </div>
-                                            <div class="billing-edit align-self-center ms-auto">
-                                                <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
-                                            </div>
-                                        </div>
-                                    </label>
-                                    <label class="list-group-item">
-                                        <div class="d-flex w-100">
-                                            <div class="billing-radio me-2">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMethod2" checked="">
-                                                </div>
-                                            </div>
-                                            <div class="payment-card">
-                                                <img src="../src/assets/img/card-americanexpress.svg" class="align-self-center me-3" alt="americanexpress">
-                                            </div>
-                                            <div class="billing-content">
-                                                <div class="fw-bold">American Express</div>
-                                                <p>XXXX XXXX XXXX 310</p>
-                                            </div>
-                                            <div class="billing-edit align-self-center ms-auto">
-                                                <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
-                                            </div>
-                                        </div>
-                                    </label>
-                                    <label class="list-group-item">
-                                        <div class="d-flex w-100">
-                                            <div class="billing-radio me-2">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMethod3">
-                                                </div>
-                                            </div>
-                                            <div class="payment-card">
-                                                <img src="../src/assets/img/card-visa.svg" class="align-self-center me-3" alt="americanexpress">
-                                            </div>
-                                            <div class="billing-content">
-                                                <div class="fw-bold">Visa</div>
-                                                <p>XXXX XXXX XXXX 5264</p>
-                                            </div>
-                                            <div class="billing-edit align-self-center ms-auto">
-                                                <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-
-                                <button class="btn btn-secondary mt-4 add-payment _effect--ripple waves-effect waves-light">Add Payment Method</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-6 col-lg-12 col-md-12 layout-spacing">
-                        <div class="section general-info payment-info">
-                            <div class="info">
-                                <h6 class="">Add Billing Address</h6>
-                                <p>Changes your New <span class="text-success">Billing</span> Information.</p>
-
-                                <div class="row mt-4">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Name</label>
-                                            <input type="text" class="form-control add-billing-address-input">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Email</label>
-                                            <input type="email" class="form-control">
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="mb-3">
-                                            <label class="form-label">Address</label>
-                                            <input type="text" class="form-control">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">City</label>
-                                            <input type="text" class="form-control">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Country</label>
-                                            <select class="form-select">
-                                                <option selected="">Choose...</option>
-                                                <option value="united-states">United States</option>
-                                                <option value="brazil">Brazil</option>
-                                                <option value="indonesia">Indonesia</option>
-                                                <option value="turkey">Turkey</option>
-                                                <option value="russia">Russia</option>
-                                                <option value="india">India</option>
-                                                <option value="germany">Germany</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">ZIP</label>
-                                            <input type="tel" class="form-control">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button class="btn btn-primary mt-4 _effect--ripple waves-effect waves-light">Add</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-6 col-lg-12 col-md-12 layout-spacing">
-                        <div class="section general-info payment-info">
-                            <div class="info">
-                                <h6 class="">Add Payment Method</h6>
-                                <p>Changes your New <span class="text-success">Payment Method</span> Information.</p>
-
-                                <div class="row mt-4">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Card Brand</label>
-                                            <div class="invoice-action-currency">
-                                                <div class="dropdown selectable-dropdown cardName-select">
-                                                    <a id="cardBrandDropdown" href="javascript:void(0);" class="dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="../src/assets/img/card-mastercard.svg" class="flag-width" alt="flag"> <span class="selectable-text">Mastercard</span> <span class="selectable-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg></span></a>
-                                                    <div class="dropdown-menu" aria-labelledby="cardBrandDropdown">
-                                                        <a class="dropdown-item" data-img-value="../src/assets/img/card-mastercard.svg" data-value="GBP - British Pound" href="javascript:void(0);"><img src="../src/assets/img/card-mastercard.svg" class="flag-width" alt="flag"> Mastercard</a>
-                                                        <a class="dropdown-item" data-img-value="../src/assets/img/card-americanexpress.svg" data-value="IDR - Indonesian Rupiah" href="javascript:void(0);"><img src="../src/assets/img/card-americanexpress.svg" class="flag-width" alt="flag"> American Express</a>
-                                                        <a class="dropdown-item" data-img-value="../src/assets/img/card-visa.svg" data-value="USD - US Dollar" href="javascript:void(0);"><img src="../src/assets/img/card-visa.svg" class="flag-width" alt="flag"> Visa</a>
-                                                        <a class="dropdown-item" data-img-value="../src/assets/img/card-discover.svg" data-value="INR - Indian Rupee" href="javascript:void(0);"><img src="../src/assets/img/card-discover.svg" class="flag-width" alt="flag"> Discover</a>
+                                    <div class="list-group mt-4">
+                                        <label class="list-group-item">
+                                            <div class="d-flex w-100">
+                                                <div class="billing-radio me-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="billingAddress" id="billingAddress1" checked="">
                                                     </div>
                                                 </div>
+                                                <div class="billing-content">
+                                                    <div class="fw-bold">Address #1</div>
+                                                    <p>2249 Caynor Circle, New Brunswick, New Jersey</p>
+                                                </div>
+                                                <div class="billing-edit align-self-center ms-auto">
+                                                    <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
+                                                </div>
+                                            </div>
+                                        </label>
+
+                                        <label class="list-group-item">
+                                            <div class="d-flex w-100">
+                                                <div class="billing-radio me-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="billingAddress" id="billingAddress2">
+                                                    </div>
+                                                </div>
+                                                <div class="billing-content">
+                                                    <div class="fw-bold">Address #2</div>
+                                                    <p>4262 Leverton Cove Road, Springfield, Massachusetts</p>
+                                                </div>
+                                                <div class="billing-edit align-self-center ms-auto">
+                                                    <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label class="list-group-item">
+                                            <div class="d-flex w-100">
+                                                <div class="billing-radio me-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="billingAddress" id="billingAddress3">
+                                                    </div>
+                                                </div>
+                                                <div class="billing-content">
+                                                    <div class="fw-bold">Address #3</div>
+                                                    <p>2692 Berkshire Circle, Knoxville, Tennessee</p>
+                                                </div>
+                                                <div class="billing-edit align-self-center ms-auto">
+                                                    <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <button class="btn btn-secondary mt-4 add-address _effect--ripple waves-effect waves-light">Add Address</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6 col-lg-12 col-md-12 layout-spacing">
+                            <div class="section general-info payment-info">
+                                <div class="info">
+                                    <h6 class="">Payment Method</h6>
+                                    <p>Changes to your <span class="text-success">Payment Method</span> information will take effect starting with scheduled payment and will be refelected on your next invoice.</p>
+
+                                    <div class="list-group mt-4">
+
+                                        <label class="list-group-item">
+                                            <div class="d-flex w-100">
+                                                <div class="billing-radio me-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMethod1">
+                                                    </div>
+                                                </div>
+                                                <div class="payment-card">
+                                                    <img src="../src/assets/img/card-mastercard.svg" class="align-self-center me-3" alt="americanexpress">
+                                                </div>
+                                                <div class="billing-content">
+                                                    <div class="fw-bold">Mastercard</div>
+                                                    <p>XXXX XXXX XXXX 9704</p>
+                                                </div>
+                                                <div class="billing-edit align-self-center ms-auto">
+                                                    <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label class="list-group-item">
+                                            <div class="d-flex w-100">
+                                                <div class="billing-radio me-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMethod2" checked="">
+                                                    </div>
+                                                </div>
+                                                <div class="payment-card">
+                                                    <img src="../src/assets/img/card-americanexpress.svg" class="align-self-center me-3" alt="americanexpress">
+                                                </div>
+                                                <div class="billing-content">
+                                                    <div class="fw-bold">American Express</div>
+                                                    <p>XXXX XXXX XXXX 310</p>
+                                                </div>
+                                                <div class="billing-edit align-self-center ms-auto">
+                                                    <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label class="list-group-item">
+                                            <div class="d-flex w-100">
+                                                <div class="billing-radio me-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMethod3">
+                                                    </div>
+                                                </div>
+                                                <div class="payment-card">
+                                                    <img src="../src/assets/img/card-visa.svg" class="align-self-center me-3" alt="americanexpress">
+                                                </div>
+                                                <div class="billing-content">
+                                                    <div class="fw-bold">Visa</div>
+                                                    <p>XXXX XXXX XXXX 5264</p>
+                                                </div>
+                                                <div class="billing-edit align-self-center ms-auto">
+                                                    <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <button class="btn btn-secondary mt-4 add-payment _effect--ripple waves-effect waves-light">Add Payment Method</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6 col-lg-12 col-md-12 layout-spacing">
+                            <div class="section general-info payment-info">
+                                <div class="info">
+                                    <h6 class="">Add Billing Address</h6>
+                                    <p>Changes your New <span class="text-success">Billing</span> Information.</p>
+
+                                    <div class="row mt-4">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Name</label>
+                                                <input type="text" name="Name" class="form-control add-billing-address-input">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Contact Number</label>
+                                                <input type="text" name="ContactNumber" class="form-control" id="Contact">
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="mb-3">
+                                                <label class="form-label">Address</label>
+                                                <input type="text" name="Address" class="form-control" id="Address" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">City</label>
+                                                <input type="text" name="City" class="form-control" id="City" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">Country</label>
+                                                <input type="text" name="Country" class="form-control" id="Country" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">ZIP</label>
+                                                <input type="tel" name="Zip" class="form-control" id="Zip" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="mb-3">
+                                                <label class="form-label">Land Mark</label>
+                                                <input type="text" name="LandMark" class="form-control" id="AdditionalInformation">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-4">
+                                        <h4>Select Your Location</h4>
+                                        <div id="map"></div>
+
+                                        <!-- Display coordinates -->
+                                        <div class="mt-3">
+                                            <input type="text" name="Latitude" id="latitude" class="form-control" hidden>
+                                            <input type="text" name="Longitude" id="longitude" class="form-control" hidden>
+                                        </div>
+                                    </div>
+
+                                    <button type="button" class="btn btn-primary mt-4 _effect--ripple waves-effect waves-light" id="AddressSave">Add</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6 col-lg-12 col-md-12 layout-spacing">
+                            <div class="section general-info payment-info">
+                                <div class="info">
+                                    <h6 class="">Add Payment Method</h6>
+                                    <p>Changes your New <span class="text-success">Payment Method</span> Information.</p>
+
+                                    <div class="row mt-4">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Type</label>
+                                                <select class="form-select" name="PaymentType">
+                                                    <option value="Gcash"><img src="~/src/assets/img/gcash.svg" class="flag-width" alt="flag"> Gcash</option>
+                                                    <option value="Maya"><img src="~/src/assets/img/maya.png" class="flag-width" alt="flag"> Maya</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Number</label>
+                                                <input type="text" name="PaymentContactNumber" class="form-control add-payment-method-input">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
+                                                <label class="form-label">Holder Name</label>
+                                                <input type="text" name="HolderName" class="form-control">
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Card Number</label>
-                                            <input type="text" class="form-control add-payment-method-input">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Holder Name</label>
-                                            <input type="text" class="form-control">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">CVV/CVV2</label>
-                                            <input type="text" class="form-control">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Card Expiry</label>
-                                            <input type="text" class="form-control">
-                                        </div>
-                                    </div>
+                                    <button type="button"class="btn btn-primary mt-4 _effect--ripple waves-effect waves-light" id="PaymentSave">Add</button>
                                 </div>
-
-                                <button class="btn btn-primary mt-4 _effect--ripple waves-effect waves-light">Add</button>
                             </div>
                         </div>
-                    </div>
 
+                    </div>
                 </div>
             </div>
-
-            <div class="tab-pane fade" id="animated-underline-contact" role="tabpanel" aria-labelledby="animated-underline-contact-tab">
-                <div class="alert alert-arrow-right alert-icon-right alert-light-warning alert-dismissible fade show mb-4" role="alert">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-circle"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12" y2="16"></line></svg>
-                    <strong>Warning!</strong> Please proceed with caution. For any assistance - <a href="javascript:void(0);">Contact Us</a>
-                </div>
-
-                <div class="row">
-                    <div class="col-xl-4 col-lg-12 col-md-12 layout-spacing">
-                        <div class="section general-info">
-                            <div class="info">
-                                <h6 class="">Purge Cache</h6>
-                                <p>Remove the active resource from the cache without waiting for the predetermined cache expiry time.</p>
-                                <div class="form-group mt-4">
-                                    <button class="btn btn-secondary btn-clear-purge _effect--ripple waves-effect waves-light">Clear</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-4 col-lg-12 col-md-12 layout-spacing">
-                        <div class="section general-info">
-                            <div class="info">
-                                <h6 class="">Deactivate Account</h6>
-                                <p>You will not be able to receive messages, notifications for up to 24 hours.</p>
-                                <div class="form-group mt-4">
-                                    <div class="switch form-switch-custom switch-inline form-switch-success mt-1">
-                                        <input class="switch-input" type="checkbox" role="switch" id="socialformprofile-custom-switch-success">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-4 col-lg-12 col-md-12 layout-spacing">
-                        <div class="section general-info">
-                            <div class="info">
-                                <h6 class="">Delete Account</h6>
-                                <p>Once you delete the account, there is no going back. Please be certain.</p>
-                                <div class="form-group mt-4">
-                                    <button class="btn btn-danger btn-delete-account _effect--ripple waves-effect waves-light">Delete my account</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-                </div>
-            </div>
-        </div>
-
+        </form>
     </div>
 
 </div>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            const form = $("#profileForm");
+            const submissionTypeInput = $("#submissionType");
+
+
+            function confirmAndSubmit(type, title, message) {
+                Swal.fire({
+                    title: title,
+                    text: message,
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes, continue",
+                    cancelButtonText: "Cancel",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        submissionTypeInput.val(type);
+                        form.submit(); // Regular POST submission
+                    }
+                });
+            }
+
+            $("#ProfileSave").on("click", function (e) {
+                e.preventDefault();
+                confirmAndSubmit(1, "Save Profile", "Do you want to save your profile changes?");
+            });
+            $("#AddressSave").on("click", function (e) {
+                e.preventDefault();
+                confirmAndSubmit(2, "Add Billing Address", "Do you want to add this billing address?");
+            });
+            $("#PaymentSave").on("click", function (e) {
+                e.preventDefault();
+                confirmAndSubmit(3, "Add Payment Method", "Do you want to add this payment method?");
+            });
+        });
+
+                      // Initialize map after everything is loaded
+        $(window).on('load', function () {
+            // Ensure map container has proper styling
+            $('#map').css({
+                'height': '500px',
+                'width': '100%',
+                'position': 'relative',
+                'display': 'block'
+            });
+
+            // Small delay to ensure Bootstrap layout is complete
+            setTimeout(function() {
+                // Create map instance
+                const map = L.map('map', {
+                    center: [14.5995, 120.9842], // Default: Manila
+                    zoom: 13,
+                    scrollWheelZoom: true
+                });
+
+                // Add OpenStreetMap tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+
+                let marker;
+
+                // Force multiple redraws to fix Bootstrap container issues
+                setTimeout(() => map.invalidateSize(), 100);
+                setTimeout(() => map.invalidateSize(), 300);
+                setTimeout(() => map.invalidateSize(), 600);
+
+                // Handle window resize
+                $(window).on('resize', function() {
+                    map.invalidateSize();
+                });
+
+                // Handle map click
+                map.on('click', async function (e) {
+                    const lat = e.latlng.lat.toFixed(6);
+                    const lng = e.latlng.lng.toFixed(6);
+
+                    // Update or create marker
+                    if (marker) {
+                        marker.setLatLng([lat, lng]);
+                    } else {
+                        marker = L.marker([lat, lng]).addTo(map);
+                    }
+
+                    // Update hidden input fields
+                    $('#latitude').val(lat);
+                    $('#longitude').val(lng);
+
+                    // Show loading state (optional)
+                    $('#Address').val('Loading address...');
+
+                    // Reverse Geocode using Nominatim
+                    try {
+                        const response = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+                            {
+                                headers: {
+                                    'User-Agent': 'OakMart/1.0'
+                                }
+                            }
+                        );
+
+                        if (!response.ok) {
+                            throw new Error('Geocoding service unavailable');
+                        }
+
+                        const data = await response.json();
+
+                        // Safely extract address data
+                        const address = data.address || {};
+                        $('#Address').val(data.display_name || 'Address not found');
+                        $('#City').val(address.city || address.town || address.village || address.municipality || '');
+                        $('#Country').val(address.country || '');
+                        $('#Zip').val(address.postcode || '');
+                    } catch (err) {
+                        console.error('Reverse geocoding failed:', err);
+                        $('#Address').val('Unable to fetch address');
+                        alert('Failed to get address information. Please try again.');
+                    }
+                });
+            }, 250); // Initial delay for Bootstrap layout
+        });
+    </script>
+
+}
