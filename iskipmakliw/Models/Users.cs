@@ -8,7 +8,7 @@
         public string ContactNumber { get; set; }
         public string Role { get; set; }
         public string Password { get; set; }
-        public DateTime DateCreated { get; set; }
+        public DateTime DateCreated { get; set; } = DateTime.Now;
         public DateTime? DateArchived { get; set; }
         public DateTime? DateModified { get; set; }
 

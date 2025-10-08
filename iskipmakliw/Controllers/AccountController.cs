@@ -70,6 +70,8 @@ namespace iskipmakliw.Controllers
                             return RedirectToAction("Index", "Home");
                         case "Seller":
                             return RedirectToAction("Index", "Seller");
+                        case "Rider":
+                            return RedirectToAction("Index", "Rider");
                     }
                 }
             }

@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Seller";
 }
-@model List<Payments>;
+@model List<Users>;
 <div class="row" id="cancel-row">
 
     <div class="col-xl-12 col-lg-12 col-sm-12 layout-top-spacing layout-spacing">
@@ -21,12 +21,11 @@
                                 <th class="sorting" tabindex="0" aria-controls="invoice-list" rowspan="1" colspan="1" aria-label="Name: activate to sort column ascending" style="width: 163px;">Name</th>
                                 <th class="sorting" tabindex="0" aria-controls="invoice-list" rowspan="1" colspan="1" aria-label="Email: activate to sort column ascending" style="width: 207px;">Email</th>
                                 <th class="sorting" tabindex="0" aria-controls="invoice-list" rowspan="1" colspan="1" aria-label="Status: activate to sort column ascending" style="width: 63px;">Status</th>
-                                <th class="sorting" tabindex="0" aria-controls="invoice-list" rowspan="1" colspan="1" aria-label="Amount: activate to sort column ascending" style="width: 62px;">Amount</th>
                                 <th class="sorting" tabindex="0" aria-controls="invoice-list" rowspan="1" colspan="1" aria-label="Actions: activate to sort column ascending" style="width: 83px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach(var data in Model)
+                            @foreach (var data in Model)
                             {
                                 <tr role="row">
                                     <td class="checkbox-column">
@@ -40,7 +39,7 @@
                                             <div class="usr-img-frame me-2 rounded-circle">
                                                 <img alt="avatar" class="img-fluid rounded-circle" src="~/src/assets/img/profile-28.jpeg">
                                             </div>
-                                            <p class="align-self-center mb-0 user-name"> @data.Users.Username </p>
+                                            <p class="align-self-center mb-0 user-name"> @data.Username </p>
                                         </div>
                                     </td>
                                     <td>
@@ -52,42 +51,32 @@
                                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                                                 <polyline points="22,6 12,13 2,6"></polyline>
                                             </svg>
-                                            @data.Users.Email
+                                            @data.Email
                                         </span>
                                     </td>
                                     @{
                                         string statusClass;
                                         string statusDetails;
-
-                                        if (data.Status.ToLower() == "pending")
+                                        statusDetails = data.UserDetails.Status;
+                                        switch (data.UserDetails.Status.ToLower())
                                         {
-                                            statusDetails = data.Status;
-                                            statusClass = "badge badge-light-warning";
-                                        }
-                                        else
-                                        {
-                                            statusDetails = data.Users.UserDetails.Status;
-                                            switch (data.Users.UserDetails.Status.ToLower())
-                                            {
-                                                case "pending":
-                                                    statusClass = "badge badge-light-warning";
-                                                    break;
-                                                case "for approval":
-                                                    statusClass = "badge badge-light-primary";
-                                                    break;
-                                                case "declined":
-                                                    statusClass = "badge badge-light-danger";
-                                                    break;
-                                                default:
-                                                    statusClass = "badge badge-light-success";
-                                                    break;
-                                            }
+                                            case "pending":
+                                                statusClass = "badge badge-light-warning";
+                                                break;
+                                            case "for approval":
+                                                statusClass = "badge badge-light-primary";
+                                                break;
+                                            case "declined":
+                                                statusClass = "badge badge-light-danger";
+                                                break;
+                                            default:
+                                                statusClass = "badge badge-light-success";
+                                                break;
                                         }
                                     }
                                     <td><span class="@statusClass inv-status">@statusDetails</span></td>
-                                    <td><span class="fw-bold">₱ </span>@data.Amount</td>
                                     <td>
-                                        <a class="badge badge-light-primary text-start me-2 action-edit" asp-controller="Admin" asp-action="SellerReview" asp-route-id="@data.Users.Id" ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></a>
+                                        <a class="badge badge-light-primary text-start me-2 action-edit" asp-controller="Admin" asp-action="RiderReview" asp-route-id="@data.Id"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></a>
                                     </td>
                                 </tr>
                             }

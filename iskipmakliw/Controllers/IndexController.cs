@@ -33,7 +33,74 @@ namespace iskipmakliw.Controllers
         [HttpPost]
         public IActionResult Rider(UserDetails userDetails, Users users, string Confirm)
         {
+            ModelState.Remove("Role");
+            ModelState.Remove("Carts");
+            ModelState.Remove("Users");
+            ModelState.Remove("CapturedIdPath");
+            ModelState.Remove("GovernmentIdPath");
+            if (ModelState.IsValid)
+            {
+                if (Confirm != users.Password)
+                {
+                    TempData["Error"] = "Password do not match!";
+                    return View();
+                }
+                else
+                { // Define upload folder
+                    string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+
+                    if (!Directory.Exists(uploadPath))
+                    {
+                        Directory.CreateDirectory(uploadPath);
+                    }
+
+                    // Save GovernmentIdFile to disk
+                    if (userDetails.GovernmentIdFile != null && userDetails.GovernmentIdFile.Length > 0)
+                    {
+                        string govFileName = $"gov_{Guid.NewGuid()}{Path.GetExtension(userDetails.GovernmentIdFile.FileName)}";
+                        string govFilePath = Path.Combine(uploadPath, govFileName);
+
+                        using (var stream = new FileStream(govFilePath, FileMode.Create))
+                        {
+                            userDetails.GovernmentIdFile.CopyTo(stream);
+                        }
+
+                        // Save relative path in DB
+                        userDetails.GovernmentIdPath = $"/uploads/{govFileName}";
+                    }
+
+                    // Save CapturedIdFile to disk
+                    if (userDetails.CapturedIdFile != null && userDetails.CapturedIdFile.Length > 0)
+                    {
+                        string capFileName = $"cap_{Guid.NewGuid()}.png";
+                        string capFilePath = Path.Combine(uploadPath, capFileName);
+
+                        using (var stream = new FileStream(capFilePath, FileMode.Create))
+                        {
+                            userDetails.CapturedIdFile.CopyTo(stream);
+                        }
+
+                        // Save relative path in DB
+                        userDetails.CapturedIdPath = $"/uploads/{capFileName}";
+                    }
+
+                    var hasher = new PasswordHasher<Users>();
+                    users.Password = hasher.HashPassword(users, users.Password);
+                    users.Role = "Rider";
+                    _context.Users.Add(users);
+                    _context.SaveChanges();
+                    userDetails.Status = "Pending";
+                    userDetails.UsersId = users.Id;
+                    _context.UserDetails.Add(userDetails);
+                    _context.SaveChanges();
+                    TempData["Success"] = "Account created!";
+                    return View();
+                }
+            }
+            TempData["Error"] = "Please enter a value for each field";
             return View();
+
+
         }
         [HttpGet]
         public IActionResult Signup()

@@ -33,7 +33,23 @@ namespace iskipmakliw.Controllers
 
             return View(payments);
         }
+        public IActionResult Riders()
+        {
+            var payments = _context.Users
+                                .Include(u => u.UserDetails)
+                            .Where(u => u.Role == "Rider")
+                            .ToList();
 
+            return View(payments);
+        }
+        public IActionResult RiderReview(int Id)
+        {
+            var data = _context.Users
+                            .Include(u => u.UserDetails)
+                            .Where(u => u.Id == Id)
+                            .FirstOrDefault();
+            return View(data);
+        }
         public IActionResult SellerReview(int Id)
         {
             var data = _context.Payments

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
-    <title>@ViewData["title"]</title>
+    <title>Oak Mart</title>
     <link rel="icon" type="image/x-icon" href="~/src/assets/img/OakMartPNG.png" />
     <link href="~/layouts/collapsible-menu/css/light/loader.css" rel="stylesheet" type="text/css" />
     <link href="~/layouts/collapsible-menu/css/dark/loader.css" rel="stylesheet" type="text/css" />
@@ -320,7 +320,7 @@
 
                     <!-- Dashboard -->
                     <li class="menu @(isDashboardActive ? "active" : "")">
-                        <a asp-action="Index" asp-controller="Seller" data-bs-toggle="collapse" aria-expanded="@(isDashboardActive.ToString().ToLower())" class="dropdown-toggle">
+                        <a href="#dashboard" data-bs-toggle="collapse" aria-expanded="@(isDashboardActive.ToString().ToLower())" class="dropdown-toggle">
                             <div>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home">
                                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>

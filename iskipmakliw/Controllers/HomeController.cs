@@ -100,7 +100,21 @@ namespace iskipmakliw.Controllers
 
             return View(cartViewModel);
         }
+        [HttpGet("reverse-geocode")]
+        public async Task<IActionResult> ReverseGeocode(double lat, double lon)
+        {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "OakMart/1.0");
 
+            var url = $"https://nominatim.openstreetmap.org/reverse?lat={lat}&lon={lon}&format=json";
+            var response = await client.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode, "Geocoding service unavailable");
+
+            var json = await response.Content.ReadAsStringAsync();
+            return Content(json, "application/json");
+        }
         [HttpPost]
         public IActionResult RemoveCart(int Id)
         {

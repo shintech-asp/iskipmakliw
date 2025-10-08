@@ -4,23 +4,6 @@
     ViewData["Title"] = "Account Settings";
     Layout = "_LayoutCustomer";
 }
-<style>
-    .section.general-info.payment-info {
-        overflow: visible !important;
-    }
-
-    #map {
-        height: 500px !important;
-        width: 100% !important;
-        min-height: 500px;
-        position: relative;
-        z-index: 1;
-    }
-
-    .leaflet-container {
-        height: 100% !important;
-    }
-</style>
 @model BillingDetailsViewModel;
 <div class="account-settings-container layout-top-spacing">
 
@@ -35,7 +18,7 @@
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="animated-underline-profile-tab" data-bs-toggle="tab" href="#animated-underline-profile" role="tab" aria-controls="animated-underline-profile" aria-selected="false" tabindex="-1"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-dollar-sign"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Payment Details</button>
-                    </li>
+                    </li>https://localhost:7280/Account/Logout
                 </ul>
             </div>
         </div>
@@ -299,6 +282,28 @@
     </div>
 
 </div>
+
+<style>
+    .section.general-info.payment-info {
+        overflow: visible !important;
+    }
+
+    #map {
+        height: 500px !important;
+        width: 100% !important;
+        min-height: 500px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .leaflet-container {
+        height: 100% !important;
+    }
+
+    .my-leaflet-map-container img {
+        max-height: none;
+    }
+</style>
 @section Scripts {
     <script>
         $(document).ready(function () {
@@ -349,17 +354,10 @@
             // Small delay to ensure Bootstrap layout is complete
             setTimeout(function() {
                 // Create map instance
-                const map = L.map('map', {
-                    center: [14.5995, 120.9842], // Default: Manila
-                    zoom: 13,
-                    scrollWheelZoom: true
-                });
-
-                // Add OpenStreetMap tile layer
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '&copy; OpenStreetMap contributors'
-                }).addTo(map);
+                const map = L.map('map', { center: [14.5995, 120.9842], // Default: Manila 
+                    zoom: 13, scrollWheelZoom: true }); 
+                    // Add OpenStreetMap tile layer 
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
 
                 let marker;
 
@@ -394,14 +392,8 @@
 
                     // Reverse Geocode using Nominatim
                     try {
-                        const response = await fetch(
-                            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
-                            {
-                                headers: {
-                                    'User-Agent': 'OakMart/1.0'
-                                }
-                            }
-                        );
+
+                        const response = await fetch(`/reverse-geocode?lat=${lat}&lon=${lng}`);
 
                         if (!response.ok) {
                             throw new Error('Geocoding service unavailable');
