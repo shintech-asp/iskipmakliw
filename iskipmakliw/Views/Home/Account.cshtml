@@ -1,4 +1,5 @@
 ﻿@using System.Security.Claims
+@using iskipmakliw.Models.ViewModels
 @{
     ViewData["Title"] = "Account Settings";
     Layout = "_LayoutCustomer";
@@ -20,6 +21,7 @@
         height: 100% !important;
     }
 </style>
+@model BillingDetailsViewModel;
 <div class="account-settings-container layout-top-spacing">
 
     <div class="account-content">
@@ -130,58 +132,22 @@
                                     <p>Changes to your <span class="text-success">Billing</span> information will take effect starting with scheduled payment and will be refelected on your next invoice.</p>
 
                                     <div class="list-group mt-4">
-                                        <label class="list-group-item">
-                                            <div class="d-flex w-100">
-                                                <div class="billing-radio me-2">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="billingAddress" id="billingAddress1" checked="">
+                                        @foreach(var data in Model.Billings)
+                                        {
+                                            int id = 1;
+                                            <label class="list-group-item">
+                                                <div class="d-flex w-100">
+                                                    <div class="billing-content">
+                                                        <div class="fw-bold">Address #@id</div>
+                                                        <p>@data.Address</p>
+                                                    </div>
+                                                    <div class="billing-edit align-self-center ms-auto">
+                                                        <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
                                                     </div>
                                                 </div>
-                                                <div class="billing-content">
-                                                    <div class="fw-bold">Address #1</div>
-                                                    <p>2249 Caynor Circle, New Brunswick, New Jersey</p>
-                                                </div>
-                                                <div class="billing-edit align-self-center ms-auto">
-                                                    <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
-                                                </div>
-                                            </div>
-                                        </label>
-
-                                        <label class="list-group-item">
-                                            <div class="d-flex w-100">
-                                                <div class="billing-radio me-2">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="billingAddress" id="billingAddress2">
-                                                    </div>
-                                                </div>
-                                                <div class="billing-content">
-                                                    <div class="fw-bold">Address #2</div>
-                                                    <p>4262 Leverton Cove Road, Springfield, Massachusetts</p>
-                                                </div>
-                                                <div class="billing-edit align-self-center ms-auto">
-                                                    <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
-                                                </div>
-                                            </div>
-                                        </label>
-                                        <label class="list-group-item">
-                                            <div class="d-flex w-100">
-                                                <div class="billing-radio me-2">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="billingAddress" id="billingAddress3">
-                                                    </div>
-                                                </div>
-                                                <div class="billing-content">
-                                                    <div class="fw-bold">Address #3</div>
-                                                    <p>2692 Berkshire Circle, Knoxville, Tennessee</p>
-                                                </div>
-                                                <div class="billing-edit align-self-center ms-auto">
-                                                    <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
-                                                </div>
-                                            </div>
-                                        </label>
+                                            </label>
+                                        }
                                     </div>
-
-                                    <button class="btn btn-secondary mt-4 add-address _effect--ripple waves-effect waves-light">Add Address</button>
                                 </div>
                             </div>
                         </div>
@@ -194,66 +160,32 @@
 
                                     <div class="list-group mt-4">
 
-                                        <label class="list-group-item">
-                                            <div class="d-flex w-100">
-                                                <div class="billing-radio me-2">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMethod1">
+                                        @foreach(var data in Model.PaymentMethod)
+                                        {
+                                            <label class="list-group-item">
+                                                <div class="d-flex w-100">
+                                                    <div class="payment-card me-2">
+                                                        @if (data.Type == "Gcash")
+                                                        {
+                                                            <img src="~/src/assets/img/gcash.svg" alt="gcash" style="height:40px; width:auto;">
+                                                        }
+                                                        else if (data.Type == "Maya")
+                                                        {
+                                                            <img src="~/src/assets/img/maya.png" alt="maya" style="height:40px; width:auto;">
+                                                        }
+                                                    </div>
+                                                    <div class="billing-content">
+                                                        <div class="fw-bold">@data.Type</div>
+                                                        <p>@data.Number</p>
+                                                    </div>
+                                                    <div class="billing-edit align-self-center ms-auto">
+                                                        <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
                                                     </div>
                                                 </div>
-                                                <div class="payment-card">
-                                                    <img src="../src/assets/img/card-mastercard.svg" class="align-self-center me-3" alt="americanexpress">
-                                                </div>
-                                                <div class="billing-content">
-                                                    <div class="fw-bold">Mastercard</div>
-                                                    <p>XXXX XXXX XXXX 9704</p>
-                                                </div>
-                                                <div class="billing-edit align-self-center ms-auto">
-                                                    <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
-                                                </div>
-                                            </div>
-                                        </label>
-                                        <label class="list-group-item">
-                                            <div class="d-flex w-100">
-                                                <div class="billing-radio me-2">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMethod2" checked="">
-                                                    </div>
-                                                </div>
-                                                <div class="payment-card">
-                                                    <img src="../src/assets/img/card-americanexpress.svg" class="align-self-center me-3" alt="americanexpress">
-                                                </div>
-                                                <div class="billing-content">
-                                                    <div class="fw-bold">American Express</div>
-                                                    <p>XXXX XXXX XXXX 310</p>
-                                                </div>
-                                                <div class="billing-edit align-self-center ms-auto">
-                                                    <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
-                                                </div>
-                                            </div>
-                                        </label>
-                                        <label class="list-group-item">
-                                            <div class="d-flex w-100">
-                                                <div class="billing-radio me-2">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMethod3">
-                                                    </div>
-                                                </div>
-                                                <div class="payment-card">
-                                                    <img src="../src/assets/img/card-visa.svg" class="align-self-center me-3" alt="americanexpress">
-                                                </div>
-                                                <div class="billing-content">
-                                                    <div class="fw-bold">Visa</div>
-                                                    <p>XXXX XXXX XXXX 5264</p>
-                                                </div>
-                                                <div class="billing-edit align-self-center ms-auto">
-                                                    <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
-                                                </div>
-                                            </div>
-                                        </label>
+                                            </label>
+                                        }
                                     </div>
 
-                                    <button class="btn btn-secondary mt-4 add-payment _effect--ripple waves-effect waves-light">Add Payment Method</button>
                                 </div>
                             </div>
                         </div>
@@ -335,8 +267,8 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Type</label>
                                                 <select class="form-select" name="PaymentType">
-                                                    <option value="Gcash"><img src="~/src/assets/img/gcash.svg" class="flag-width" alt="flag"> Gcash</option>
-                                                    <option value="Maya"><img src="~/src/assets/img/maya.png" class="flag-width" alt="flag"> Maya</option>
+                                                    <option value="gcash"><img src="~/src/assets/img/gcash.svg" class="flag-width" alt="flag"> Gcash</option>
+                                                    <option value="paymaya"><img src="~/src/assets/img/maya.png" class="flag-width" alt="flag"> Maya</option>
                                                 </select>
                                             </div>
                                         </div>

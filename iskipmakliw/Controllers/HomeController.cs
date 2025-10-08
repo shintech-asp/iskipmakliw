@@ -50,11 +50,28 @@ namespace iskipmakliw.Controllers
 
         public IActionResult Account()
         {
-            return View();
+            var usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            var billings = _context.Billings.Where(u => u.UsersId == usersId).ToList();
+            var paymentMethods = _context.PaymentMethod.Where(u => u.UsersId == usersId).ToList();
+
+            var billingDetails = new BillingDetailsViewModel
+            {
+                Billings = billings,
+                PaymentMethod = paymentMethods
+            };
+            return View(billingDetails);
         }
         public IActionResult Orders()
         {
-            return View();
+            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            var data = _context.PurchasedProduct
+                        .Include(u => u.ProductVariants)
+                            .ThenInclude(u => u.Product)
+                                .ThenInclude(u => u.Users)
+                                    .ThenInclude(u => u.UserDetails)
+                        .Where(u => u.UsersId == usersId)
+                        .ToList();
+            return View(data);
         }
         public IActionResult Cart()
         {
@@ -71,7 +88,42 @@ namespace iskipmakliw.Controllers
                             .GroupBy(c => c.ProductVariants.Product.Users.Username)
                             .ToDictionary(g => g.Key, g => g.ToList());
 
-            return View(groupedCart);
+            var billings = _context.Billings.Where(u => u.UsersId == usersId).ToList();
+            var paymentMethods = _context.PaymentMethod.Where(u => u.UsersId == usersId).ToList();
+
+            var cartViewModel = new CartViewModel
+            {
+                Cart = groupedCart,
+                Billings = billings,
+                PaymentMethod = paymentMethods
+            };
+
+            return View(cartViewModel);
+        }
+
+        [HttpPost]
+        public IActionResult RemoveCart(int Id)
+        {
+            var cartItem = _context.Cart.Find(Id);
+            if(cartItem != null)
+            {
+                _context.Cart.Remove(cartItem);
+                _context.SaveChanges();
+            }
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        public IActionResult ModifyQuantity(int Id, int Quantity)
+        {
+            var cartItem = _context.Cart.Find(Id);
+            if (cartItem != null)
+            {
+                cartItem.Quantity = Quantity;
+                _context.Cart.Update(cartItem);
+                _context.SaveChanges();
+            }
+            return Json(new { success = true });
         }
         public IActionResult Customization()
         {

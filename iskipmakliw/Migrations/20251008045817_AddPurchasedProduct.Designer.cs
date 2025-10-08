@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iskipmakliw.Data;
 
@@ -11,9 +12,11 @@ using iskipmakliw.Data;
 namespace iskipmakliw.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251008045817_AddPurchasedProduct")]
+    partial class AddPurchasedProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -100,31 +103,6 @@ namespace iskipmakliw.Migrations
                     b.HasIndex("UsersId");
 
                     b.ToTable("Cart");
-                });
-
-            modelBuilder.Entity("iskipmakliw.Models.DeliverProduct", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("PurchasedProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("RiderId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PurchasedProductId");
-
-                    b.ToTable("DeliverProduct");
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.PaymentMethod", b =>
@@ -302,18 +280,11 @@ namespace iskipmakliw.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BillingsId")
-                        .HasColumnType("int");
-
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PaymentStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double?>("Price")
+                    b.Property<double>("Price")
                         .HasColumnType("float");
 
                     b.Property<int>("ProductVariantsId")
@@ -325,7 +296,7 @@ namespace iskipmakliw.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<string>("TransactionStatus")
+                    b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -333,8 +304,6 @@ namespace iskipmakliw.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BillingsId");
 
                     b.HasIndex("ProductVariantsId");
 
@@ -384,42 +353,26 @@ namespace iskipmakliw.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("CapturedIdPath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CardName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CardNumber")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("City")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Country")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("Cvv")
+                    b.Property<int>("Cvv")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("ExpirationDate")
+                    b.Property<DateTime>("ExpirationDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("GovernmentIdPath")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LandMark")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Latitude")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Longitude")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("PlansId")
@@ -434,9 +387,6 @@ namespace iskipmakliw.Migrations
 
                     b.Property<int>("UsersId")
                         .HasColumnType("int");
-
-                    b.Property<string>("Zip")
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -520,17 +470,6 @@ namespace iskipmakliw.Migrations
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("iskipmakliw.Models.DeliverProduct", b =>
-                {
-                    b.HasOne("iskipmakliw.Models.PurchasedProduct", "PurchasedProduct")
-                        .WithMany()
-                        .HasForeignKey("PurchasedProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PurchasedProduct");
-                });
-
             modelBuilder.Entity("iskipmakliw.Models.PaymentMethod", b =>
                 {
                     b.HasOne("iskipmakliw.Models.Users", "Users")
@@ -577,12 +516,6 @@ namespace iskipmakliw.Migrations
 
             modelBuilder.Entity("iskipmakliw.Models.PurchasedProduct", b =>
                 {
-                    b.HasOne("iskipmakliw.Models.Billings", "Billings")
-                        .WithMany()
-                        .HasForeignKey("BillingsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("iskipmakliw.Models.ProductVariants", "ProductVariants")
                         .WithMany()
                         .HasForeignKey("ProductVariantsId")
@@ -594,8 +527,6 @@ namespace iskipmakliw.Migrations
                         .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Billings");
 
                     b.Navigation("ProductVariants");
 

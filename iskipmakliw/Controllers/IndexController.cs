@@ -26,6 +26,16 @@ namespace iskipmakliw.Controllers
             return View();
         }
         [HttpGet]
+        public IActionResult Rider()
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult Rider(UserDetails userDetails, Users users, string Confirm)
+        {
+            return View();
+        }
+        [HttpGet]
         public IActionResult Signup()
         {
             return View();
@@ -35,6 +45,7 @@ namespace iskipmakliw.Controllers
         {
             users.Role = "Customer";
             ModelState.Remove("Role");
+            ModelState.Remove("Carts");
             if (ModelState.IsValid &&(Confirm == users.Password))
             {
                 var existingUser = _context.Users.FirstOrDefault(u => u.Email == users.Email);
@@ -47,6 +58,7 @@ namespace iskipmakliw.Controllers
                 users.Password = hasher.HashPassword(users, users.Password);
                 _context.Users.Add(users);
                 _context.SaveChanges();
+                TempData["Success"] = "Account successfully created!";
                 return RedirectToAction("Login", "Account");
             }else if(Confirm != users.Password)
             {

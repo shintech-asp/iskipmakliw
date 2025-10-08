@@ -1,60 +1,349 @@
-﻿@{
+﻿@using iskipmakliw.Models.ViewModels
+@{
     ViewData["Title"] = "My Orders";
     Layout = "_LayoutSeller";
 }
-<div class="statbox widget box box-shadow mt-5">
-    <div class="widget-header">
-        <div class="row">
-            <div class="col-xl-12 col-md-12 col-sm-12 col-12">
-                <h4>Orders</h4>
+@model SellerOrderViewModel;
+
+<div class="layout-px-spacing">
+    <div class="row layout-top-spacing">
+        <div class="col-xl-12 col-lg-12 col-sm-12 layout-spacing">
+            <div class="widget-content widget-content-area br-8">
+
+                <div class="d-flex justify-content-between align-items-center mb-4 p-3 flex-wrap">
+                    <h3 class="mb-2 mb-sm-0">My Orders</h3>
+                    <span class="badge badge-light-primary">@Model.PurchasedProduct.Count Items</span>
+                </div>
+
+                <ul class="nav nav-pills mb-4 d-flex justify-content-between" id="orderTabs" role="tablist">
+                    <li class="nav-item flex-fill">
+                        <a class="nav-link active text-center" id="toShip-tab" data-bs-toggle="pill" href="#toShip" role="tab">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-package d-none d-sm-inline-block"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                            <span class="ms-0 ms-sm-2">To Ship</span>
+                        </a>
+                    </li>
+                    <li class="nav-item flex-fill">
+                        <a class="nav-link text-center" id="toDeliver-tab" data-bs-toggle="pill" href="#toDeliver" role="tab">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-truck d-none d-sm-inline-block"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                            <span class="ms-0 ms-sm-2">To Deliver</span>
+                        </a>
+                    </li>
+                    <li class="nav-item flex-fill">
+                        <a class="nav-link text-center" id="toRate-tab" data-bs-toggle="pill" href="#toRate" role="tab">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star d-none d-sm-inline-block"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <span class="ms-0 ms-sm-2">To Rate</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <style>
+                    .nav-pills .nav-link {
+                        border: 1px solid #e0e6ed;
+                        background-color: transparent;
+                        color: #888ea8;
+                        border-radius: 6px;
+                    }
+
+                        .nav-pills .nav-link:hover {
+                            background-color: #f1f2f3;
+                            border-color: #d3d3d3;
+                        }
+
+                        .nav-pills .nav-link.active {
+                            background-color: transparent;
+                            color: #4361ee;
+                            border: 2px solid #4361ee;
+                            font-weight: 600;
+                        }
+
+                            .nav-pills .nav-link.active svg {
+                                stroke: #4361ee;
+                            }
+                </style>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="orderTabsContent">
+
+                    <!-- To Ship Tab -->
+                    <div class="tab-pane fade show active" id="toShip" role="tabpanel">
+                        @if (Model.PurchasedProduct != null && Model.PurchasedProduct.Any())
+                        {
+                            @foreach (var item in Model.PurchasedProduct)
+                            {
+                                @if (item.TransactionStatus == "Pending" || item.TransactionStatus == "To ship")
+                                {
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-12 col-md-8 col-lg-9 mb-3 mb-md-0">
+                                                    <div class="d-flex flex-column flex-sm-row">
+                                                        <div class="me-0 me-sm-3 mb-3 mb-sm-0 text-center text-sm-start">
+                                                            <img src="@(item.ProductVariants.ProductImage ?? "/src/assets/img/OakMartLogo.png")"
+                                                                 class="rounded"
+                                                                 width="80"
+                                                                 height="80"
+                                                                 alt="Product Image" />
+                                                        </div>
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="mb-2">@item.ProductVariants.Product.Name</h6>
+                                                            <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 mb-2">
+                                                                <span class="badge badge-light-secondary">@item.ProductVariants.Material</span>
+                                                                <span class="text-muted small">Quantity: <span class="fw-semibold">@item.Quantity</span></span>
+                                                            </div>
+                                                                @{
+                                                                if (item.PaymentStatus == "Paid")
+                                                                    {
+                                                                        <p class="text-muted mb-0 small d-none d-md-block">
+                                                                        Payment Status: <span class="text-success">@item.PaymentStatus</span>
+                                                                    </p>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <p class="text-muted mb-0 small d-none d-md-block">
+                                                                        Payment Status: <span class="text-warning">@item.PaymentStatus</span>
+                                                                        </p>
+                                                                    }
+                                                                }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-md-4 col-lg-3 text-center text-md-end">
+                                                    <p class="text-muted mb-1 small">Unit Price</p>
+                                                    <p class="mb-1">₱@item.ProductVariants.Price.ToString("N2")</p>
+                                                    <h6 class="text-primary mb-0 fw-bold">
+                                                        ₱@(Convert.ToDecimal(item.Price).ToString("N2"))
+                                                    </h6>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-footer bg-light">
+                                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+                                                <span class="text-muted small order-2 order-sm-1">Order #1000@(item.Id) <span class="badge badge-light-info">To Ship</span></span>
+                                                <div class="d-flex gap-2 flex-wrap justify-content-center order-1 order-sm-2">
+                                                    <button class="btn btn-outline-secondary btn-sm">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle me-1"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                                                        <span class="d-none d-sm-inline">Contact</span>
+                                                    </button>
+                                                    <button class="btn btn-outline-success btn-sm" id="deliverBtn" data-id="@item.Id">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-truck"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                                                        <span class="d-none d-sm-inline">Deliver</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-package text-muted mb-3"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                                <h5 class="text-muted">No orders to ship</h5>
+                                <p class="text-muted">You don't have any orders ready to ship yet.</p>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- To Deliver Tab -->
+                    <div class="tab-pane fade" id="toDeliver" role="tabpanel">
+                        @if (Model.PurchasedProduct != null && Model.PurchasedProduct.Any())
+                        {
+                            @foreach (var item in Model.PurchasedProduct)
+                            {
+                                @if (item.TransactionStatus == "To deliver")
+                                {
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-12 col-md-8 col-lg-9 mb-3 mb-md-0">
+                                                    <div class="d-flex flex-column flex-sm-row">
+                                                        <div class="me-0 me-sm-3 mb-3 mb-sm-0 text-center text-sm-start">
+                                                            <img src="@(item.ProductVariants.ProductImage ?? "/src/assets/img/OakMartLogo.png")"
+                                                                 class="rounded"
+                                                                 width="80"
+                                                                 height="80"
+                                                                 alt="Product Image" />
+                                                        </div>
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="mb-2">@item.ProductVariants.Product.Name</h6>
+                                                            <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 mb-2">
+                                                                <span class="badge badge-light-secondary">@item.ProductVariants.Material</span>
+                                                                <span class="text-muted small">Quantity: <span class="fw-semibold">@item.Quantity</span></span>
+                                                            </div>
+                                                            <p class="text-muted mb-0 small d-none d-md-block">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user me-1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                                                Seller: @item.ProductVariants.Product.Users.Username
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-md-4 col-lg-3 text-center text-md-end">
+                                                    <p class="text-muted mb-1 small">Unit Price</p>
+                                                    <p class="mb-1">₱@item.ProductVariants.Price.ToString("N2")</p>
+                                                    <h6 class="text-primary mb-0 fw-bold">
+                                                        ₱@(Convert.ToDecimal(item.Price).ToString("N2"))
+                                                    </h6>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-footer bg-light">
+                                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+                                                <span class="text-muted small order-2 order-sm-1">Order #1000@(item.Id) <span class="badge badge-light-secondary">To Deliver</span></span>
+                                                <div class="d-flex gap-2 flex-wrap justify-content-center order-1 order-sm-2">
+                                                    <button class="btn btn-outline-secondary btn-sm">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle me-1"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                                                        <span class="d-none d-sm-inline">Contact</span>
+                                                    </button>
+                                                    <button class="btn btn-outline-primary btn-sm">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text me-1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                                        <span class="d-none d-sm-inline">Details</span>
+                                                    </button>
+                                                    @if(Model.DeliverProduct.FirstOrDefault().RiderId != null)
+                                                    {
+                                                        <button class="btn btn-primary btn-sm">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin me-1"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                                            <span class="d-none d-sm-inline">Track</span>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-truck text-muted mb-3"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                                <h5 class="text-muted">No items being delivered</h5>
+                                <p class="text-muted">There are no items currently in transit.</p>
+                            </div>
+                        }
+
+                    </div>
+
+                    <!-- To Rate Tab -->
+                    <div class="tab-pane fade" id="toRate" role="tabpanel">
+                        @* @if (Model != null && Model.Any())
+                        {
+                            @foreach (var item in Model)
+                            {
+                                @if (item.TransactionStatus == "To rate")
+                                {
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-12 col-md-8 col-lg-9 mb-3 mb-md-0">
+                                                    <div class="d-flex flex-column flex-sm-row">
+                                                        <div class="me-0 me-sm-3 mb-3 mb-sm-0 text-center text-sm-start">
+                                                            <img src="@(item.ProductVariants.ProductImage ?? "/src/assets/img/OakMartLogo.png")"
+                                                                 class="rounded"
+                                                                 width="80"
+                                                                 height="80"
+                                                                 alt="Product Image" />
+                                                        </div>
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="mb-2">@item.ProductVariants.Product.Name</h6>
+                                                            <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 mb-2">
+                                                                <span class="badge badge-light-secondary">@item.ProductVariants.Material</span>
+                                                                <span class="text-muted small">Quantity: <span class="fw-semibold">@item.Quantity</span></span>
+                                                            </div>
+                                                            <p class="text-muted mb-0 small d-none d-md-block">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user me-1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                                                Seller: @item.ProductVariants.Product.Users.Username
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-md-4 col-lg-3 text-center text-md-end">
+                                                    <p class="text-muted mb-1 small">Unit Price</p>
+                                                    <p class="mb-1">₱@item.ProductVariants.Price.ToString("N2")</p>
+                                                    <h6 class="text-primary mb-0 fw-bold">
+                                                        ₱@(Convert.ToDecimal(item.Price).ToString("N2"))
+                                                    </h6>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-footer bg-light">
+                                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+                                                <span class="text-muted small order-2 order-sm-1">Order #1000@(item.Id) <span class="badge badge-light-info">To Ship</span></span>
+                                                <div class="d-flex gap-2 flex-wrap justify-content-center order-1 order-sm-2">
+                                                    <button class="btn btn-outline-secondary btn-sm">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle me-1"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                                                        <span class="d-none d-sm-inline">Contact</span>
+                                                    </button>
+                                                    <button class="btn btn-outline-primary btn-sm">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text me-1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                                        <span class="d-none d-sm-inline">Details</span>
+                                                    </button>
+                                                    <button class="btn btn-primary btn-sm">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin me-1"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                                        <span class="d-none d-sm-inline">Track</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star text-muted mb-3"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                <h5 class="text-muted">No products to rate</h5>
+                                <p class="text-muted">You haven't received any products to rate yet.</p>
+                            </div>
+                        }
+                     *@
+                    </div>
+
+                </div>
+
             </div>
         </div>
-    </div>
-    <div class="widget-content widget-content-area">
-
-        <div class="simple-pill">
-
-            <ul class="nav nav-pills mb-3 d-flex justify-content-evenly" id="pills-tab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pills-home-icon-tab" data-bs-toggle="pill" data-bs-target="#pills-home-icon" type="button" role="tab" aria-controls="pills-home-icon" aria-selected="false" tabindex="-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-archive"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
-                        Orders
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pills-profile-icon-tab" data-bs-toggle="pill" data-bs-target="#pills-profile-icon" type="button" role="tab" aria-controls="pills-profile-icon" aria-selected="false" tabindex="-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-truck"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                        To Ship
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="pills-contact-icon-tab" data-bs-toggle="pill" data-bs-target="#pills-contact-icon" type="button" role="tab" aria-controls="pills-contact-icon" aria-selected="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-smile"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
-                        Received
-                    </button>
-                </li>
-            </ul>
-            <div class="tab-content" id="pills-tabContent">
-                <div class="tab-pane fade" id="pills-home-icon" role="tabpanel" aria-labelledby="pills-home-icon-tab" tabindex="0">
-                    <p class="mt-3">Etiam iaculis imperdiet maximus. Curabitur at tempus massa, a aliquet ex. Aliquam faucibus sapien ut ex vulputate interdum. Quisque in ex sed eros malesuada vehicula. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Maecenas massa felis, maximus eu risus ut, finibus feugiat neque. In id dictum elit.</p>
-                    <p>Aenean ut aliquet dolor. Integer accumsan odio non dignissim lobortis. Sed rhoncus ante eros, vel ullamcorper orci molestie congue. Phasellus vel faucibus dolor. Morbi magna eros, vulputate eu sem nec, venenatis egestas quam. Maecenas hendrerit mollis eros, eget faucibus quam dignissim vel.</p>
-                </div>
-                <div class="tab-pane fade" id="pills-profile-icon" role="tabpanel" aria-labelledby="pills-profile-icon-tab" tabindex="0">
-                    <p class="mt-3">Aliquam at sem nunc. Maecenas tincidunt lacus justo, non ultrices mauris egestas eu. Vestibulum ut ipsum ac eros rutrum blandit in eget quam. Nullam et lobortis nunc. Nam sodales, ante sed sodales rhoncus, diam ipsum faucibus mauris, non interdum nisl lacus vel justo.</p>
-                    <p>Sed imperdiet mi tincidunt mauris convallis, ut ullamcorper nunc interdum. Praesent maximus massa eu varius gravida. Nullam in malesuada enim. Morbi commodo pellentesque velit sodales pretium. Mauris scelerisque augue vel est pulvinar laoreet.</p>
-                </div>
-                <div class="tab-pane fade active show" id="pills-contact-icon" role="tabpanel" aria-labelledby="pills-contact-icon-tab" tabindex="0">
-                    <p class="mt-3">In diam odio, ullamcorper vitae dolor vel, lobortis rhoncus odio. Nullam lacinia euismod ex vitae ullamcorper. Integer fringilla arcu nunc, et tempus sapien ornare sed. Nam fringilla velit nec bibendum consectetur. Etiam pellentesque eu nulla vel tincidunt. </p>
-                    <p>Ut nec nunc sed risus viverra vehicula non non purus. Nunc semper sem ut ante suscipit vulputate. Integer tempus ornare ligula, sed lacinia leo posuere eu. </p>
-                </div>
-                <div class="tab-pane fade" id="pills-disabled-icon" role="tabpanel" aria-labelledby="pills-disabled-icon-tab" tabindex="0">
-                    <p class="mt-3">Nullam feugiat, sapien a lacinia condimentum, libero nibh fermentum lectus, eu dictum justo ex sit amet neque. Sed felis arcu, efficitur eget diam eget, maximus dapibus enim. Sed vitae varius lorem. Fusce non accumsan diam, quis porttitor dolor. </p>
-                    <p>Aenean ut aliquet dolor. Integer accumsan odio non dignissim lobortis. Sed rhoncus ante eros, vel ullamcorper orci molestie congue. Phasellus vel faucibus dolor. Morbi magna eros, vulputate eu sem nec, venenatis egestas quam. Maecenas hendrerit mollis eros, eget faucibus quam dignissim vel.</p>
-                </div>
-            </div>
-
-        </div>
-
-
     </div>
 </div>
+@section Scripts {
+    <script>
+        $("#deliverBtn").on("click", function(){
+            var id = $(this).data("id");
+            Swal.fire({
+                title: "Proceed to Checkout?",
+                text: "Are you sure you want to place this order?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Checkout",
+                cancelButtonText: "Cancel"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "/Seller/Deliver",
+                        method: "POST",
+                        data: {
+                            id: id
+                        },
+                        success: function(response){
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Successfully submitted to delivery',
+                                showConfirmButton: false,
+                                timer: 2000
+                            });
+                        },
+                        error: function(xhr){
+                            console.log(xhr.responseText)
+                        }
+                    })
+                }
+            });
+            
+        })
+    </script>
+}

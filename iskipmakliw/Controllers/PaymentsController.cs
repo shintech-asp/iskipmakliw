@@ -50,14 +50,14 @@ namespace iskipmakliw.Controllers
             var name = User.FindFirst(ClaimTypes.Name)?.Value ?? "Guest";
             var email = User.FindFirst(ClaimTypes.Email)?.Value ?? "guest@example.com";
             var contact = User.FindFirst("ContactNumber")?.Value ?? "0000000000";
-
-            var sessionJson = await _paymongo.CreateCheckoutSession(
+            var sessionJson = await _paymongo.CreateCheckoutSessionService(
                 totalAmount,
                 "PHP",
                 name,
                 email,
                 contact,
-                productNames
+                productNames,
+                "gcash"
             );
 
             dynamic session = JsonConvert.DeserializeObject(sessionJson);
@@ -76,8 +76,214 @@ namespace iskipmakliw.Controllers
 
             return Redirect(checkoutUrl);
         }
+        [HttpPost]
+        public async Task<IActionResult> PayProduct(List<int> cartSelect, int paymentMethod, int? paymentMethodOnline, int billings)
+        {
+            if(paymentMethodOnline != null)
+            {
+                if (cartSelect == null || !cartSelect.Any())
+                {
+                    TempData["Error"] = "No items selected for checkout.";
+                    return RedirectToAction("Cart");
+                }
 
+                var usersId = int.Parse(User.FindFirst("UsersId")?.Value ?? "0");
+                var user = _context.Users.Find(usersId);
 
+                if (user == null)
+                {
+                    TempData["Error"] = "User not found.";
+                    return RedirectToAction("Cart");
+                }
+
+                // ✅ Get selected cart items
+                var selectedCarts = _context.Cart
+                    .Include(c => c.ProductVariants)
+                    .ThenInclude(pv => pv.Product)
+                    .Where(c => cartSelect.Contains(c.Id) && c.UsersId == usersId)
+                    .ToList();
+                var paymentMethodData = _context.PaymentMethod.Where(u => u.UsersId == usersId && u.Id == paymentMethodOnline).FirstOrDefault();
+                if (!selectedCarts.Any())
+                {
+                    TempData["Error"] = "No valid cart items found.";
+                    return RedirectToAction("Cart");
+                }
+
+                // ✅ Compute total
+                double? totalAmount = 0;
+                List<(string name, double price, int quantity)> productDetails = new();
+
+                foreach (var item in selectedCarts)
+                {
+                    var price = item.ProductVariants.Price;
+                    var discount = item.ProductVariants.Discount;
+                    var quantity = item.Quantity;
+                    double? discountedPrice;
+                    double? total;
+                    if (discount != null)
+                    {
+                        discountedPrice = price - (price * discount / 100);
+                        total = discountedPrice + 50;
+                    }
+                    else
+                    {
+                        total = price + 50;
+                    }
+
+                    totalAmount += total;
+                    productDetails.Add((
+                        $"{item.ProductVariants.Product.Name}",
+                        (double)total,
+                        quantity
+                    ));
+                }
+
+                var email = User.FindFirst(ClaimTypes.Email)?.Value ?? "guest@example.com";
+                long totalInCentavos = (long)(totalAmount);
+                var sessionJson = await _paymongo.CreateCheckoutSession(
+                    totalInCentavos,
+                    "PHP",
+                    email,
+                    User.FindFirst(ClaimTypes.Email)?.Value ?? "guest@example.com",
+                    paymentMethodData.Number,
+                    productDetails,
+                    paymentMethodData.Type
+                );
+
+                dynamic session = JsonConvert.DeserializeObject(sessionJson);
+                string checkoutUrl = session?.data?.attributes?.checkout_url;
+                string sessionId = session?.data?.id;
+
+                if (string.IsNullOrEmpty(checkoutUrl) || string.IsNullOrEmpty(sessionId))
+                {
+                    TempData["Error"] = "Unable to create payment session.";
+                    return RedirectToAction("Checkout");
+                }
+
+                // ✅ Save for later validation
+                TempData["CartIds"] = string.Join(",", cartSelect);
+                TempData["BillingsId"] = billings;
+                TempData["SessionId"] = sessionId;
+                TempData["PaymentMethod"] = "Online";
+
+                return Redirect(checkoutUrl);
+            }
+            else
+            {
+                var cartsData = _context.Cart.Include(p => p.ProductVariants).Where(p => cartSelect.Contains(p.Id)).ToList();
+                foreach (var payment in cartsData)
+                {
+                    var price = payment.ProductVariants.Price;
+                    var quantity = payment.Quantity;
+                    var discount = payment.ProductVariants.Discount;
+                    double? discountedPrice;
+                    double? total;
+                    if (discount != null)
+                    {
+                        discountedPrice = price - (price * discount / 100);
+                        total = discountedPrice * quantity + 20;
+                    }
+                    else
+                    {
+                        total = price + 20;
+                        discountedPrice = price;
+                    }
+
+                    var purchasedProduct = new PurchasedProduct
+                    {
+                        UsersId = payment.UsersId,
+                        ProductVariantsId = payment.ProductVariantsId,
+                        Quantity = payment.Quantity,
+                        Price = total,
+                        PaymentStatus = "Pending",
+                        PaymentMethod = "Cash on Delivery",
+                        PurchasedDate = DateTime.Now
+                    };
+                    _context.PurchasedProduct.Add(purchasedProduct);
+                    var updateProduct = _context.ProductVariants.FirstOrDefault(u => u.Id == payment.ProductVariantsId);
+                    updateProduct.Quantity -= payment.Quantity;
+                    _context.ProductVariants.Update(updateProduct);
+                    var cartRemove = _context.Cart.FirstOrDefault(u => u.Id == payment.Id);
+                    _context.Cart.Remove(cartRemove);
+                }
+                TempData["Success"] = "Purchase successfuly!";
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index", "Home");
+            }
+            
+        }
+        public async Task<IActionResult> SuccessPurchaseProduct()
+        {
+            var userId = int.Parse(User.FindFirst("UsersId")?.Value);
+            var sessionId = TempData["SessionId"]?.ToString();
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                return BadRequest("Session not found.");
+            }
+
+            // Ask PayMongo about this checkout session
+            var sessionJson = await _paymongo.GetCheckoutSession(sessionId);
+            dynamic session = JsonConvert.DeserializeObject(sessionJson);
+
+            // payments is an array; get first payment
+            var payments = session?.data?.attributes?.payments as IEnumerable<dynamic>;
+            var first = payments?.FirstOrDefault();
+            string status = first?.attributes?.status;
+
+            // Update DB
+            var cartIds = TempData["CartIds"]?.ToString()?.Split(',').Select(int.Parse).ToList();
+            var billingId = TempData["BillingsId"]?.ToString();
+
+            if (cartIds != null && cartIds.Any())
+            {
+                // Update payment records
+                var cartsData = _context.Cart.Include(p => p.ProductVariants).Where(p => cartIds.Contains(p.Id)).ToList();
+                foreach (var payment in cartsData)
+                {
+                    var price = payment.ProductVariants.Price;
+                    var quantity = payment.Quantity;
+                    var discount = payment.ProductVariants.Discount;
+                    double? discountedPrice;
+                    double? total;
+                    if (discount != null)
+                    {
+                        discountedPrice = price - (price * discount / 100);
+                        total = discountedPrice * quantity;
+                    }
+                    else
+                    {
+                        total = price;
+                        discountedPrice = price;
+                    }
+                    var purchasedProduct = new PurchasedProduct
+                    {
+                        UsersId = payment.UsersId,
+                        ProductVariantsId = payment.ProductVariantsId,
+                        Quantity = payment.Quantity,
+                        Price = total,
+                        PaymentStatus = status switch
+                        {
+                            "paid" => "Paid",
+                            "succeeded" => "Paid",
+                            "failed" => "Failed",
+                            _ => "Pending"
+                        },
+                        PaymentMethod = "Online",
+                        PurchasedDate = DateTime.Now,
+                        BillingsId = int.Parse(billingId)
+                    };
+                    _context.PurchasedProduct.Add(purchasedProduct);
+                    var updateProduct = _context.ProductVariants.FirstOrDefault(u => u.Id == payment.ProductVariantsId);
+                    updateProduct.Quantity -= payment.Quantity;
+                    _context.ProductVariants.Update(updateProduct);
+                    var cartRemove = _context.Cart.FirstOrDefault(u => u.Id == payment.Id);
+                    _context.Cart.Remove(cartRemove);
+                }
+                await _context.SaveChangesAsync();
+            }
+            TempData["Success"] = "Payment successful!";
+            return RedirectToAction("Index", "Home");
+        }
         public async Task<IActionResult> Success()
         {
             var userId = int.Parse(User.FindFirst("UsersId")?.Value);
@@ -136,7 +342,7 @@ namespace iskipmakliw.Controllers
 
             // 🔹 Sign in with cookie auth
             await HttpContext.SignInAsync("MyCookieAuth", principal);
-            ViewBag.PaymentStatus = status ?? "unknown";
+            TempData["Success"] = "Payment successful!";
             return View();
         }
 

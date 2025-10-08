@@ -157,7 +157,7 @@ namespace iskipmakliw.Controllers
             return View(ProductDetailsViewModel);
         }
         [HttpPost]
-        public IActionResult ProductDetails(ProductDetailsViewModel model, IFormFile Image, int Id)
+        public IActionResult ProductDetails(ProductDetailsViewModel model, IFormFile ProductVariantImage, int Id)
         {
             if (model?.ProductDetails == null)
                 return View(model);
@@ -166,7 +166,7 @@ namespace iskipmakliw.Controllers
             ModelState.Remove("ProductVariants");
             ModelState.Remove("ProductDetails.Product");
             ModelState.Remove("ProductDetails.ProductId");
-
+            ModelState.Remove("ProductDetails.Carts");
             if (ModelState.IsValid)
             {
                 ProductVariants productVariant;
@@ -201,14 +201,14 @@ namespace iskipmakliw.Controllers
                 _context.SaveChanges(); // save here so productVariant.Id is available
 
                 // ✅ Save uploaded image as file path
-                if (Image != null && Image.Length > 0)
+                if (ProductVariantImage != null && ProductVariantImage.Length > 0)
                 {
-                    var fileName = $"product_{Guid.NewGuid()}{Path.GetExtension(Image.FileName)}";
+                    var fileName = $"product_{Guid.NewGuid()}{Path.GetExtension(ProductVariantImage.FileName)}";
                     var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", fileName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        Image.CopyTo(stream);
+                        ProductVariantImage.CopyTo(stream);
                     }
 
                     // Save relative path to DB
@@ -222,7 +222,7 @@ namespace iskipmakliw.Controllers
                 return RedirectToAction("Index", "Seller");
             }
 
-            return View(model);
+            return RedirectToAction("ProductDetails");
         }
 
 
@@ -239,9 +239,47 @@ namespace iskipmakliw.Controllers
         {
             return View();
         }
+        public IActionResult Deliver(int Id)
+        {
+            var data = _context.PurchasedProduct.Find(Id);
+            if(data != null)
+            {
+                var deliver = new DeliverProduct
+                {
+                    PurchasedProductId = data.Id,
+                    Status = "Pending"
+                };
+                _context.DeliverProduct.Add(deliver);
+                data.TransactionStatus = "To deliver";
+                _context.PurchasedProduct.Update(data);
+                _context.SaveChanges();
+            }
+            return Json(new { success = true });
+        }
         public IActionResult Orders()
         {
-            return View();
+            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            var data = _context.PurchasedProduct
+                        .Include(u => u.ProductVariants)
+                            .ThenInclude(u => u.Product)
+                                .ThenInclude(u => u.Users)
+                                    .ThenInclude(u => u.UserDetails)
+                        .Where(u => u.ProductVariants.Product.Users.Id == usersId)
+                        .ToList();
+            var toDeliver = _context.DeliverProduct
+                                    .Include(u => u.PurchasedProduct)
+                                        .ThenInclude(u => u.ProductVariants)
+                                            .ThenInclude(u => u.Product)
+                                                .ThenInclude(u => u.Users)
+                                                    .ThenInclude(u => u.UserDetails)
+                                        .Where(u => u.PurchasedProduct.ProductVariants.Product.Users.Id == usersId)
+                                        .ToList();
+            var order = new SellerOrderViewModel
+            {
+                PurchasedProduct = data,
+                DeliverProduct = toDeliver
+            };
+            return View(order);
         }
     }
 }

@@ -17,6 +17,8 @@ namespace iskipmakliw.Data
         public DbSet<Subscription> Subscription { get; set; }
         public DbSet<Cart> Cart { get; set; }
         public DbSet<PaymentMethod> PaymentMethod { get; set; }
+        public DbSet<PurchasedProduct> PurchasedProduct { get; set; }
+        public DbSet<DeliverProduct> DeliverProduct { get; set; }
         public void UpdateExpiredSubscriptionsOnStartup()
         {
             var basicPlan = Plans.FirstOrDefault(p => p.PlanName == "Basic");
