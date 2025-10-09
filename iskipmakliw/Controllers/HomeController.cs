@@ -128,6 +128,83 @@ namespace iskipmakliw.Controllers
         }
 
         [HttpPost]
+        public IActionResult SubmitRating(int Id, int purchasedId, int selectedRating, string? Review, IFormFile? ImageFile)
+        {
+            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            string path = null;
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+            }
+            
+            // Save GovernmentIdFile to disk
+            if (ImageFile != null)
+            {
+                string govFileName = $"gov_{Guid.NewGuid()}{Path.GetExtension(ImageFile.FileName)}";
+                string govFilePath = Path.Combine(uploadPath, govFileName);
+
+                using (var stream = new FileStream(govFilePath, FileMode.Create))
+                {
+                    ImageFile.CopyTo(stream);
+                }
+
+                // Save relative path in DB
+                path = $"/uploads/{govFileName}";
+            }
+            var data = new Ratings
+            {
+                ProductVariantsId = Id,
+                UsersId = usersId,
+                Stars = selectedRating,
+                Review = Review,
+                Image = path
+            };
+            _context.Ratings.Add(data);
+            var getPurchased = _context.PurchasedProduct.Find(purchasedId);
+            getPurchased.TransactionStatus = "Completed";
+            _context.PurchasedProduct.Update(getPurchased);
+            _context.SaveChanges();
+            TempData["Success"] = $"Thank you for {selectedRating} star/s rating!";
+            return RedirectToAction("Orders");
+        }
+
+        public IActionResult OrderTracking(int Id)
+        {
+            var usersId = int.Parse(User.FindFirst("UsersId").Value);
+            var data = _context.DeliverProduct
+                         .Include(dp => dp.PurchasedProduct)
+                             .ThenInclude(pp => pp.Billings)
+                         .Include(dp => dp.PurchasedProduct)
+                             .ThenInclude(pp => pp.ProductVariants)
+                                 .ThenInclude(pv => pv.Product)
+                                     .ThenInclude(p => p.Users)
+                                         .ThenInclude(u => u.UserDetails)
+                         .Include(dp => dp.PurchasedProduct)
+                            .ThenInclude(p => p.Users)
+                                .ThenInclude(u => u.UserDetails)
+                         .Where(dp => dp.PurchasedProductId == Id)
+                         .FirstOrDefault();
+            return View(data);
+        }
+        [HttpGet]
+        public IActionResult GetDriverLocation(int Id)
+        {
+            var data = _context.DeliverProduct.FirstOrDefault(u => u.Id == Id);
+
+            if (data == null)
+                return Json(new { success = false, message = "Delivery not found." });
+
+            return Json(new
+            {
+                success = true,
+                lat = data.DriversLat,
+                lng = data.DriversLong
+            });
+        }
+
+
+        [HttpPost]
         public IActionResult ModifyQuantity(int Id, int Quantity)
         {
             var cartItem = _context.Cart.Find(Id);

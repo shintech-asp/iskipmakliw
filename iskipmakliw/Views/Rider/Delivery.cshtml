@@ -1,0 +1,236 @@
+﻿@{
+    Layout = "_LayoutRider";
+}
+
+@model DeliverProduct
+@if(Model != null)
+{
+    <div class="row mt-4">
+        <!-- Order Info -->
+        <div class="col-xl-4 col-lg-5 col-md-12 mt-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Order Information</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><strong>Order ID:</strong> @Model.Id</li>
+                        <li><strong>Customer:</strong> @Model.PurchasedProduct?.Billings?.Name</li>
+                        <li><strong>Product:</strong> @Model.PurchasedProduct?.ProductVariants?.Material - @Model.PurchasedProduct?.ProductVariants?.Product?.Name</li>
+                        <li><strong>Price:</strong> ₱@Model.PurchasedProduct?.Price</li>
+                        <li><strong>Status:</strong> <span class="badge bg-primary">@Model.Status</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mt-3">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Location Details</h5>
+                    <p class="mb-2"><strong>Pickup Address:</strong><br>@Model.PurchasedProduct.ProductVariants.Product.Users.UserDetails.Address</p>
+                    <p class="mb-2"><strong>Drop-off Address:</strong><br>@Model.PurchasedProduct.Billings.Address</p>
+                    <p><strong>Distance:</strong> <span id="distance">Calculating...</span></p>
+                </div>
+            </div>
+            @{
+                // Ensure it's parsed as DateTime before formatting
+                DateTime acceptedOn = Convert.ToDateTime(Model.AcceptedOn);
+                string acceptedOnIso = acceptedOn.ToString("yyyy-MM-ddTHH:mm:ss"); // ISO format for JS
+            }
+            <div class="alert alert-info text-center">
+                <b>Time lapsed:</b><br />
+                <span id="timeLapsed">Calculating...</span>
+            </div>
+            <form asp-action="Delivery" asp-controller="Rider" asp-route-Id="@Model.Id">
+                @if (Model.PickUpOn == null)
+                {
+                    <button type="submit" class="mt-3 btn btn-warning w-100">
+                        Item received
+                    </button>
+                    <input type="hidden" name="Type" value="1"/>
+                }
+                else if (Model.PickUpOn != null && Model.DropOffOn == null)
+                {
+                    <button type="submit" class="mt-3 btn btn-secondary w-100">
+                        Item drop
+                    </button>
+                    <input type="hidden" name="Type" value="2" />
+                }
+                else if (Model.PickUpOn != null && Model.DropOffOn != null)
+                {
+                    <button type="submit" class="mt-3 btn btn-success w-100">
+                        Delivered
+                    </button>
+                    <input type="hidden" name="Type" value="3" />
+                }
+            </form>
+        </div>
+
+        <!-- Map Section -->
+        <div class="col-xl-8 col-lg-7 col-md-12 mt-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Delivery Route</h5>
+                </div>
+                <div class="card-body p-3">
+                    <div id="order-map" style="height: 500px; width: 100%; border-radius: 0 0 8px 8px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // ✅ Location data
+                const dropoffLat = @Model.PurchasedProduct.Billings.Latitude;
+                const dropoffLng = @Model.PurchasedProduct.Billings.Longitude;
+                const pickupLat = @Model.PurchasedProduct.ProductVariants.Product.Users.UserDetails.Latitude;
+                const pickupLng = @Model.PurchasedProduct.ProductVariants.Product.Users.UserDetails.Longitude;
+
+                // ✅ Track delivery state
+                const hasPickup = @((Model.PickUpOn != null).ToString().ToLower());
+                const hasDropoff = @((Model.DropOffOn != null).ToString().ToLower());
+                const deliveryId = @Model.Id;
+
+                // ✅ Initialize Leaflet map
+                const map = L.map('order-map').setView([pickupLat, pickupLng], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+
+                // ✅ Pickup marker
+                const pickupMarker = L.marker([pickupLat, pickupLng], {
+                    icon: L.icon({
+                        iconUrl: 'https://cdn-icons-png.flaticon.com/512/149/149059.png',
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 32]
+                    })
+                }).addTo(map).bindPopup("<b>Pickup Location</b><br>@Model.PurchasedProduct.ProductVariants.Product.Users.UserDetails.Address");
+
+                // ✅ Dropoff marker
+                const dropoffMarker = L.marker([dropoffLat, dropoffLng], {
+                    icon: L.icon({
+                        iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 32]
+                    })
+                }).addTo(map).bindPopup("<b>Drop-off Location</b><br>@Model.PurchasedProduct.Billings.Address");
+
+                // ✅ Driver marker setup
+                const driverIcon = L.icon({
+                    iconUrl: 'https://cdn-icons-png.flaticon.com/512/3097/3097161.png',
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 40]
+                });
+
+                let driverMarker = null;
+                let routingControl = null;
+
+                // ✅ Route drawer
+                function drawRoute(fromLat, fromLng, toLat, toLng) {
+                    if (routingControl) map.removeControl(routingControl);
+
+                    routingControl = L.Routing.control({
+                        waypoints: [L.latLng(fromLat, fromLng), L.latLng(toLat, toLng)],
+                        lineOptions: { styles: [{ color: '#007bff', weight: 5, opacity: 0.8 }] },
+                        addWaypoints: false,
+                        draggableWaypoints: false,
+                        fitSelectedRoutes: true,
+                        createMarker: () => null,
+                        show: false,
+                        router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' })
+                    }).addTo(map);
+
+                    routingControl.on('routeselected', () => {
+                        const panel = document.querySelector('.leaflet-routing-container');
+                        if (panel) panel.style.display = 'none';
+                    });
+
+                    routingControl.on('routesfound', e => {
+                        const route = e.routes[0];
+                        const distKm = (route.summary.totalDistance / 1000).toFixed(2);
+                        document.getElementById("distance").textContent = `${distKm} km (by road)`;
+                    });
+                }
+
+                // ✅ Geolocation tracking
+                if (navigator.geolocation) {
+                    navigator.geolocation.watchPosition(
+                        pos => {
+                            const lat = pos.coords.latitude;
+                            const lng = pos.coords.longitude;
+
+                            // Update driver marker
+                            if (!driverMarker) {
+                                driverMarker = L.marker([lat, lng], { icon: driverIcon }).addTo(map)
+                                    .bindPopup("<b>🏍️ Your Location</b>");
+                                map.setView([lat, lng], 15);
+                            } else {
+                                driverMarker.setLatLng([lat, lng]);
+                            }
+
+                            // ✅ Update database with driver's position
+                            fetch('/Rider/UpdateDriversPosition', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    Id: deliveryId,
+                                    Lat: lat.toString(),
+                                    Long: lng.toString()
+                                })
+                            }).then(res => res.json())
+                              .then(data => console.log("Position updated:", data))
+                              .catch(err => console.error("Error updating position:", err));
+
+                            // ✅ Determine which route to display
+                            if (!hasPickup) {
+                                drawRoute(lat, lng, pickupLat, pickupLng); // before pickup
+                            } else if (hasPickup && !hasDropoff) {
+                                drawRoute(lat, lng, dropoffLat, dropoffLng); // after pickup
+                            } else {
+                                drawRoute(pickupLat, pickupLng, dropoffLat, dropoffLng); // completed
+                            }
+                        },
+                        err => console.error("Geolocation error:", err),
+                        { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+                    );
+                } else {
+                    alert("Geolocation not supported by your browser.");
+                }
+
+                setTimeout(() => map.invalidateSize(), 800);
+            });
+
+            // ✅ Time-lapse updater
+            const acceptedOn = new Date("@acceptedOnIso");
+            function updateTimeLapsed() {
+                const diff = new Date() - acceptedOn;
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const minutes = Math.floor((diff / (1000 * 60)) % 60);
+                const seconds = Math.floor((diff / 1000) % 60);
+
+                document.getElementById("timeLapsed").textContent =
+                    (days > 0 ? `${days}d ` : "") +
+                    (hours > 0 ? `${hours}h ` : "") +
+                    (minutes > 0 ? `${minutes}m ` : "") +
+                    `${seconds}s`;
+            }
+
+            setInterval(updateTimeLapsed, 1000);
+            updateTimeLapsed();
+        </script>
+    }
+
+}
+else
+{
+    <div class="text-center mt-5">
+        <img src="~/src//assets/img/sad-face-2691.png" alt="No deliveries" class="mb-3" width="180" />
+        <h5>No available deliveries right now</h5>
+        <p class="text-muted">Check back soon for new delivery requests.</p>
+    </div>
+}
+

@@ -1,0 +1,106 @@
+﻿@using iskipmakliw.Models.ViewModels
+@{
+    Layout = "_LayoutSeller";
+}
+@model TimelineViewModel;
+<div class="statbox widget box box-shadow">
+    <div class="widget-header mb-3">
+        <div class="row align-items-center">
+            <div class="col">
+                <h4 class="mb-0">🛒 Product Delivery Timeline</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Information -->
+    <div class="widget-content widget-content-area border rounded p-3 mb-4 bg-light">
+        <div class="d-flex align-items-center">
+            <img src="@Model.DeliverProduct.PurchasedProduct.ProductVariants.ProductImage" alt="Product" class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+            <div>
+                <h5 class="mb-1">@Model.DeliverProduct.PurchasedProduct.ProductVariants.Material - @Model.DeliverProduct.PurchasedProduct.ProductVariants.Product.Name</h5>
+                <p class="text-muted mb-0">
+                    <b>Order ID:</b> @Model.DeliverProduct.PurchasedProductId<br />
+                    <b>Buyer:</b> @Model.DeliverProduct.PurchasedProduct.Users.Username<br />
+                    <b>Price:</b> ₱@Model.DeliverProduct.PurchasedProduct.Price
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="widget-content widget-content-area pb-1">
+        <div class="mt-container mx-auto">
+            <div class="timeline-line position-relative">
+                <div class="item-timeline">
+                    <p class="t-time">@Model.DeliverProduct.PurchasedProduct.PurchasedDate.ToString("hh:mm tt")</p>
+                    <div class="t-dot t-dot-success"></div>
+                    <div class="t-text">
+                        <p><b>Order Accepted</b></p>
+                        <p class="t-meta-time">@Model.DeliverProduct.PurchasedProduct.PurchasedDate.ToString("MMM dd, yyyy")</p>
+                    </div>
+                </div>
+
+                @if(Model.DeliverProduct.PickUpOn != null)
+                {
+                    <div class="item-timeline">
+                        <p class="t-time">@Model.DeliverProduct.PickUpOn?.ToString("hh:mm tt")</p>
+                        <div class="t-dot t-dot-warning"></div>
+                        <div class="t-text">
+                            <p><b>Preparing Product</b></p>
+                            <p class="t-meta-time">@Model.DeliverProduct.PickUpOn?.ToString("MMM dd, yyyy")</p>
+                        </div>
+                    </div>
+                }
+
+                <!-- Delivered -->
+                @if (Model.DeliverProduct.DropOffOn != null)
+                {
+                    <div class="item-timeline">
+                        <p class="t-time">@Model.DeliverProduct.DeliveredOn?.ToString("hh:mm tt")</p>
+                        <div class="t-dot t-dot-info"></div>
+                        <div class="t-text">
+                            <p><b>Drop Off</b></p>
+                            <p class="t-meta-time">@Model.DeliverProduct.DeliveredOn?.ToString("MMM dd, yyyy")</p>
+                            <p class="text-muted small">Driver: @Model.DeliverProduct.RiderId</p>
+                        </div>
+                    </div>
+                }
+
+                <!-- Out for Delivery -->
+                @if (Model.DeliverProduct.DeliveredOn != null)
+                {
+                    <div class="item-timeline">
+                        <p class="t-time">@Model.DeliverProduct.DeliveredOn?.ToString("hh:mm tt")</p>
+                        <div class="t-dot t-dot-primary"></div>
+                        <div class="t-text">
+                            <p><b>Delivered Successfully</b></p>
+                            <p class="t-meta-time">@Model.DeliverProduct.DeliveredOn?.ToString("MMM dd, yyyy")</p>
+                        </div>
+                    </div>
+                }
+
+                <!-- Cancelled (optional) -->
+                @if (Model.Ratings != null)
+                {
+                    <div class="item-timeline">
+                        <p class="t-time">@Model.Ratings.CreatedAt.ToString("hh:mm tt")</p>
+                        <div class="t-dot t-dot-danger"></div>
+                        <div class="t-text">
+                            <p><b>Buyer:</b> @Model.DeliverProduct.PurchasedProduct.Users.Username</p><br />
+                            <p>
+                                <b>Ratings:</b> @Model.Ratings.Stars
+                                <svg class="star" data-value="1" xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14
+                                                 18.18 21.02 12 17.77 5.82 21.02
+                                                 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                            </p>
+                            <p class="t-meta-time">@Model.Ratings.CreatedAt.ToString("MMM dd, yyyy")</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

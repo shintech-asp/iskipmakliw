@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iskipmakliw.Data;
 
@@ -11,9 +12,11 @@ using iskipmakliw.Data;
 namespace iskipmakliw.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251009014058_AddDeliveryPickupAndDropoffAcceptedOn")]
+    partial class AddDeliveryPickupAndDropoffAcceptedOn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -115,12 +118,6 @@ namespace iskipmakliw.Migrations
 
                     b.Property<DateTime?>("DeliveredOn")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("DriversLat")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DriversLong")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("DropOffOn")
                         .HasColumnType("datetime2");
@@ -359,41 +356,6 @@ namespace iskipmakliw.Migrations
                     b.HasIndex("UsersId");
 
                     b.ToTable("PurchasedProduct");
-                });
-
-            modelBuilder.Entity("iskipmakliw.Models.Ratings", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Image")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ProductVariantsId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Review")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Stars")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UsersId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductVariantsId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("Ratings");
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.Subscription", b =>
@@ -649,25 +611,6 @@ namespace iskipmakliw.Migrations
                         .IsRequired();
 
                     b.Navigation("Billings");
-
-                    b.Navigation("ProductVariants");
-
-                    b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("iskipmakliw.Models.Ratings", b =>
-                {
-                    b.HasOne("iskipmakliw.Models.ProductVariants", "ProductVariants")
-                        .WithMany()
-                        .HasForeignKey("ProductVariantsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("iskipmakliw.Models.Users", "Users")
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("ProductVariants");
 

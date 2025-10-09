@@ -239,6 +239,34 @@ namespace iskipmakliw.Controllers
         {
             return View();
         }
+        public IActionResult OrderDetails(int Id, int ProductId)
+        {
+            var toDeliver = _context.DeliverProduct
+                                    .Include(u => u.PurchasedProduct)
+                                        .ThenInclude(u => u.ProductVariants)
+                                            .ThenInclude(u => u.Product)
+                                                .ThenInclude(u => u.Users)
+                                                    .ThenInclude(u => u.UserDetails)
+                                    .Include(u => u.PurchasedProduct)
+                                        .ThenInclude(u => u.Users)
+                                            .ThenInclude(u => u.UserDetails)
+                                    .Where(u => u.PurchasedProduct.Id == Id)
+                                    .FirstOrDefault();
+            var Rated = _context.Ratings
+                            .Include(u => u.ProductVariants)
+                                .ThenInclude(u => u.Product)
+                            .ThenInclude(u => u.Users)
+                                .ThenInclude(u => u.UserDetails)
+                            .Where(u => u.ProductVariants.Id == ProductId)
+                            .FirstOrDefault();
+
+            var timeline = new TimelineViewModel
+            {
+                DeliverProduct = toDeliver,
+                Ratings = Rated
+            };
+            return View(timeline);
+        }
         public IActionResult Deliver(int Id)
         {
             var data = _context.PurchasedProduct.Find(Id);
@@ -264,6 +292,8 @@ namespace iskipmakliw.Controllers
                             .ThenInclude(u => u.Product)
                                 .ThenInclude(u => u.Users)
                                     .ThenInclude(u => u.UserDetails)
+                        .Include(u => u.Users)
+                            .ThenInclude(u => u.UserDetails)
                         .Where(u => u.ProductVariants.Product.Users.Id == usersId)
                         .ToList();
             var toDeliver = _context.DeliverProduct
@@ -272,8 +302,11 @@ namespace iskipmakliw.Controllers
                                             .ThenInclude(u => u.Product)
                                                 .ThenInclude(u => u.Users)
                                                     .ThenInclude(u => u.UserDetails)
-                                        .Where(u => u.PurchasedProduct.ProductVariants.Product.Users.Id == usersId)
-                                        .ToList();
+                                    .Include(u => u.PurchasedProduct)
+                                        .ThenInclude(u => u.Users)
+                                            .ThenInclude(u => u.UserDetails)
+                                    .Where(u => u.PurchasedProduct.ProductVariants.Product.Users.Id == usersId)
+                                    .ToList();
             var order = new SellerOrderViewModel
             {
                 PurchasedProduct = data,

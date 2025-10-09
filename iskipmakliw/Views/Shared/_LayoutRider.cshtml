@@ -283,6 +283,7 @@
                 var isOrdersActive = currentController == "Rider" && currentAction == "Orders";
                 var isRatingsActive = currentController == "Rider" && currentAction == "Ratings";
                 var isSettingsActive = currentController == "Rider" && currentAction == "ManageBookings";
+                var isDeliveryActive = currentController == "Rider" && currentAction == "Delivery";
             }
 
             <nav id="sidebar">
@@ -348,8 +349,16 @@
                         <li class="menu @(isOrdersActive ? "active" : "")">
                             <a asp-controller="Rider" asp-action="Orders" aria-expanded="false" class="dropdown-toggle">
                                 <div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-archive"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-bag"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
                                     <span>Orders</span>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="menu @(isDeliveryActive ? "active" : "")">
+                            <a asp-controller="Rider" asp-action="Delivery" aria-expanded="false" class="dropdown-toggle">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-archive"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                                    <span>Delivery</span>
                                 </div>
                             </a>
                         </li>
