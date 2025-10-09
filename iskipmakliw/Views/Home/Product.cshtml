@@ -1,8 +1,9 @@
-﻿@{
+﻿@using iskipmakliw.Models.ViewModels
+@{
     ViewData["Title"] = "Product Details";
     Layout = "_LayoutCustomer";
 }
-@model Product
+@model ProductCustomerViewModel
 
 <div class="row layout-top-spacing">
     <div class="col-xxl-12 col-xl-12 col-lg-12 col-md-12 col-sm-12 mb-4">
@@ -19,7 +20,7 @@
                                 <div id="main-slider" class="splide splide--fade splide--ltr splide--draggable is-active is-initialized">
                                     <div class="splide__track" id="main-slider-track" style="padding-left: 0px; padding-right: 0px;">
                                         <ul class="splide__list" id="main-slider-list">
-                                            @foreach (var data in Model.ProductVariants)
+                                            @foreach (var data in Model.Product.ProductVariants)
                                             {
                                                 var imgSrc = string.IsNullOrEmpty(data.ProductImage)
                                                 ? Url.Content("~/src/assets/img/OakMartLogo.png")
@@ -55,7 +56,7 @@
                                     </div>
                                     <div class="splide__track" id="thumbnail-slider-track">
                                         <ul class="splide__list" id="thumbnail-slider-list" role="menu" aria-orientation="horizontal">
-                                            @foreach (var data in Model.ProductVariants)
+                                            @foreach (var data in Model.Product.ProductVariants)
                                             {
                                                 var thumbSrc = string.IsNullOrEmpty(data.ProductImage)
                                                 ? Url.Content("~/src/assets/img/OakMartLogo.png")
@@ -77,13 +78,18 @@
                             <div class="col-xxl-4 col-xl-5 col-lg-12 col-md-12 col-12 mt-xl-0 mt-5 align-self-center">
 
                                 <div class="product-details-content">
-                                    <span id="discountBadge" class="badge mb-3">@Model.ProductVariants.FirstOrDefault().Discount% Sale off</span>
+                                    <span id="discountBadge" class="badge mb-3">@Model.Product.ProductVariants.FirstOrDefault().Discount% Sale off</span>
 
-                                    <h3 class="product-title mb-0">@Model.Name</h3>
+                                    <h3 class="product-title mb-0">@Model.Product.Name</h3>
 
                                     <div class="review mb-4">
+                                        @{
+                                            var avgRating = Model.Ratings.Any()
+                                            ? Model.Ratings.Average(r => r.Stars)
+                                            : 0;
+                                        }
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                        <span class="rating-score">4.88 <span class="rating-count">(200 Reviews)</span></span>
+                                        <span class="rating-score">@avgRating <span class="rating-count">(@Model.Ratings.Count Reviews)</span></span>
                                     </div>
 
                                     <div class="row">
@@ -92,7 +98,7 @@
 
 
                                             <div class="pricing my-3">
-                                                <span id="discountedPrice" class="discounted-price text-danger h4">₱@Model.ProductVariants.FirstOrDefault().Price.ToString("N0")</span>
+                                                <span id="discountedPrice" class="discounted-price text-danger h4">₱@Model.Product.ProductVariants.FirstOrDefault().Price.ToString("N0")</span>
                                                 <span id="regularPrice" class="regular-price text-muted text-decoration-line-through ms-2"></span>
                                             </div>
 
@@ -116,7 +122,7 @@
                                         <div class="col-3 align-self-center">Color</div>
                                         <div class="col-9">
                                             <div class="btn-group" role="group" id="colorOptions">
-                                                @foreach (var colorGroup in Model.ProductVariants.GroupBy(v => v.Color))
+                                                @foreach (var colorGroup in Model.Product.ProductVariants.GroupBy(v => v.Color))
                                                 {
                                                     var color = string.IsNullOrEmpty(colorGroup.Key) ? "Default" : colorGroup.Key;
                                                     var safeId = $"color-{color.Replace(" ", "-").ToLower()}"; // avoid spaces in id
@@ -142,7 +148,7 @@
                                         <div class="col-3 align-self-center">Size</div>
                                         <div class="col-9">
                                             <div class="btn-group" role="group" id="sizeOptions">
-                                                @foreach (var sizeGroup in Model.ProductVariants.GroupBy(v => v.Dimension))
+                                                @foreach (var sizeGroup in Model.Product.ProductVariants.GroupBy(v => v.Dimension))
                                                 {
                                                     var size = sizeGroup.Key;
                                                     var id = $"size-{size}";
@@ -213,88 +219,72 @@
 
                 <div class="pro-des-content">
 
+                    @{
+                        var ratings = Model.Ratings ?? new List<Ratings>(); // assume Rating has property Stars (1–5)
+                        var totalReviews = ratings.Count;
+                        var avgsRating = totalReviews > 0 ? ratings.Average(r => r.Stars) : 0;
+                        // Count how many reviews per star (1–5)
+                        var starCounts = Enumerable.Range(1, 5)
+                        .ToDictionary(i => i, i => ratings.Count(r => r.Stars == i));
+                        // Compute percentage for each star for progress bars
+                        var starPercent = starCounts.ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => totalReviews > 0 ? (kvp.Value * 100.0 / totalReviews) : 0
+                        );
+                    }
                     <div class="row">
                         <div class="col-xxl-6 col-xl-8 col-lg-9 col-md-9 col-sm-12 mx-auto">
                             <div class="product-reviews mb-5">
-
                                 <div class="row">
                                     <div class="col-sm-6 align-self-center">
-                                        <div class="reviews">
-                                            <h1 class="mb-0">4.88</h1>
-                                            <span>(200 reviews)</span>
+                                        <div class="reviews text-center">
+                                            <h1 class="mb-0">@avgsRating.ToString("0.0")</h1>
+                                            <span>(@totalReviews Reviews)</span>
                                             <div class="stars mt-3 mb-sm-0 mb-4">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star empty-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                            var filled = i <= Math.Round(avgsRating);
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                             viewBox="0 0 24 24"
+                                                             fill="@(filled ? "gold" : "none")"
+                                                             stroke="@(filled ? "gold" : "currentColor")"
+                                                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                             class="feather feather-star">
+                                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14
+                                                                             18.18 21.02 12 17.77 5.82 21.02
+                                                                             7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                                        </svg>
+                                                }
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="col-sm-6">
-
-                                        <div class="row review-progress mb-sm-1 mb-3">
-                                            <div class="col-sm-4">
-                                                <p>5 Star</p>
-                                            </div>
-                                            <div class="col-sm-8 align-self-center">
-                                                <div class="progress">
-                                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 80%" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                                        @for (int i = 5; i >= 1; i--)
+                                        {
+                                            <div class="row review-progress mb-sm-1 mb-3">
+                                                <div class="col-sm-4">
+                                                    <p>@i Star</p>
+                                                </div>
+                                                <div class="col-sm-8 align-self-center">
+                                                    <div class="progress">
+                                                        <div class="progress-bar bg-warning"
+                                                                role="progressbar"
+                                                                style="width:@starPercent[i]%"
+                                                                aria-valuenow="@starPercent[i]"
+                                                                aria-valuemin="0"
+                                                                aria-valuemax="100">
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        <div class="row review-progress mb-sm-1 mb-3">
-                                            <div class="col-sm-4">
-                                                <p>4 Star</p>
-                                            </div>
-                                            <div class="col-sm-8 align-self-center">
-                                                <div class="progress">
-                                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 40%" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row review-progress mb-sm-1 mb-3">
-                                            <div class="col-sm-4">
-                                                <p>3 Star</p>
-                                            </div>
-                                            <div class="col-sm-8 align-self-center">
-                                                <div class="progress">
-                                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 30%" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row review-progress mb-sm-1 mb-3">
-                                            <div class="col-sm-4">
-                                                <p>2 Star</p>
-                                            </div>
-                                            <div class="col-sm-8 align-self-center">
-                                                <div class="progress">
-                                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row review-progress mb-sm-1 mb-3">
-                                            <div class="col-sm-4">
-                                                <p>1 Star</p>
-                                            </div>
-                                            <div class="col-sm-8 align-self-center">
-                                                <div class="progress">
-                                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 10%" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
+                                        }
                                     </div>
                                 </div>
-
                             </div>
-
                         </div>
                     </div>
+
 
 
                     <div id="iconsAccordion" class="accordion-icons accordion">
@@ -314,153 +304,45 @@
                                     <div class="row">
 
                                         <div class="col-md-12 mx-auto">
-
-                                            <div class="media mb-4">
-                                                <div class="avatar me-sm-4 mb-sm-0 me-0 mb-3">
-                                                    <img alt="avatar" src="~/src/assets/img/profile-2.jpeg" class="rounded-circle">
-                                                </div>
-                                                <div class="media-body">
-                                                    <h4 class="media-heading mb-1">Kelly Young</h4>
-                                                    <div class="stars">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                            @foreach (var data in Model.Ratings)
+                                            {
+                                                <div class="media mb-4">
+                                                    <div class="avatar me-sm-4 mb-sm-0 me-0 mb-3">
+                                                        <img alt="avatar" src="~/src/assets/img/OakMartLogo.png" class="rounded-circle" width="50" height="50">
                                                     </div>
-                                                    <div class="meta-tags">a min ago</div>
-                                                    <p class="media-text mt-2">Fusce condimentum cursus mauris et ornare. Mauris fermentum mi id sollicitudin viverra. Aenean dignissim sed ante eget dapibus. Sed dapibus nulla elementum, rutrum neque eu, gravida neque.</p>
-                                                </div>
-                                            </div>
-
-                                            <div class="media mb-4">
-                                                <div class="avatar me-sm-4 mb-sm-0 me-0 mb-3">
-                                                    <img alt="avatar" src="~/src/assets/img/profile-4.jpeg" class="rounded-circle">
-                                                </div>
-                                                <div class="media-body">
-                                                    <h4 class="media-heading mb-1">Mary McDonald</h4>
-                                                    <div class="stars">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                                    <div class="media-body">
+                                                        <h4 class="media-heading mb-1">@data.Users.Username</h4>
+                                                        <div class="stars">
+                                                            @for (int i = 1; i <= 5; i++)
+                                                            {
+                                                                    var fillStar = i <= data.Stars;
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                                            viewBox="0 0 24 24"
+                                                                            fill="@(fillStar ? "gold" : "none")"
+                                                                            stroke="@(fillStar ? "gold" : "currentColor")"
+                                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                                            class="feather feather-star">
+                                                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                                                    </svg>
+                                                            }
+                                                        </div>
+                                                        <div class="meta-tags text-muted small">@data.CreatedAt.ToString("MMMM dd, yyyy")</div>
+                                                        <p class="media-text mt-2"><b>Product: </b>@data.ProductVariants.Material - @(data.ProductVariants.Dimension??"Default") </p>
+                                                        <p class="media-text mt-2">@data.Review</p>
+                                                        @if (!string.IsNullOrEmpty(data.Image))
+                                                        {
+                                                        <img src="@data.Image" class="img-thumbnail review-thumb"
+                                                             style="width: 120px; height: 120px; object-fit: cover; cursor: pointer;"
+                                                             data-bs-toggle="modal"
+                                                             data-bs-target="#imageModal"
+                                                             data-img="@data.Image" />
+                                                             }
                                                     </div>
-                                                    <div class="meta-tags">40 mins ago</div>
-                                                    <p class="media-text mt-2">Fusce condimentum cursus mauris et ornare. Mauris fermentum mi id sollicitudin viverra. Aenean dignissim sed ante eget dapibus. Sed dapibus nulla elementum, rutrum neque eu, gravida neque.</p>
                                                 </div>
-                                            </div>
+                                            }
 
-                                            <div class="media mb-4">
-                                                <div class="avatar me-sm-4 mb-sm-0 me-0 mb-3">
-                                                    <img alt="avatar" src="~/src/assets/img/profile-21.jpeg" class="rounded-circle">
-                                                </div>
-                                                <div class="media-body">
-                                                    <h4 class="media-heading mb-1">Oscar Garner</h4>
-                                                    <div class="stars">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star empty-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                    </div>
-                                                    <div class="meta-tags">1 hr ago</div>
-                                                    <p class="media-text mt-2">Fusce condimentum cursus mauris et ornare. Mauris fermentum mi id sollicitudin viverra. Aenean dignissim sed ante eget dapibus. Sed dapibus nulla elementum, rutrum neque eu, gravida neque.</p>
-                                                </div>
-                                            </div>
-
-                                            <div class="media mb-4">
-                                                <div class="avatar me-sm-4 mb-sm-0 me-0 mb-3">
-                                                    <img alt="avatar" src="~/src/assets/img/profile-24.jpeg" class="rounded-circle">
-                                                </div>
-                                                <div class="media-body">
-                                                    <h4 class="media-heading mb-1">Daisy Anderson</h4>
-                                                    <div class="stars">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                    </div>
-                                                    <div class="meta-tags">15 hrs ago</div>
-                                                    <p class="media-text mt-2">Fusce condimentum cursus mauris et ornare. Mauris fermentum mi id sollicitudin viverra. Aenean dignissim sed ante eget dapibus. Sed dapibus nulla elementum, rutrum neque eu, gravida neque.</p>
-                                                </div>
-                                            </div>
-
-                                            <div class="media mb-4">
-                                                <div class="avatar me-sm-4 mb-sm-0 me-0 mb-3">
-                                                    <img alt="avatar" src="~/src/assets/img/profile-5.jpeg" class="rounded-circle">
-                                                </div>
-                                                <div class="media-body">
-                                                    <h4 class="media-heading mb-1">Andy King</h4>
-                                                    <div class="stars">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                    </div>
-                                                    <div class="meta-tags">1 day ago</div>
-                                                    <p class="media-text mt-2">Fusce condimentum cursus mauris et ornare. Mauris fermentum mi id sollicitudin viverra. Aenean dignissim sed ante eget dapibus. Sed dapibus nulla elementum, rutrum neque eu, gravida neque.</p>
-                                                </div>
-                                            </div>
-
-                                            <div class="media mb-4">
-                                                <div class="avatar me-sm-4 mb-sm-0 me-0 mb-3">
-                                                    <img alt="avatar" src="~/src/assets/img/profile-30.png" class="rounded-circle">
-                                                </div>
-                                                <div class="media-body">
-                                                    <h4 class="media-heading mb-1">Andy King</h4>
-                                                    <div class="stars">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                    </div>
-                                                    <div class="meta-tags">2 days ago</div>
-                                                    <p class="media-text mt-2">Fusce condimentum cursus mauris et ornare. Mauris fermentum mi id sollicitudin viverra. Aenean dignissim sed ante eget dapibus. Sed dapibus nulla elementum, rutrum neque eu, gravida neque.</p>
-                                                </div>
-                                            </div>
-
-                                            <div class="media mb-4">
-                                                <div class="avatar me-sm-4 mb-sm-0 me-0 mb-3">
-                                                    <img alt="avatar" src="~/src/assets/img/profile-34.jpeg" class="rounded-circle">
-                                                </div>
-                                                <div class="media-body">
-                                                    <h4 class="media-heading mb-1">Shaun Park</h4>
-                                                    <div class="stars">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                    </div>
-                                                    <div class="meta-tags">a week ago</div>
-                                                    <p class="media-text mt-2">Fusce condimentum cursus mauris et ornare. Mauris fermentum mi id sollicitudin viverra. Aenean dignissim sed ante eget dapibus. Sed dapibus nulla elementum, rutrum neque eu, gravida neque.</p>
-                                                </div>
-                                            </div>
-
-                                            <div class="media">
-                                                <div class="avatar me-sm-4 mb-sm-0 me-0 mb-3">
-                                                    <img alt="avatar" src="~/src/assets/img/profile-32.jpeg" class="rounded-circle">
-                                                </div>
-                                                <div class="media-body">
-                                                    <h4 class="media-heading mb-1">Xavier</h4>
-                                                    <div class="stars">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star empty-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                                    </div>
-                                                    <div class="meta-tags">2 weeks ago</div>
-                                                    <p class="media-text mt-2">Fusce condimentum cursus mauris et ornare. Mauris fermentum mi id sollicitudin viverra. Aenean dignissim sed ante eget dapibus. Sed dapibus nulla elementum, rutrum neque eu, gravida neque.</p>
-                                                </div>
-                                            </div>
 
                                         </div>
-
                                     </div>
                                 </div>
                             </div>
@@ -480,24 +362,7 @@
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <p class="mb-4">Flattering pleats silhouette sartorial cuffs luxurious pearl buttons fitted around the waist silver. Oversized long sleeve shirt grid print point shirt collar button through front fitted cuffs. Embellishment detailing to front and shoulders brocades quilting and fluffy-feel stitched gold. Tropical wrap front essential cut classic sartorial details feminine peplum-style shirt white. Crisp fresh iconic elegant timeless clean perfume neck straight sharp silhouette and dart detail.</p>
-                                            <p class="mb-5">Stripe shirts plain button-down collar short-sleeved three-color button navy top-fused collar. Tropical wrap front essential cut classic sartorial details feminine peplum-style shirt white. Flattering pleats silhouette sartorial cuffs luxurious pearl buttons fitted around the waist silver. Sophisticated kymono-style neckline satin finish manly cloth check black and red precious. Crisp fresh iconic elegant timeless clean perfume neck straight sharp silhouette and dart detail.</p>
-
-                                            <h5><strong>Packaging &amp; Delivery</strong></h5>
-                                            <hr>
-                                            <p class="mb-4">Sophisticated kymono-style neckline satin finish manly cloth check black and red precious. Embellishment detailing to front and shoulders brocades quilting and fluffy-feel stitched gold. Embroidered logo chest pocket locker loop button-flap breast pockets fastening jetted. Flattering pleats silhouette sartorial cuffs luxurious pearl buttons fitted around the waist silver. Cotton canvas chacket silk mixing classic quirky work wear primary colour cropped.</p>
-                                            <p class="mb-5">Duis vehicula lectus condimentum, tincidunt odio a, posuere magna. Aliquam vitae orci a metus volutpat sagittis. Quisque volutpat, nulla non efficitur aliquet, turpis felis fringilla sem, quis pellentesque erat diam sit amet mi.</p>
-
-                                            <h5><strong>Specifications</strong></h5>
-                                            <hr>
-                                            <p class="mb-3">Etiam imperdiet nulla.</p>
-                                            <p class="mb-3">Maecenas fringilla posuere fringilla.</p>
-                                            <p class="mb-5">Crisp fresh iconic elegant timeless clean perfume neck straight sharp silhouette and dart detail. Sophisticated kymono-style neckline satin finish manly cloth check black and red precious. Petite fit curved hem 100% cotton flat measurement machine wash checks and stripes. Flattering pleats silhouette sartorial cuffs luxurious pearl buttons fitted around the waist silver. Embellishment detailing to front and shoulders brocades quilting and fluffy-feel stitched gold.</p>
-
-                                            <h5><strong>Material And Washing Instructions</strong></h5>
-                                            <hr>
-                                            <p class="mb-3">Petite fit curved hem 100% cotton flat measurement machine wash checks and stripes. Embroidered logo chest pocket locker loop button-flap breast pockets fastening jetted. Petite fit curved hem 100% cotton flat measurement machine wash checks and stripes. Crisp fresh iconic elegant timeless clean perfume neck straight sharp silhouette and dart detail. Stripe shirts plain button-down collar short-sleeved three-color button navy top-fused collar.</p>
-
+                                            <p class="mb-4">@Model.Product.Details</p>
                                         </div>
                                     </div>
                                 </div>
@@ -522,18 +387,8 @@
 
                                             <h5><strong>Shipping methods</strong></h5>
                                             <hr>
-                                            <p class="mb-2">We ship with these shipping options:</p>
-                                            <p class="mb-5">Duis vehicula lectus condimentum, tincidunt odio a, posuere magna. Aliquam vitae orci a metus volutpat sagittis. Quisque volutpat, nulla non efficitur aliquet, turpis felis fringilla sem, quis pellentesque erat diam sit amet mi.</p>
-
-                                            <h5><strong>DHL Express</strong></h5>
-                                            <hr>
-                                            <p class="mb-3"> Worldwide shipping with DHL Express and you'll get a tracking number for your order. All orders usually arrive within 1 business day in North American countries.</p>
-                                            <p class="mb-5">Please see estimated delivery information at checkout.</p>
-
-                                            <h5><strong>Local pickup in Washington</strong></h5>
-                                            <hr>
-                                            <p class="mb-3">You can pickup your order from our office here in Washington. We will send you an E-mail when your order is ready for pickup. Please note: In the case of pickup orders, which need to be sent by US Post at the request of the customer, a processing fee of USD 10.00 will be charged in addition to the shipping costs.</p>
-
+                                            <p class="mb-2">We ship thru our application</p>
+                                            <p class="mb-5">We have our own and trusted riders to deliver your product safe and scratch free for small amount fee!</p>
                                         </div>
                                     </div>
                                 </div>
@@ -549,9 +404,26 @@
     </div>
 
 </div>
+<!-- Image Zoom Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-body p-0 text-center">
+                <img id="modalImage" src="" class="img-fluid rounded shadow-lg" alt="Zoomed Image" />
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         // --- Product variants from server ---
+            document.addEventListener("click", function (e) {
+            if (e.target.matches(".review-thumb")) {
+                const imgSrc = e.target.getAttribute("data-img");
+                document.getElementById("modalImage").src = imgSrc;
+            }
+        });
         var productVariants = @Html.Raw(ViewBag.ProductVariantsJson);
 
         // Normalize colors — replace null or empty with "Default"

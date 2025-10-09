@@ -25,7 +25,34 @@ namespace iskipmakliw.Controllers
             _context = context;
             _httpContextAccessor = httpContextAccessor;
         }
+        public IActionResult OrderDetails(int Id, int ProductId)
+        {
+            var toDeliver = _context.DeliverProduct
+                                    .Include(u => u.PurchasedProduct)
+                                        .ThenInclude(u => u.ProductVariants)
+                                            .ThenInclude(u => u.Product)
+                                                .ThenInclude(u => u.Users)
+                                                    .ThenInclude(u => u.UserDetails)
+                                    .Include(u => u.PurchasedProduct)
+                                        .ThenInclude(u => u.Users)
+                                            .ThenInclude(u => u.UserDetails)
+                                    .Where(u => u.PurchasedProduct.Id == Id)
+                                    .FirstOrDefault();
+            var Rated = _context.Ratings
+                            .Include(u => u.ProductVariants)
+                                .ThenInclude(u => u.Product)
+                            .ThenInclude(u => u.Users)
+                                .ThenInclude(u => u.UserDetails)
+                            .Where(u => u.PurchasedProductId == Id)
+                            .FirstOrDefault();
 
+            var timeline = new TimelineViewModel
+            {
+                DeliverProduct = toDeliver,
+                Ratings = Rated
+            };
+            return View(timeline);
+        }
         public IActionResult Index()
         {
             var userId = int.Parse(User.FindFirst("UsersId")?.Value);
@@ -158,7 +185,8 @@ namespace iskipmakliw.Controllers
                 UsersId = usersId,
                 Stars = selectedRating,
                 Review = Review,
-                Image = path
+                Image = path,
+                PurchasedProductId = purchasedId,
             };
             _context.Ratings.Add(data);
             var getPurchased = _context.PurchasedProduct.Find(purchasedId);
@@ -376,7 +404,20 @@ namespace iskipmakliw.Controllers
             var product = _context.Product
                         .Include(p => p.ProductVariants.Where(u => u.isArchive == null))
                         .FirstOrDefault(p => p.Id == Id);
-
+            var ratings = _context.Ratings
+                            .Include(u => u.ProductVariants)
+                                .ThenInclude(u => u.Product)
+                                    .ThenInclude(u => u.Users)
+                                        .ThenInclude(u => u.UserDetails)
+                            .Include(u => u.PurchasedProduct)
+                                .ThenInclude(u => u.ProductVariants)
+                                    .ThenInclude(u => u.Product)
+                                        .ThenInclude(u => u.Users)
+                                            .ThenInclude(u => u.UserDetails)
+                            .Include(u => u.Users)
+                                .ThenInclude(u => u.UserDetails)
+                            .Where(u => u.ProductVariants.ProductId == Id)
+                            .ToList();
             var variantDtos = product.ProductVariants.Select(v => new ProductVariantDto
             {
                 Id = v.Id,
@@ -389,7 +430,12 @@ namespace iskipmakliw.Controllers
             }).ToList();
 
             ViewBag.ProductVariantsJson = JsonSerializer.Serialize(variantDtos);
-            return View(product);
+            var Product = new ProductCustomerViewModel
+            {
+                Product = product,
+                Ratings = ratings
+            };
+            return View(Product);
 
         }
 

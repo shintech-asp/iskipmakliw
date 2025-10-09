@@ -128,6 +128,7 @@ namespace iskipmakliw.Controllers
                     _context.DeliverProduct.Update(data);
                     var transaction = _context.PurchasedProduct.Where(u => u.Id == data.PurchasedProductId).FirstOrDefault();
                     transaction.TransactionStatus = "To rate";
+                    transaction.PaymentStatus = "Paid";
                     _context.PurchasedProduct.Update(transaction);
                     _context.SaveChanges();
                     TempData["Success"] = "Yay! Delivery Complete!";

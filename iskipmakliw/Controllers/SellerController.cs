@@ -30,7 +30,22 @@ namespace iskipmakliw.Controllers
                         .Include(u => u.Billings)
                         .Where(u => u.Id == usersId)
                         .FirstOrDefault();
-            return View(user);
+            var recent = _context.PurchasedProduct
+                        .Include(u => u.ProductVariants)
+                            .ThenInclude(u => u.Product)
+                        .Include(u => u.Users)
+                        .Where(u => u.ProductVariants.Product.UsersId == usersId).ToList();
+            var product = _context.ProductVariants
+                          .Include(u => u.Product)
+                          .Include(u => u.PurchasedProduct)
+                          .Where(u => u.Product.UsersId == usersId).ToList();
+            var data = new SellersIndexViewModel
+            {
+                Users = user,
+                PurchasedProduct = recent,
+                ProductVariants = product
+            };
+            return View(data);
         }
         public IActionResult Chats()
         {
@@ -167,6 +182,7 @@ namespace iskipmakliw.Controllers
             ModelState.Remove("ProductDetails.Product");
             ModelState.Remove("ProductDetails.ProductId");
             ModelState.Remove("ProductDetails.Carts");
+            ModelState.Remove("ProductDetails.PurchasedProduct");
             if (ModelState.IsValid)
             {
                 ProductVariants productVariant;
@@ -221,8 +237,12 @@ namespace iskipmakliw.Controllers
                 TempData["Success"] = "Item successfully added";
                 return RedirectToAction("Index", "Seller");
             }
+            else
+            {
+                TempData["Error"] = "Fill up all the fields";
+                return RedirectToAction("ProductDetails");
+            }
 
-            return RedirectToAction("ProductDetails");
         }
 
 
@@ -257,7 +277,7 @@ namespace iskipmakliw.Controllers
                                 .ThenInclude(u => u.Product)
                             .ThenInclude(u => u.Users)
                                 .ThenInclude(u => u.UserDetails)
-                            .Where(u => u.ProductVariants.Id == ProductId)
+                            .Where(u => u.PurchasedProductId == Id)
                             .FirstOrDefault();
 
             var timeline = new TimelineViewModel

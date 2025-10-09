@@ -15,6 +15,7 @@ namespace iskipmakliw.Models
         public int? Discount { get; set; }
         public string? ProductImage { get; set; }
         public ICollection<Cart> Carts { get; set; }
+        public ICollection<PurchasedProduct> PurchasedProduct { get; set; }
         public DateTime? isArchive { get; set; }
     }
 }

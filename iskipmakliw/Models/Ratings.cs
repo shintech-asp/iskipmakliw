@@ -11,5 +11,7 @@
         public string? Review { get; set; }
         public string? Image { get; set; }
         public DateTime CreatedAt { get; set; }
+        public int PurchasedProductId { get; set; }
+        public PurchasedProduct PurchasedProduct { get; set; }
     }
 }
