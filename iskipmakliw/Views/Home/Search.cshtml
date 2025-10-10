@@ -1,0 +1,73 @@
+﻿@using iskipmakliw.Models.ViewModels
+@model SearchResultViewModel
+
+@{
+        Layout = "_LayoutCustomer";
+}
+
+<div class="fq-header-wrapper pt-5">
+    <div class="container text-center mb-5">
+        <h1 class="mb-4 text-black">Search Results for "<span class="text-primary">@ViewBag.Query</span>"</h1>
+        <p class="text-muted">Showing matching products and sellers</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 🔍 Seller Results -->
+    @if (Model.Sellers.Any())
+    {
+        <div class="mb-5">
+            <h3 class="mb-3 text-black"><i class="fa fa-user"></i> Matching Sellers</h3>
+            <div class="row">
+                @foreach (var seller in Model.Sellers)
+                {
+                    <div class="col-md-3 mb-4">
+                        <div class="card shadow-sm text-center border-0">
+                            <img src="@(seller.ProfileImage ?? "/images/default-user.png")"
+                                 class="card-img-top rounded-circle mx-auto mt-3"
+                                 style="width:100px; height:100px; object-fit:cover;" />
+                            <div class="card-body">
+                                <h5 class="card-title">@seller.SellerName</h5>
+                                <a asp-controller="Home" asp-action="Profile" asp-route-Id="@seller.SellerId" class="btn btn-outline-primary btn-sm">
+                                    View Profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- 🛍 Product Results -->
+    @if (Model.Products.Any())
+    {
+        <div class="mb-5">
+            <h3 class="mb-3 text-black"><i class="fa fa-box"></i> Matching Products</h3>
+            <div class="row">
+                @foreach (var p in Model.Products)
+                {
+                    <div class="col-md-3 mb-4">
+                        <div class="card shadow-sm border-0">
+                            <img src="@p.Image" class="card-img-top" style="height:180px; object-fit:cover;" />
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-truncate">@p.Name</h6>
+                                <p class="text-muted small mb-1">by @p.SellerName</p>
+                                <p class="fw-bold text-primary mb-2">₱@p.Price.ToString("N2")</p>
+                                <a asp-controller="Home" asp-action="Product" asp-route-Id="@p.ProductId" asp-route-SellerId="@p.SellerId" class="btn btn-primary btn-sm">View</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- 🚫 No Results -->
+    @if (!Model.Products.Any() && !Model.Sellers.Any())
+    {
+        <div class="alert alert-warning text-center mt-4">
+            No results found for "<b>@ViewBag.Query</b>".
+        </div>
+    }
+</div>

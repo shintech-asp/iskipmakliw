@@ -1,11 +1,14 @@
 ﻿using iskipmakliw.Data;
+using iskipmakliw.Filters;
 using iskipmakliw.Models;
+using iskipmakliw.Models.DTO;
+using iskipmakliw.Models.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using iskipmakliw.Filters;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace iskipmakliw.Controllers
 {
@@ -19,11 +22,62 @@ namespace iskipmakliw.Controllers
         }
         public IActionResult Index()
         {
-            return View();
+            var data = _context.Product
+                .Select(p => new ClientViewModel
+                {
+                    ProductId = p.Id,
+                    Name = p.Name,
+                    SellerName = p.Users.Username,
+                    SellerId = p.UsersId,
+                    Price = p.ProductVariants
+                        .OrderBy(v => v.Price)
+                        .Select(v => v.Price)
+                        .FirstOrDefault(),
+                    Image = p.ProductVariants.FirstOrDefault().ProductImage
+
+                })
+                .ToList();
+
+            return View(data);
         }
-        public IActionResult Product()
+        public IActionResult Product(int Id, int SellerId)
         {
-            return View();
+            var product = _context.Product
+                        .Include(p => p.ProductVariants.Where(u => u.isArchive == null))
+                        .FirstOrDefault(p => p.Id == Id);
+            var ratings = _context.Ratings
+                            .Include(u => u.ProductVariants)
+                                .ThenInclude(u => u.Product)
+                                    .ThenInclude(u => u.Users)
+                                        .ThenInclude(u => u.UserDetails)
+                            .Include(u => u.PurchasedProduct)
+                                .ThenInclude(u => u.ProductVariants)
+                                    .ThenInclude(u => u.Product)
+                                        .ThenInclude(u => u.Users)
+                                            .ThenInclude(u => u.UserDetails)
+                            .Include(u => u.Users)
+                                .ThenInclude(u => u.UserDetails)
+                            .Where(u => u.ProductVariants.ProductId == Id)
+                            .ToList();
+            var variantDtos = product.ProductVariants.Select(v => new ProductVariantDto
+            {
+                Id = v.Id,
+                Color = v.Color,
+                Size = v.Dimension,
+                Price = v.Price,
+                Stock = v.Quantity,
+                ProductImage = v.ProductImage,
+                Discount = v.Discount
+            }).ToList();
+
+            ViewBag.ProductVariantsJson = JsonSerializer.Serialize(variantDtos);
+            var Product = new ProductCustomerViewModel
+            {
+                Product = product,
+                Ratings = ratings
+            };
+            return View(Product);
+
         }
         [HttpGet]
         public IActionResult Rider()

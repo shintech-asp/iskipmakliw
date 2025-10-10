@@ -25,6 +25,78 @@ namespace iskipmakliw.Controllers
             _context = context;
             _httpContextAccessor = httpContextAccessor;
         }
+        public IActionResult Search(string query)
+        {
+            var products = _context.Product
+                .Where(p => p.Name.Contains(query))
+                .Select(p => new ClientViewModel
+                {
+                    ProductId = p.Id,
+                    Name = p.Name,
+                    SellerName = p.Users.Username,
+                    SellerId = p.UsersId,
+                    Price = p.ProductVariants
+                        .OrderBy(v => v.Price)
+                        .Select(v => v.Price)
+                        .FirstOrDefault(),
+                    Image = p.ProductVariants.FirstOrDefault().ProductImage ?? "/src/assets/img/OakMartLogo.png"
+                })
+                .ToList();
+
+            var sellers = _context.Users
+                .Where(u => u.Username.Contains(query))
+                .Select(u => new SellerViewModel
+                {
+                    SellerId = u.Id,
+                    Role = u.Role,
+                    SellerName = u.Username,
+                    ProfileImage = "/src/assets/img/OakMartLogo.png"
+                })
+                .Where(u => u.Role != "Admin")
+                .ToList();
+
+            ViewBag.Query = query;
+
+            return View(new SearchResultViewModel
+            {
+                Products = products,
+                Sellers = sellers
+            });
+        }
+        public IActionResult Profile(int Id)
+        {
+            var user = _context.Users
+                        .Include(u => u.PurchasedProduct)
+                        .Include(u => u.UserDetails)
+                        .Include(u => u.Product)
+                            .ThenInclude(p => p.ProductVariants.Where(v => v.isArchive == null))
+                                .ThenInclude(p => p.PurchasedProduct)
+                        .Include(u => u.Product)
+                            .ThenInclude(p => p.ProductVariants.Where(v => v.isArchive == null))
+                                .ThenInclude(p => p.Ratings)
+                        .FirstOrDefault(u => u.Id == Id);
+
+            var ratings = _context.Ratings
+                            .Include(u => u.ProductVariants)
+                                .ThenInclude(u => u.Product)
+                                    .ThenInclude(u => u.Users)
+                                        .ThenInclude(u => u.UserDetails)
+                            .Include(u => u.PurchasedProduct)
+                                .ThenInclude(u => u.ProductVariants)
+                                    .ThenInclude(u => u.Product)
+                                        .ThenInclude(u => u.Users)
+                                            .ThenInclude(u => u.UserDetails)
+                            .Include(u => u.Users)
+                                .ThenInclude(u => u.UserDetails)
+                            .Where(u => u.ProductVariants.Product.UsersId == Id)
+                            .ToList();
+            var profile = new ProfileViewModel
+            {
+                Users = user,
+                Ratings = ratings
+            };
+            return View(profile);
+        }
         public IActionResult OrderDetails(int Id, int ProductId)
         {
             var toDeliver = _context.DeliverProduct
@@ -248,6 +320,21 @@ namespace iskipmakliw.Controllers
         {
             return View();
         }
+        [HttpPost]
+        public IActionResult Customization(string Model, string color, string texture, string Dimension)
+        {
+            // You can log or process here
+            Console.WriteLine($"Model: {Model}");
+            Console.WriteLine($"Color: {color}");
+            Console.WriteLine($"Texture: {texture}");
+            Console.WriteLine($"Dimension: {Dimension}"); // JSON string (scale, width, height)
+
+            // Example: Deserialize Dimension if needed
+            // var dims = JsonConvert.DeserializeObject<DimensionData>(Dimension);
+
+            return View();
+        }
+
         [HttpGet]
         public IActionResult BecomeSeller()
         {

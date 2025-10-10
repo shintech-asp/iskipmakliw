@@ -402,9 +402,33 @@ else if (Model.Users.UserDetails?.Status == "Approved")
                                 @foreach (var data in Model.ProductVariants)
                                 {
                                     <tr>
-                                        <td><div class="td-content product-name"><img src="@data.ProductImage" alt="product"><div class="align-self-center"><p class="prd-name">@data.Product.Name</p><p class="prd-category text-primary">@data.Material</p><p class="text-mute">@(data.Dimension??"Default")</p></div></div></td>
+                                        <td>
+                                            <div class="td-content product-name">
+                                                    @{
+                                                        if (data.ProductImage != null)
+                                                        {
+                                                            <img src="@data.ProductImage" alt="product">
+                                                        }
+                                                        else
+                                                        {
+                                                            <img src="~/src/assets/img/OakMartLogo.png" alt"product" />
+                                                        }
+                                                    }
+                                                <div class="align-self-center">
+                                                    <p class="prd-name">@data.Product.Name</p>
+                                                    <p class="prd-category text-primary">@data.Material</p>
+                                                    <p class="text-mute">@(data.Dimension ?? "Default")</p>
+                                                </div>
+                                            </div>
+                                        </td>
                                         <td><div class="td-content"><span class="pricing">₱@data.Price.ToString("N2")</span></div></td>
-                                        <td><div class="td-content"><span class="discount-pricing">@(data.Discount.ToString()??"No discount")%</span></div></td>
+                                            <td>
+                                                <div class="td-content">
+                                                    <span class="discount-pricing">
+                                                        @(data.Discount.HasValue ? $"{data.Discount.Value}%" : "No discount")
+                                                    </span>
+                                                </div>
+                                            </td>
                                         <td><div class="td-content">@data.PurchasedProduct.Sum(u => u.Quantity)</div></td>
                                     </tr>
                                 }

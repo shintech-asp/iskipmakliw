@@ -16,6 +16,7 @@
         public ICollection<Payments>? Payments { get; set; }
         public ICollection<Product>? Product { get; set; }
         public ICollection<Subscription>? Subscription { get; set; }
+        public ICollection<PurchasedProduct>? PurchasedProduct { get; set; }
         public ICollection<Cart> Carts { get; set; }
 
         // 🔹 Add 1-to-1 relationship with UserDetails

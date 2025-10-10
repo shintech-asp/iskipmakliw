@@ -18,6 +18,44 @@ namespace iskipmakliw.Controllers
         {
             _context = context;
         }
+        public IActionResult Search(string query)
+        {
+            var products = _context.Product
+                .Where(p => p.Name.Contains(query))
+                .Select(p => new ClientViewModel
+                {
+                    ProductId = p.Id,
+                    Name = p.Name,
+                    SellerName = p.Users.Username,
+                    SellerId = p.UsersId,
+                    Price = p.ProductVariants
+                        .OrderBy(v => v.Price)
+                        .Select(v => v.Price)
+                        .FirstOrDefault(),
+                    Image = p.ProductVariants.FirstOrDefault().ProductImage ?? "/src/assets/img/OakMartLogo.png"
+                })
+                .ToList();
+
+            var sellers = _context.Users
+                .Where(u => u.Username.Contains(query))
+                .Select(u => new SellerViewModel
+                {
+                    SellerId = u.Id,
+                    Role = u.Role,
+                    SellerName = u.Username,
+                    ProfileImage = "/src/assets/img/OakMartLogo.png"
+                })
+                .Where(u => u.Role != "Admin")
+                .ToList();
+
+            ViewBag.Query = query;
+
+            return View(new SearchResultViewModel
+            {
+                Products = products,
+                Sellers = sellers
+            });
+        }
         public IActionResult Index()
         {
             int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
