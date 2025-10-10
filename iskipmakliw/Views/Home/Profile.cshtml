@@ -476,7 +476,7 @@
                     <div class="profile-actions mt-3">
                         @if(Model.Users.Role == "Seller")
                         {
-                            <a class="btn btn-follow w-100 mb-2" asp-controller="Home" asp-action="Customization">
+                            <a class="btn btn-follow w-100 mb-2" asp-controller="Home" asp-action="Customization" asp-route-Id="@Model.Users.Id">
                                 <i class="bi bi-person-plus-fill"></i> Craft your product
                             </a>
                         }

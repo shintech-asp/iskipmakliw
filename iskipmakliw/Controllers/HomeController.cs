@@ -316,25 +316,104 @@ namespace iskipmakliw.Controllers
             }
             return Json(new { success = true });
         }
-        public IActionResult Customization()
+        public IActionResult Customization(int Id)
         {
+            ViewBag.Id = Id;
             return View();
         }
         [HttpPost]
-        public IActionResult Customization(string Model, string color, string texture, string Dimension)
+        public IActionResult Customization(int Id,string Model, string color, string texture, string scale, string width, string height)
         {
-            // You can log or process here
-            Console.WriteLine($"Model: {Model}");
-            Console.WriteLine($"Color: {color}");
-            Console.WriteLine($"Texture: {texture}");
-            Console.WriteLine($"Dimension: {Dimension}"); // JSON string (scale, width, height)
-
-            // Example: Deserialize Dimension if needed
-            // var dims = JsonConvert.DeserializeObject<DimensionData>(Dimension);
-
+            if(Model != null)
+            {
+                var submitCustomization = new CustomizationOrders
+                {
+                    UsersId = int.Parse(User.FindFirst("UsersId").Value),
+                    SellersId = Id,
+                    Model = Model,
+                    Color = color,
+                    Texture = texture,
+                    Scale = scale,
+                    Width = width,
+                    Height = height,
+                    SellerStatus = "Pending",
+                };
+                _context.CustomizationOrders.Add(submitCustomization);
+                _context.SaveChanges();
+                var CustomizationChat = new CustomizationChat
+                {
+                    UsersId = int.Parse(User.FindFirst("UsersId").Value),
+                    SellersId = Id,
+                    Message = "Hello, I would like to inquire about a custom order.",
+                    CustomizationOrdersId = submitCustomization.Id,
+                    IsFromBuyer = true
+                };
+                _context.CustomizationChat.Add(CustomizationChat);
+                _context.SaveChanges();
+                TempData["Success"] = "Customization order submitted!";
+            }else
+            {
+                TempData["Error"] = "Please select your base model";
+            }
             return View();
         }
+        [HttpPost]
+        public IActionResult SendMessage(int Id, string Message)
+        {
+            var message = _context.CustomizationChat.Where(u => u.CustomizationOrdersId == Id).FirstOrDefault();
+            var CustomizationChat = new CustomizationChat
+            {
+                UsersId = int.Parse(User.FindFirst("UsersId").Value),
+                SellersId = message.SellersId,
+                Message = Message,
+                CustomizationOrdersId = message.CustomizationOrdersId,
+                IsFromBuyer = true
+            };
+            _context.CustomizationChat.Add(CustomizationChat);
+            _context.SaveChanges();
+            return Json(new { success = true });
+        }
+        [HttpGet]
+        public IActionResult GetNewMessages(int orderId, int lastMessageId)
+        {
+            var newMessages = _context.CustomizationChat
+                .Where(c => c.CustomizationOrdersId == orderId && c.Id > lastMessageId)
+                .OrderBy(c => c.Id)
+                .Select(c => new {
+                    c.Id,
+                    c.Message,
+                    c.DateSent,
+                    IsCustomer = c.IsFromBuyer // ✅ renamed for frontend compatibility
+                })
+                .ToList();
 
+            return Json(newMessages);
+        }
+
+        public IActionResult LoadChatPartial(int orderId)
+        {
+            var messages = _context.CustomizationChat
+                .Where(c => c.CustomizationOrdersId == orderId)
+                .Include(c => c.CustomizationOrders)
+                .Include(c => c.Sellers)
+                .Include(c => c.Users)
+                .OrderBy(c => c.DateSent)
+                .ToList();
+
+            return PartialView("_ChatConversationPartial", messages);
+        }
+        public IActionResult Chat()
+        {
+            var usersId = int.Parse(User.FindFirst("UsersId").Value);
+            var data = _context.CustomizationChat
+                        .Include(u => u.Users)
+                            .ThenInclude(u => u.UserDetails)
+                        .Include(u => u.Sellers)
+                            .ThenInclude(u => u.UserDetails)
+                        .Where(u => u.UsersId == usersId)
+                        .ToList();
+            return View(data);
+        }
         [HttpGet]
         public IActionResult BecomeSeller()
         {

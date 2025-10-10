@@ -85,9 +85,63 @@ namespace iskipmakliw.Controllers
             };
             return View(data);
         }
-        public IActionResult Chats()
+
+        [HttpPost]
+        public IActionResult SendMessage(int Id, string Message)
         {
-            return View();
+            var message = _context.CustomizationChat.Where(u => u.CustomizationOrdersId == Id).FirstOrDefault();
+            var CustomizationChat = new CustomizationChat
+            {
+                UsersId = int.Parse(User.FindFirst("UsersId").Value),
+                SellersId = message.SellersId,
+                Message = Message,
+                CustomizationOrdersId = message.CustomizationOrdersId,
+                IsFromBuyer = false
+            };
+            _context.CustomizationChat.Add(CustomizationChat);
+            _context.SaveChanges();
+            return Json(new { success = true });
+        }
+        [HttpGet]
+        public IActionResult GetNewMessages(int orderId, int lastMessageId)
+        {
+            var newMessages = _context.CustomizationChat
+                .Where(c => c.CustomizationOrdersId == orderId && c.Id > lastMessageId)
+                .OrderBy(c => c.Id)
+                .Select(c => new {
+                    c.Id,
+                    c.Message,
+                    c.DateSent,
+                    IsCustomer = c.IsFromBuyer
+                })
+                .ToList();
+
+            return Json(newMessages);
+        }
+
+        public IActionResult LoadChatPartial(int orderId)
+        {
+            var messages = _context.CustomizationChat
+                .Where(c => c.CustomizationOrdersId == orderId)
+                .Include(c => c.CustomizationOrders)
+                .Include(c => c.Sellers)
+                .Include(c => c.Users)
+                .OrderBy(c => c.DateSent)
+                .ToList();
+
+            return PartialView("_ChatConversationPartial", messages);
+        }
+        public IActionResult Chat()
+        {
+            var usersId = int.Parse(User.FindFirst("UsersId").Value);
+            var data = _context.CustomizationChat
+                        .Include(u => u.Users)
+                            .ThenInclude(u => u.UserDetails)
+                        .Include(u => u.Sellers)
+                            .ThenInclude(u => u.UserDetails)
+                        .Where(u => u.SellersId == usersId)
+                        .ToList();
+            return View(data);
         }
         public IActionResult ProductAdd()
         {

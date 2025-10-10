@@ -20,6 +20,8 @@ namespace iskipmakliw.Data
         public DbSet<PurchasedProduct> PurchasedProduct { get; set; }
         public DbSet<DeliverProduct> DeliverProduct { get; set; }
         public DbSet<Ratings> Ratings { get; set; }
+        public DbSet<CustomizationChat> CustomizationChat { get; set; }
+        public DbSet<CustomizationOrders> CustomizationOrders { get; set; }
         public void UpdateExpiredSubscriptionsOnStartup()
         {
             var basicPlan = Plans.FirstOrDefault(p => p.PlanName == "Basic");

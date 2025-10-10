@@ -1,0 +1,542 @@
+﻿@{
+    Layout = "_LayoutCustomer";
+    ViewData["Title"] = "Customization Chat";
+}
+@model List<CustomizationChat>
+
+<style>
+    .chat-sidebar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .chat-item {
+        transition: all 0.2s ease;
+        border-left: 3px solid transparent;
+    }
+
+        .chat-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-left-color: #667eea;
+            transform: translateX(2px);
+        }
+
+        .chat-item.active {
+            background: rgba(102, 126, 234, 0.15);
+            border-left-color: #667eea;
+        }
+
+    .message-bubble {
+        animation: slideIn 0.3s ease;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .viewer-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #chatBox::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #chatBox::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    #chatBox::-webkit-scrollbar-thumb {
+        background: #667eea;
+        border-radius: 10px;
+    }
+
+        #chatBox::-webkit-scrollbar-thumb:hover {
+            background: #5568d3;
+        }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="row g-4">
+        <!-- LEFT SIDEBAR: Recent Chats -->
+        <div class="col-xl-3 col-lg-4 col-md-12">
+            <div class="card h-100 shadow-lg border-0 overflow-hidden">
+                <div class="chat-sidebar p-3">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-chat-left-dots me-2"></i>Conversations
+                        </h5>
+                        <span class="badge bg-white text-primary">@(Model?.GroupBy(c => c.CustomizationOrdersId).Count() ?? 0)</span>
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-white border-0">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control border-0" placeholder="Search chats..." id="searchChats">
+                    </div>
+                </div>
+
+                <div class="card-body p-0" style="max-height: 70vh; overflow-y: auto;">
+                    @if (Model == null || !Model.Any())
+                    {
+                        <div class="d-flex flex-column justify-content-center align-items-center text-muted py-5">
+                            <i class="bi bi-inbox fs-1 mb-3 text-primary"></i>
+                            <h6 class="fw-semibold">No conversations yet</h6>
+                            <p class="small text-center px-3">Your customization chats will appear here</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var chat in Model.GroupBy(c => c.CustomizationOrdersId).Select(g => g.OrderByDescending(x => x.DateSent).First()))
+                            {
+                                <li class="list-group-item chat-item px-3 py-3"
+                                    style="cursor: pointer;"
+                                    onclick="loadChat(@chat.CustomizationOrdersId)"
+                                    data-order-id="@chat.CustomizationOrdersId">
+                                    <div class="d-flex align-items-start gap-2">
+                                        <div class="position-relative">
+                                            <img src="~/src/assets/img/user-profile.jpeg"
+                                                 class="rounded-circle"
+                                                 style="width:48px; height:48px; object-fit:cover; border: 3px solid #667eea;" />
+                                            <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-success"
+                                                  style="width: 12px; height: 12px; padding: 0; border: 2px solid white;"></span>
+                                        </div>
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <h6 class="mb-0 fw-semibold text-black">@chat.Sellers?.Username</h6>
+                                                <small class="text-muted">@chat.DateSent.ToString("MMM dd")</small>
+                                            </div>
+                                            <p class="mb-0 small text-muted text-truncate">
+                                                @(chat.Message.Length > 40 ? chat.Message.Substring(0, 40) + "..." : chat.Message)
+                                            </p>
+                                            <div class="mt-1 text-end">
+                                                <span class="badge bg-light text-dark small">
+                                                    @chat.DateSent.ToString("hh: m tt")
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Chat Area -->
+        <div class="col-xl-9 col-lg-8 col-md-12">
+            <div id="chatArea" class="card shadow-lg border-0" style="height: 80vh;">
+                <div class="d-flex flex-column justify-content-center align-items-center h-100 text-muted">
+                    <div class="text-center p-5">
+                        <div class="mb-4">
+                            <i class="bi bi-chat-square-dots" style="font-size: 4rem; color: #667eea;"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">Welcome to Customization Chat</h4>
+                        <p class="text-muted">Select a conversation to start messaging and view 3D models</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        //Chat Data3DTexture Modeling Render
+        let currentOrderId = null;
+        let lastMessageId = 0;
+        let pollInterval = null;
+        // Search functionality
+        document.getElementById('searchChats')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.chat-item').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Load chat partial
+        function loadChat(orderId) {
+            if (currentOrderId === orderId) return;
+            currentOrderId = orderId;
+
+            // Clear previous polling
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+
+            // Update active state
+            document.querySelectorAll('.chat-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-order-id="${orderId}"]`)?.classList.add('active');
+
+            const chatArea = document.getElementById("chatArea");
+            chatArea.innerHTML = `
+                <div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Loading conversation...</p>
+                    </div>
+                </div>`;
+
+            fetch(`/Home/LoadChatPartial?orderId=${orderId}`)
+                .then(response => response.text())
+                .then(html => {
+                    chatArea.innerHTML = html;
+                    chatArea.style.height = '80vh'; // Ensure height is maintained
+
+                    // Scroll to bottom of chat
+                    const chatBox = document.getElementById('chatBox');
+                    if (chatBox) {
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    }
+
+                    // Fetch all messages to determine the last message ID without reprinting
+                    fetch(`/Home/GetNewMessages?orderId=${orderId}&lastMessageId=0`)
+                        .then(response => response.json())
+                        .then(allMessages => {
+                            if (allMessages && allMessages.length > 0) {
+                                lastMessageId = Math.max(...allMessages.map(m => m.id));
+                                console.log(`Set lastMessageId to ${lastMessageId} based on loaded messages`);
+                            } else {
+                                lastMessageId = 0;
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Error fetching initial messages for ID:', err);
+                            lastMessageId = 0;
+                        })
+                        .finally(() => {
+                            // Start polling after setting lastMessageId
+                            startPolling();
+                        });
+
+                    function startPolling() {
+                        pollInterval = setInterval(() => {
+                            if (currentOrderId && lastMessageId >= 0) {
+                                fetch(`/Home/GetNewMessages?orderId=${currentOrderId}&lastMessageId=${lastMessageId}`)
+                                    .then(response => response.json())
+                                    .then(newMessages => {
+                                        if (newMessages && newMessages.length > 0) {
+                                            const chatBox = document.getElementById('chatBox');
+                                            if (chatBox) {
+                                                newMessages.forEach(msg => {
+                                                    const isBuyer = msg.isCustomer;
+                                                    const avatar = "/src/assets/img/user-profile.jpeg";
+
+                                                    // Robust date parsing with exact format match
+                                                    let timeStr = new Date().toLocaleTimeString('en-US', {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                        hour12: true
+                                                    });
+                                                    if (msg.dateSent) {
+                                                        const date = new Date(msg.dateSent);
+                                                        if (!isNaN(date.getTime())) {
+                                                            timeStr = date.toLocaleTimeString('en-US', {
+                                                                hour: '2-digit',
+                                                                minute: '2-digit',
+                                                                hour12: true
+                                                            });
+                                                        } else {
+                                                            console.warn('Invalid date received:', msg.dateSent);
+                                                        }
+                                                    } else {
+                                                        console.warn('No date sent for message:', msg);
+                                                    }
+
+                                                    const bubbleClass = isBuyer ? "buyer" : "seller";
+                                                    const textClass = isBuyer ? "text-white" : "text-dark";
+                                                    const timeTextClass = isBuyer ? "text-white-50" : "text-muted";
+
+                                                    const html = `
+                                                        <div class="d-flex mb-3 ${isBuyer ? "justify-content-end" : "justify-content-start"}">
+                                                            ${!isBuyer ? `<img src="${avatar}" class="rounded-circle me-2" style="width:32px; height:32px; object-fit:cover;" />` : ''}
+                                                            <div class="message-bubble ${bubbleClass} p-3 rounded-3 shadow-sm ${textClass}" data-id="${msg.id}">
+                                                                <div class="mb-1">${msg.message || ''}</div>
+                                                                <div class="small ${timeTextClass} text-end">
+                                                                    ${timeStr}
+                                                                </div>
+                                                            </div>
+                                                            ${isBuyer ? `<img src="${avatar}" class="rounded-circle ms-2" style="width:32px; height:32px; object-fit:cover;" />` : ''}
+                                                        </div>
+                                                    `;
+                                                    chatBox.insertAdjacentHTML('beforeend', html);
+                                                });
+
+                                                // Update lastMessageId to the latest
+                                                lastMessageId = Math.max(...newMessages.map(m => m.id));
+
+                                                // Scroll to bottom
+                                                chatBox.scrollTop = chatBox.scrollHeight;
+                                            }
+                                        }
+                                    })
+                                    .catch(err => {
+                                        console.error('Error fetching new messages:', err);
+                                    });
+                            }
+                        }, 1000); // Poll every 5 seconds
+                    }
+
+                    // Initialize 3D viewer
+                    const canvas = document.getElementById("viewer");
+                    if (canvas) {
+                        const modelPath = canvas.dataset.model || "";
+                        const color = canvas.dataset.color || "#ffffff";
+                        const texture = canvas.dataset.texture || "";
+                        const scale = parseFloat(canvas.dataset.scale) || 1;
+                        const width = parseFloat(canvas.dataset.width) || 1;
+                        const height = parseFloat(canvas.dataset.height) || 1;
+
+                        console.log("🎨 Initializing 3D viewer:", { modelPath, color, texture, scale, width, height });
+                        initThreeViewer(modelPath, color, texture, scale, width, height);
+                    }
+
+                    // Send message handler
+                    $("#Send").off("click").on("click", function(){
+                        console.log("Send clicked");
+                        var Message = $("#Message").val().trim();
+                        if (!Message) return;
+
+                        $.ajax({
+                            url: "/Home/SendMessage",
+                            method: "POST",
+                            data: {
+                                Id: orderId,
+                                Message: Message
+                            },
+                            success: function(response){
+                                console.log(response);
+                                $("#Message").val('');
+                                // The new message will be appended on next poll
+                            },
+                            error: function(xhr){
+                                console.log(xhr.responseText);
+                            }
+                        });
+                    });
+                })
+                .catch(err => {
+                    console.error("Error loading chat:", err);
+                    chatArea.innerHTML = `
+                        <div class="text-center text-danger p-5">
+                            <i class="bi bi-exclamation-triangle fs-1 mb-3"></i>
+                            <h5>Failed to load conversation</h5>
+                            <p class="text-muted">Please try again later</p>
+                        </div>`;
+                });
+        }
+
+        // Initialize 3D viewer
+        function initThreeViewer(modelPath, color, texture, scale, width, height) {
+            setTimeout(() => {
+                const canvas = document.getElementById("viewer");
+                if (!canvas) {
+                    console.error("Canvas not found");
+                    return;
+                }
+
+                if (typeof THREE === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+                    script.onload = () => loadGLTFLoader(modelPath, color, texture, scale, width, height, canvas);
+                    document.head.appendChild(script);
+                } else {
+                    loadGLTFLoader(modelPath, color, texture, scale, width, height, canvas);
+                }
+            }, 100);
+        }
+
+        function loadGLTFLoader(modelPath, color, texture, scale, width, height, canvas) {
+            const gltfScript = document.createElement('script');
+            gltfScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
+            gltfScript.onload = () => loadOrbitControls(modelPath, color, texture, scale, width, height, canvas);
+            document.head.appendChild(gltfScript);
+        }
+
+        function loadOrbitControls(modelPath, color, texture, scale, width, height, canvas) {
+            const orbitScript = document.createElement('script');
+            orbitScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
+            orbitScript.onload = () => initScene(modelPath, color, texture, scale, width, height, canvas);
+            document.head.appendChild(orbitScript);
+        }
+
+        function initScene(modelPath, color, texture, scale, width, height, canvas) {
+            console.log("🎨 Rendering model:", modelPath);
+            console.log("📏 Dimensions - Scale:", scale, "Width:", width, "Height:", height);
+            console.log("🖼️ Texture:", texture, "Color:", color);
+
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf0f2f5);
+
+            const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+            renderer.shadowMap.enabled = true;
+
+            // Lighting setup
+            const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+            hemiLight.position.set(0, 20, 0);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            dirLight.position.set(5, 10, 7.5);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+
+            const rimLight = new THREE.DirectionalLight(0x667eea, 0.5);
+            rimLight.position.set(-5, 5, -5);
+
+            scene.add(ambient, hemiLight, dirLight, rimLight);
+
+            // Controls
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 1.0;
+            camera.position.set(0, 1.5, 4);
+
+            // Load model
+            const loader = new THREE.GLTFLoader();
+            loader.load(
+                modelPath,
+                (gltf) => {
+                    const model = gltf.scene;
+                    const colorHex = color || "#ffffff";
+                    const textureName = texture || null;
+                    const textureLoader = new THREE.TextureLoader();
+
+                    // Apply materials with proper handling
+                    model.traverse((node) => {
+                        if (node.isMesh && node.material) {
+                            node.castShadow = true;
+                            node.receiveShadow = true;
+
+                            // Clone material to avoid modifying shared materials
+                            node.material = node.material.clone();
+
+                            // Apply texture if specified
+                            if (textureName && textureName.trim() !== '') {
+                                const texturePath = `${textureName.toLowerCase()}`;
+                                console.log("🖼️ Loading texture:", texturePath);
+
+                                textureLoader.load(
+                                    texturePath,
+                                    (tex) => {
+                                        // Configure texture
+                                        tex.encoding = THREE.sRGBEncoding;
+                                        tex.wrapS = THREE.RepeatWrapping;
+                                        tex.wrapT = THREE.RepeatWrapping;
+                                        tex.repeat.set(1, 1);
+
+                                        // Apply texture to material
+                                        node.material.map = tex;
+                                        node.material.needsUpdate = true;
+
+                                        console.log("✅ Texture loaded successfully:", textureName);
+                                    },
+                                    undefined,
+                                    (error) => {
+                                        console.error("❌ Error loading texture:", texturePath, error);
+                                    }
+                                );
+                            } else {
+                                // No texture, just apply color
+                                node.material.map = null;
+                            }
+
+                            // Apply color (will be combined with texture if present)
+                            node.material.color = new THREE.Color(colorHex);
+                            node.material.needsUpdate = true;
+                        }
+                    });
+
+                    // Calculate bounding box for the model
+                    const box = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+
+                    // Apply custom scale from database
+                    model.scale.set(scale, scale, scale);
+
+                    // Normalize the model size first
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    if (maxDim > 0) {
+                        const normalizeScale = 2 / maxDim; // Normalize to size 2
+                        model.scale.multiplyScalar(normalizeScale);
+                    }
+
+                    // Apply custom proportions based on width and height
+                    model.scale.x *= width;
+                    model.scale.y *= height;
+                    model.scale.z *= width; // Use width for depth to maintain proportions
+
+                    // Recalculate center after scaling
+                    box.setFromObject(model);
+                    const newCenter = box.getCenter(new THREE.Vector3());
+
+                    // Center the model
+                    model.position.x = -newCenter.x;
+                    model.position.y = -newCenter.y;
+                    model.position.z = -newCenter.z;
+
+                    scene.add(model);
+
+                    // Adjust camera based on model size
+                    const finalSize = box.getSize(new THREE.Vector3());
+                    const maxFinalDim = Math.max(finalSize.x, finalSize.y, finalSize.z);
+                    const cameraDistance = maxFinalDim * 2.5;
+                    camera.position.set(0, cameraDistance * 0.4, cameraDistance);
+                    camera.lookAt(0, 0, 0);
+
+                    console.log(`✅ Model loaded with dimensions - W: ${width}, H: ${height}, S: ${scale}`);
+                    if (textureName) {
+                        console.log(`🎨 Texture applied: ${textureName}`);
+                    }
+                },
+                (xhr) => console.log(`Loading: ${(xhr.loaded / xhr.total * 100).toFixed(1)}%`),
+                (error) => console.error("❌ Error loading model:", error)
+            );
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Handle resize
+            const resizeObserver = new ResizeObserver(() => {
+                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            });
+            resizeObserver.observe(canvas);
+        }
+    </script>
+}

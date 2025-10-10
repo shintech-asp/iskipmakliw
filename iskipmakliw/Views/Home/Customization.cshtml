@@ -10,7 +10,7 @@
             <div class="card shadow-sm border-0 rounded-4">
                 <div class="card-body p-4">
                     <h4 class="mb-3 fw-semibold">🪑 Customize Your Own Furniture</h4>
-                    <canvas id="viewer" class="w-100 rounded-3 border" style="height: 600px;"></canvas>
+                    <canvas id="viewer" class="w-100 rounded-3" style="height: 600px;"></canvas>
                 </div>
             </div>
         </div>
@@ -29,15 +29,15 @@
 
                     <!-- Color -->
                     <h5 class="fw-semibold mt-4 mb-2">Change Color</h5>
-                    <input type="color" id="colorPicker" class="form-control form-control-color mb-3" value="#ff0000" onchange="changeColor(this.value)">
+                    <input type="color" id="colorPicker" class="form-control form-control-color mb-3" value="#ffffff" onchange="changeColor(this.value)">
 
                     <!-- Texture -->
                     <h5 class="fw-semibold mt-4 mb-2">Apply Texture</h5>
                     <div class="d-flex flex-wrap gap-2 mb-3">
-                        <img src="/textures/oak.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('/textures/oak.jpg')" />
-                        <img src="/textures/synthetic_wood.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('/textures/synthetic_wood.jpg')" />
-                        <img src="/textures/wood_table_worn.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('/textures/wood_table_worn.jpg')" />
-                        <img src="/textures/wooden_planks.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('/textures/wooden_planks.jpg')" />
+                        <img src="/textures/oak.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('oak')" />
+                        <img src="/textures/synthetic_wood.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('synthetic_wood')" />
+                        <img src="/textures/wood_table_worn.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('wood_table_worn')" />
+                        <img src="/textures/wooden_planks.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('wooden_planks')" />
                     </div>
 
                     <!-- Resizing -->
@@ -70,6 +70,7 @@
                         <input type="hidden" name="color" id="selectedColor" />
                         <input type="hidden" name="texture" id="selectedTexture" />
                         <input type="hidden" name="Dimension" id="selectedDimension" />
+                        <input type="hidden" name="Id" value="@ViewBag.Id" />
                     </form>
                 </div>
             </div>
@@ -94,6 +95,7 @@
 </style>
 
 @section Scripts {
+    <!-- Import Map for Three.js -->
     <script type="importmap">
         {
             "imports": {
@@ -107,84 +109,153 @@
         import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/loaders/GLTFLoader.js";
         import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/controls/OrbitControls.js";
 
+        // ---------------------
+        // 🧩 Global Variables
+        // ---------------------
         let scene, camera, renderer, controls, model;
-        let currentScale = 1.0, currentWidth = 1.0, currentHeight = 1.0;
         let selectedModelPath = "/models/chair.glb";
-        let selectedColor = "#ff0000";
+        let selectedColor = "#ffffff";
         let selectedTexture = "";
+        let originalModelSize = null; // Store original model dimensions
         const dimensions = { scale: 1.0, width: 1.0, height: 1.0 };
 
         const canvas = document.getElementById("viewer");
 
-        // Scene setup
+        // ---------------------
+        // 🎬 Scene Setup (Matching Chat Rendering)
+        // ---------------------
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf0f0f0);
+        scene.background = new THREE.Color(0xf0f2f5); // Match chat background
 
-        camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-        camera.position.set(0, 2, 4);
+        camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        camera.position.set(0, 1.5, 4);
 
-        renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
         renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
         renderer.shadowMap.enabled = true;
 
-        scene.add(new THREE.AmbientLight(0x404040, 0.6));
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
-        directionalLight.position.set(5, 10, 5);
-        directionalLight.castShadow = true;
-        scene.add(directionalLight);
+        // Lighting setup (matching chat)
+        const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+        hemiLight.position.set(0, 20, 0);
 
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        dirLight.position.set(5, 10, 7.5);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+
+        const rimLight = new THREE.DirectionalLight(0x667eea, 0.5);
+        rimLight.position.set(-5, 5, -5);
+
+        scene.add(ambient, hemiLight, dirLight, rimLight);
+
+        // Controls (matching chat)
         controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 1.0;
 
-        function centerAndFitModel(object) {
-            const box = new THREE.Box3().setFromObject(object);
-            const center = box.getCenter(new THREE.Vector3());
-            const size = box.getSize(new THREE.Vector3());
-            object.position.sub(center);
-            const maxDim = Math.max(size.x, size.y, size.z);
-            const fov = camera.fov * (Math.PI / 180);
-            const distance = Math.abs(maxDim / Math.sin(fov / 2)) * 1.2;
-            camera.position.set(distance, distance * 0.5, distance);
-            controls.target.set(0, 0, 0);
-            controls.update();
-        }
-
-        // Load model
+        // ---------------------
+        // 🧱 Model Loading (EXACT SAME LOGIC AS CHAT)
+        // ---------------------
         window.loadModel = (path) => {
             selectedModelPath = path;
             const loader = new GLTFLoader();
-            loader.load(path, (gltf) => {
-                if (model) scene.remove(model);
-                model = gltf.scene;
-                model.traverse((child) => {
-                    if (child.isMesh) {
-                        child.material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
-                        child.castShadow = true;
+
+            console.log("🎨 Loading model:", path);
+
+            loader.load(
+                path,
+                (gltf) => {
+                    if (model) scene.remove(model);
+                    model = gltf.scene;
+
+                    // Apply materials
+                    model.traverse((child) => {
+                        if (child.isMesh && child.material) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+
+                            // Apply color
+                            child.material.color = new THREE.Color(selectedColor);
+                            child.material.needsUpdate = true;
+                        }
+                    });
+
+                    // Calculate bounding box for the model (SAME AS CHAT)
+                    const box = new THREE.Box3().setFromObject(model);
+                    const size = box.getSize(new THREE.Vector3());
+                    originalModelSize = size.clone(); // Store original size
+
+                    // Apply custom scale from dimensions
+                    const { scale, width, height } = dimensions;
+                    model.scale.set(scale, scale, scale);
+
+                    // Normalize the model size first (SAME AS CHAT)
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    if (maxDim > 0) {
+                        const normalizeScale = 2 / maxDim; // Normalize to size 2
+                        model.scale.multiplyScalar(normalizeScale);
                     }
-                });
-                scene.add(model);
-                centerAndFitModel(model);
-                updateModelScale();
-            });
+
+                    // Apply custom proportions based on width and height (SAME AS CHAT)
+                    model.scale.x *= width;
+                    model.scale.y *= height;
+                    model.scale.z *= width; // Use width for depth to maintain proportions
+
+                    // Recalculate center after scaling (SAME AS CHAT)
+                    box.setFromObject(model);
+                    const newCenter = box.getCenter(new THREE.Vector3());
+
+                    // Center the model (SAME AS CHAT)
+                    model.position.x = -newCenter.x;
+                    model.position.y = -newCenter.y;
+                    model.position.z = -newCenter.z;
+
+                    scene.add(model);
+
+                    // Adjust camera based on model size (SAME AS CHAT)
+                    const finalSize = box.getSize(new THREE.Vector3());
+                    const maxFinalDim = Math.max(finalSize.x, finalSize.y, finalSize.z);
+                    const cameraDistance = maxFinalDim * 2.5;
+                    camera.position.set(0, cameraDistance * 0.4, cameraDistance);
+                    camera.lookAt(0, 0, 0);
+
+                    console.log(`✅ Model loaded with dimensions - W: ${width}, H: ${height}, S: ${scale}`);
+                },
+                (xhr) => console.log(`Loading: ${(xhr.loaded / xhr.total * 100).toFixed(1)}%`),
+                (error) => console.error("❌ Error loading model:", error)
+            );
         };
 
+        // ---------------------
+        // 🎨 Customization Functions
+        // ---------------------
         window.changeColor = (hex) => {
             selectedColor = hex;
             if (!model) return;
             model.traverse((child) => {
-                if (child.isMesh) {
+                if (child.isMesh && child.material) {
                     child.material.color.set(hex);
-                    child.material.map = null;
+                    child.material.needsUpdate = true;
                 }
             });
         };
 
-        window.applyTexture = (path) => {
-            selectedTexture = path;
-            const loader = new THREE.TextureLoader();
-            loader.load(path, (texture) => {
+        window.applyTexture = (textureName) => {
+            selectedTexture = textureName;
+            const texturePath = `/textures/${textureName.toLowerCase()}.jpg`;
+            const textureLoader = new THREE.TextureLoader();
+
+            textureLoader.load(texturePath, (texture) => {
                 model.traverse((child) => {
-                    if (child.isMesh) {
+                    if (child.isMesh && child.material) {
                         child.material.map = texture;
                         child.material.needsUpdate = true;
                     }
@@ -192,28 +263,72 @@
             });
         };
 
-        window.changeScale = (val) => {
-            currentScale = parseFloat(val);
-            dimensions.scale = currentScale;
+        // ---------------------
+        // 📏 Dimension Controls (USING CHAT LOGIC)
+        // ---------------------
+        window.changeScale = (val) => updateDimension("scale", val);
+        window.changeWidth = (val) => updateDimension("width", val);
+        window.changeHeight = (val) => updateDimension("height", val);
+
+        function updateDimension(type, value) {
+            dimensions[type] = parseFloat(value);
             updateModelScale();
-            document.getElementById("scaleValue").textContent = val;
-        };
-        window.changeWidth = (val) => {
-            currentWidth = parseFloat(val);
-            dimensions.width = currentWidth;
-            updateModelScale();
-            document.getElementById("widthValue").textContent = val;
-        };
-        window.changeHeight = (val) => {
-            currentHeight = parseFloat(val);
-            dimensions.height = currentHeight;
-            updateModelScale();
-            document.getElementById("heightValue").textContent = val;
-        };
+            document.getElementById(`${type}Value`).textContent = value;
+        }
+
+        function updateModelScale() {
+            if (!model || !originalModelSize) return;
+
+            // Remove model from scene to recalculate
+            const hadModel = scene.children.includes(model);
+            if (hadModel) scene.remove(model);
+
+            // Reset scale
+            model.scale.set(1, 1, 1);
+
+            // Calculate bounding box
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+
+            // Apply custom scale
+            const { scale, width, height } = dimensions;
+            model.scale.set(scale, scale, scale);
+
+            // Normalize the model size (SAME AS CHAT)
+            const maxDim = Math.max(size.x, size.y, size.z);
+            if (maxDim > 0) {
+                const normalizeScale = 2 / maxDim;
+                model.scale.multiplyScalar(normalizeScale);
+            }
+
+            // Apply custom proportions (SAME AS CHAT)
+            model.scale.x *= width;
+            model.scale.y *= height;
+            model.scale.z *= width;
+
+            // Recalculate center (SAME AS CHAT)
+            box.setFromObject(model);
+            const newCenter = box.getCenter(new THREE.Vector3());
+
+            // Center the model (SAME AS CHAT)
+            model.position.x = -newCenter.x;
+            model.position.y = -newCenter.y;
+            model.position.z = -newCenter.z;
+
+            if (hadModel) scene.add(model);
+
+            // Adjust camera (SAME AS CHAT)
+            const finalSize = box.getSize(new THREE.Vector3());
+            const maxFinalDim = Math.max(finalSize.x, finalSize.y, finalSize.z);
+            const cameraDistance = maxFinalDim * 2.5;
+            camera.position.set(0, cameraDistance * 0.4, cameraDistance);
+            camera.lookAt(0, 0, 0);
+
+            console.log(`📏 Updated dimensions - W: ${width}, H: ${height}, S: ${scale}`);
+        }
 
         window.resetDimensions = () => {
-            currentScale = currentWidth = currentHeight = 1.0;
-            dimensions.scale = dimensions.width = dimensions.height = 1.0;
+            Object.keys(dimensions).forEach(key => dimensions[key] = 1.0);
             ["scale", "width", "height"].forEach(id => {
                 document.getElementById(`${id}Slider`).value = 1.0;
                 document.getElementById(`${id}Value`).textContent = "1.0";
@@ -221,21 +336,37 @@
             updateModelScale();
         };
 
-        function updateModelScale() {
-            if (!model) return;
-            model.scale.set(currentScale * currentWidth, currentScale * currentHeight, currentScale);
-        }
-
-        // Submit form to controller
+        // ---------------------
+        // 🚀 Submit Customization
+        // ---------------------
         window.submitCustomization = () => {
-            document.getElementById("selectedModel").value = selectedModelPath;
-            document.getElementById("selectedColor").value = selectedColor;
-            document.getElementById("selectedTexture").value = selectedTexture;
-            document.getElementById("selectedDimension").value = JSON.stringify(dimensions);
-            document.getElementById("customizationForm").submit();
+            const data = {
+                Model: selectedModelPath,
+                color: selectedColor,
+                texture: selectedTexture,
+                scale: dimensions.scale,
+                width: dimensions.width,
+                height: dimensions.height,
+                Id: @ViewBag.Id
+            };
+
+            $.ajax({
+                url: '/Home/Customization',
+                type: 'POST',
+                data: data,
+                success: function () {
+                    alert("✅ Customization saved successfully!");
+                    console.log("Submitted:", data);
+                },
+                error: function (xhr) {
+                    console.error("❌ Error:", xhr.responseText);
+                }
+            });
         };
 
-        // Resize
+        // ---------------------
+        // 🔄 Handle Resizing
+        // ---------------------
         window.addEventListener("resize", () => {
             const width = canvas.clientWidth;
             const height = canvas.clientHeight;
@@ -244,11 +375,16 @@
             renderer.setSize(width, height, false);
         });
 
+        // ---------------------
+        // 🌀 Animation Loop
+        // ---------------------
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
             renderer.render(scene, camera);
         }
+
+        // Initialize
         animate();
         loadModel(selectedModelPath);
     </script>
