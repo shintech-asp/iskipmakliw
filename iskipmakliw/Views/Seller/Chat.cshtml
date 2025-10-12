@@ -123,7 +123,7 @@
                                             </p>
                                             <div class="mt-1 text-end">
                                                 <span class="badge bg-light text-dark small">
-                                                    @chat.DateSent.ToString("hh: m tt")
+                                                    @chat.DateSent.ToString("hh: mm tt")
                                                 </span>
                                             </div>
                                         </div>
@@ -156,6 +156,7 @@
 @section Scripts {
     <script>
         //Chat Data3DTexture Modeling Render
+
         let currentOrderId = null;
         let lastMessageId = 0;
         let pollInterval = null;
@@ -167,7 +168,301 @@
                 item.style.display = text.includes(searchTerm) ? '' : 'none';
             });
         });
+        $("#chatArea").on("click", "#ApproveOrder", function(){
+            const orderId = $(this).data("id")
+            console.log("ApproveOrder clicked");
+            Swal.fire({
+                title: "Approve Order?",
+                text: "Are you sure you want to approve this order?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Approve",
+                cancelButtonText: "Cancel"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    // Add AJAX call to approve the order
+                    $.ajax({
+                        url: "/Seller/Approve3DOrder",
+                        method: "POST",
+                        data: { Id: orderId },
+                        success: function(response) {
+                            console.log("Order approved:", response);
+                            Swal.fire({
+                                title: "Success",
+                                text: "Order has been approved!",
+                                icon: "success",
+                                confirmButtonText: "OK"
+                            });
+                            // Optionally reload the chat to update status
+                            loadChat(currentOrderId);
+                        },
+                        error: function(xhr) {
+                            console.error("Error approving order:", xhr.responseText);
+                            Swal.fire({
+                                title: "Error",
+                                text: "Failed to approve order. Please try again.",
+                                icon: "error",
+                                confirmButtonText: "OK"
+                            });
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        });
+            $("#chatArea").on("click", "#MarkAsComplete", function(){
+                const orderId = $(this).data("id")
+                console.log("MarkAsComplete clicked");
+                Swal.fire({
+                    title: "Complete Order?",
+                    text: "Are you sure you want to mark this as delivered?",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes",
+                    cancelButtonText: "Cancel"
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        // Add AJAX call to approve the order
+                        $.ajax({
+                            url: "/Seller/Mark3dAsComplete",
+                            method: "POST",
+                            data: { Id: orderId },
+                            success: function(response) {
+                                console.log("Order completed:", response);
+                                Swal.fire({
+                                    title: "Success",
+                                    text: "Order completed!",
+                                    icon: "success",
+                                    confirmButtonText: "OK"
+                                });
+                                location.reload();
+                                loadChat(currentOrderId);
+                            },
+                            error: function(xhr) {
+                                console.error("Error approving order:", xhr.responseText);
+                                Swal.fire({
+                                    title: "Error",
+                                    text: "Failed to approve order. Please try again.",
+                                    icon: "error",
+                                    confirmButtonText: "OK"
+                                });
+                                location.reload();
+                            }
+                        });
+                    }
+                });
+            });
+        $("#chatArea").on("click", "#DeliverOrder", function(){
+            const orderId = $(this).data("id")
+            console.log("DeliverOrder clicked");
+            Swal.fire({
+                title: "Deliver Order?",
+                text: "Are you sure you want to deliver this order?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Yes, deliver",
+                cancelButtonText: "Cancel"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    // Add AJAX call to approve the order
+                    $.ajax({
+                        url: "/Seller/Deliver3d",
+                        method: "POST",
+                        data: { Id: orderId },
+                        success: function(response) {
+                            console.log("Order delivered:", response);
+                            Swal.fire({
+                                title: "Success",
+                                text: "Order has been sent to delivery!",
+                                icon: "success",
+                                confirmButtonText: "OK"
+                            });
+                            location.reload();
+                            loadChat(currentOrderId);
+                        },
+                        error: function(xhr) {
+                            console.error("Error approving order:", xhr.responseText);
+                            Swal.fire({
+                                title: "Error",
+                                text: "Failed to approve order. Please try again.",
+                                icon: "error",
+                                confirmButtonText: "OK"
+                            });
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        });
+        $("#chatArea").on("click", "#ModifyPrice", function(){
+            const orderId = $(this).data("id") || currentOrderId;
+            console.log("ModifyPrice clicked for order ID:", orderId);
 
+            // Fetch current price and payment mode
+            $.ajax({
+                url: "/Seller/GetPrice",
+                method: "GET",
+                data: { Id: orderId },
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            title: "Modify Price",
+                            html: `
+                                <div class="form-group mb-3">
+                                    <label for="priceInput">Price</label>
+                                    <input type="number" id="priceInput" class="swal2-input" placeholder="Enter price" min="0" step="0.01" value="${response.Price || ''}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="paymentMode">Payment Mode</label>
+                                    <select id="paymentMode" class="swal2-select" required>
+                                        <option value="" disabled ${!response.ModeOfPayment ? 'selected' : ''}>Select payment mode</option>
+                                        <option value="COD" ${response.ModeOfPayment === 'COD' ? 'selected' : ''}>COD</option>
+                                        <option value="E-wallet" ${response.ModeOfPayment === 'E-wallet' ? 'selected' : ''}>E-wallet</option>
+                                    </select>
+                                </div>
+                            `,
+                            icon: "question",
+                            showCancelButton: true,
+                            confirmButtonText: "Submit",
+                            cancelButtonText: "Cancel",
+                            focusConfirm: false,
+                            preConfirm: () => {
+                                const price = document.getElementById("priceInput").value;
+                                const paymentMode = document.getElementById("paymentMode").value;
+                                if (!price || isNaN(price) || price <= 0) {
+                                    Swal.showValidationMessage("Please enter a valid price");
+                                    return false;
+                                }
+                                if (!paymentMode) {
+                                    Swal.showValidationMessage("Please select a payment mode");
+                                    return false;
+                                }
+                                return { price: parseFloat(price), paymentMode };
+                            }
+                        }).then(result => {
+                            if (result.isConfirmed) {
+                                const { price, paymentMode } = result.value;
+                                $.ajax({
+                                    url: "/Seller/Add3dPrice",
+                                    method: "POST",
+                                    data: {
+                                        Id: orderId,
+                                        Price: price,
+                                        ModeOfPayment: paymentMode
+                                    },
+                                    success: function(response) {
+                                        console.log("Price modified:", response);
+                                        Swal.fire({
+                                            title: "Success",
+                                            text: "Price and payment mode have been updated!",
+                                            icon: "success",
+                                            confirmButtonText: "OK"
+                                        });
+                                        loadChat(orderId);
+                                    },
+                                    error: function(xhr) {
+                                        console.error("Error modifying price:", xhr.responseText);
+                                        Swal.fire({
+                                            title: "Error",
+                                            text: "Failed to modify price. Please try again.",
+                                            icon: "error",
+                                            confirmButtonText: "OK"
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "Error",
+                            text: "Failed to fetch current price and payment mode.",
+                            icon: "error",
+                            confirmButtonText: "OK"
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    console.error("Error fetching price:", xhr.responseText);
+                    Swal.fire({
+                        title: "Error",
+                        text: "Failed to fetch current price. Please try again.",
+                        icon: "error",
+                        confirmButtonText: "OK"
+                    });
+                }
+            });
+        });
+        $("#chatArea").on("click", "#AddPrice", function(){
+            const orderId = $(this).data("id");
+            console.log("AddPrice clicked for order ID:", orderId);
+            Swal.fire({
+                title: "Add Price",
+                html: `
+                    <div class="form-group mb-3">
+                        <label for="priceInput">Price</label>
+                        <input type="number" id="priceInput" class="swal2-input" placeholder="Enter price" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentMode">Payment Mode</label>
+                        <select id="paymentMode" class="swal2-select" required>
+                            <option value="" disabled selected>Select payment mode</option>
+                            <option value="COD">COD</option>
+                            <option value="E-wallet">E-wallet</option>
+                        </select>
+                    </div>
+                `,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Submit",
+                cancelButtonText: "Cancel",
+                focusConfirm: false,
+                preConfirm: () => {
+                    const price = document.getElementById("priceInput").value;
+                    const paymentMode = document.getElementById("paymentMode").value;
+                    if (!price || isNaN(price) || price <= 0) {
+                        Swal.showValidationMessage("Please enter a valid price");
+                        return false;
+                    }
+                    if (!paymentMode) {
+                        Swal.showValidationMessage("Please select a payment mode");
+                        return false;
+                    }
+                    return { price: parseFloat(price), paymentMode };
+                }
+            }).then(result => {
+                if (result.isConfirmed) {
+                    const { price, paymentMode } = result.value;
+                    $.ajax({
+                        url: "/Seller/Add3dPrice",
+                        method: "POST",
+                        data: {
+                            Id: orderId,
+                            Price: price,
+                            ModeOfPayment: paymentMode
+                        },
+                        success: function(response) {
+                            console.log("Price added:", response);
+                            Swal.fire({
+                                title: "Success",
+                                text: "Price and payment mode have been added!",
+                                icon: "success",
+                                confirmButtonText: "OK"
+                            });
+                            location.reload();
+                        },
+                        error: function(xhr) {
+                            console.error("Error adding price:", xhr.responseText);
+                            Swal.fire({
+                                title: "Error",
+                                text: "Failed to add price. Please try again.",
+                                icon: "error",
+                                confirmButtonText: "OK"
+                            });
+                        }
+                    });
+                }
+            });
+        });
         // Load chat partial
         function loadChat(orderId) {
             if (currentOrderId === orderId) return;
@@ -178,7 +473,7 @@
                 clearInterval(pollInterval);
                 pollInterval = null;
             }
-
+            
             // Update active state
             document.querySelectorAll('.chat-item').forEach(item => {
                 item.classList.remove('active');
@@ -262,7 +557,7 @@
                                                         console.warn('No date sent for message:', msg);
                                                     }
 
-                                                    const bubbleClass = isFromBuyer ? "buyer" : "seller";
+                                                    const bubbleClass = isFromBuyer ? "seller" : "buyer";
                                                     const textClass = isFromBuyer ? "text-dark" : "text-white";
                                                     const timeTextClass = isFromBuyer ? "text-muted" : "text-white-50";
 
@@ -293,7 +588,7 @@
                                         console.error('Error fetching new messages:', err);
                                     });
                             }
-                        }, 5000); // Poll every 5 seconds
+                        }, 1000); // Poll every 5 seconds
                     }
 
                     // Initialize 3D viewer

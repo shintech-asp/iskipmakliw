@@ -123,7 +123,7 @@
                                             </p>
                                             <div class="mt-1 text-end">
                                                 <span class="badge bg-light text-dark small">
-                                                    @chat.DateSent.ToString("hh: m tt")
+                                                    @chat.DateSent.ToString("hh: mm tt")
                                                 </span>
                                             </div>
                                         </div>
@@ -152,7 +152,6 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
     <script>
         //Chat Data3DTexture Modeling Render
@@ -167,7 +166,86 @@
                 item.style.display = text.includes(searchTerm) ? '' : 'none';
             });
         });
+        $("#chatArea").on("click", "#PayOrderTrigger", function(){
+            const CustomizationOrderId = $(this).data("Id");
+            console.log(CustomizationOrderId)
+           $("#PayOrderModal").modal("show")
+        })
+                $("#chatArea").on("click", "#SubmitPayment", function() {
+            const orderId = currentOrderId || $(this).data("id");
+            console.log("SubmitPayment clicked for order ID:", orderId);
 
+            const paymentMethodId = $("input[name='paymentMethodOnline']:checked").val();
+            const billingId = $("input[name='billings']:checked").val();
+            const amount = parseFloat($("#AmountContainer").val()) || 0;
+            const amountInCents = Math.round(amount * 100); // Integer cents
+
+            if (!paymentMethodId || !billingId || isNaN(amount) || amount <= 0 || amountInCents <= 0) {
+                Swal.fire({
+                    title: "Error",
+                    text: "Please select payment method, delivery address, and ensure valid price.",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                    buttonsStyling: false,
+                    customClass: { confirmButton: "btn btn-primary" }
+                });
+                return;
+            }
+
+            const formattedPrice = "P " + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'); // P 12,999.00
+
+            Swal.fire({
+                title: "Confirm Payment",
+                html: `Pay <strong>${formattedPrice}</strong>? You'll be redirected to secure payment.`,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Pay Now",
+                cancelButtonText: "Cancel",
+                buttonsStyling: false,
+                customClass: {
+                    confirmButton: "btn btn-primary",
+                    cancelButton: "btn btn-secondary"
+                }
+            }).then(result => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "/Payments/Pay3dProduct",
+                        method: "POST",
+                        data: {
+                            amount: amountInCents,
+                            billings: billingId,
+                            PaymentMethodId: paymentMethodId,
+                            CustomizationOrdersId: orderId
+                        },
+                        success: function(response) {
+                            if (response.success && response.redirectUrl) {
+                                window.location.href = response.redirectUrl; // Client-side redirect
+                            } else {
+                                Swal.fire({
+                                    title: "Error",
+                                    text: response.message || "Payment session failed.",
+                                    icon: "error",
+                                    confirmButtonText: "OK",
+                                    buttonsStyling: false,
+                                    customClass: { confirmButton: "btn btn-primary" }
+                                });
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error("Payment error:", xhr.responseText);
+                            Swal.fire({
+                                title: "Error",
+                                text: "Payment failed. Try again.",
+                                icon: "error",
+                                confirmButtonText: "OK",
+                                buttonsStyling: false,
+                                customClass: { confirmButton: "btn btn-primary" }
+                            });
+                        }
+                    });
+                }
+            });
+        });
         // Load chat partial
         function loadChat(orderId) {
             if (currentOrderId === orderId) return;
@@ -184,7 +262,7 @@
                 item.classList.remove('active');
             });
             document.querySelector(`[data-order-id="${orderId}"]`)?.classList.add('active');
-
+            
             const chatArea = document.getElementById("chatArea");
             chatArea.innerHTML = `
                 <div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
@@ -538,5 +616,6 @@
             });
             resizeObserver.observe(canvas);
         }
+        
     </script>
 }

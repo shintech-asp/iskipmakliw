@@ -79,7 +79,7 @@ namespace iskipmakliw.Controllers
         [HttpPost]
         public async Task<IActionResult> PayProduct(List<int> cartSelect, int paymentMethod, int? paymentMethodOnline, int billings)
         {
-            if(paymentMethodOnline != null)
+            if (paymentMethodOnline != null)
             {
                 if (cartSelect == null || !cartSelect.Any())
                 {
@@ -195,6 +195,7 @@ namespace iskipmakliw.Controllers
                         ProductVariantsId = payment.ProductVariantsId,
                         Quantity = payment.Quantity,
                         Price = total,
+                        Source = "ProductVariants",
                         PaymentStatus = "Pending",
                         PaymentMethod = "Cash on Delivery",
                         PurchasedDate = DateTime.Now
@@ -210,7 +211,63 @@ namespace iskipmakliw.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction("Index", "Home");
             }
-            
+
+        }
+        [HttpPost]
+        public async Task<IActionResult> Pay3dProduct(long amount, int billings, int PaymentMethodId, int CustomizationOrdersId)
+        {
+            try
+            {
+                var usersId = int.Parse(User.FindFirst("UsersId")?.Value ?? "0");
+                var user = _context.Users.Find(usersId);
+                var paymentMethodData = _context.PaymentMethod.Where(u => u.UsersId == usersId && u.Id == PaymentMethodId).FirstOrDefault();
+                var email = User.FindFirst(ClaimTypes.Email)?.Value ?? "guest@example.com";
+
+                // Validate amount (in cents)
+                if (amount <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid payment amount" });
+                }
+
+                // productDetails with PHP price
+                List<(string name, decimal price, int quantity)> productDetails = new()
+        {
+            ("Cuztomization", amount / 100m, 1)
+        };
+
+                var sessionJson = await _paymongo.Create3dCheckoutSession(
+                    amount, // Pass cents directly as long
+                    "PHP",
+                    email,
+                    email,
+                    paymentMethodData.Number,
+                    productDetails,
+                    paymentMethodData.Type
+                );
+
+                dynamic session = JsonConvert.DeserializeObject(sessionJson);
+                string checkoutUrl = session?.data?.attributes?.checkout_url;
+                string sessionId = session?.data?.id;
+
+                if (string.IsNullOrEmpty(checkoutUrl) || string.IsNullOrEmpty(sessionId))
+                {
+                    return Json(new { success = false, message = "Unable to create payment session." });
+                }
+
+                // Store TempData["Amount"] as string (PHP format)
+                TempData["BillingsId"] = billings;
+                TempData["SessionId"] = sessionId;
+                TempData["Amount"] = (amount / 100m).ToString("F2"); // e.g., "12999.00"
+                TempData["CustomizationOrdersId"] = CustomizationOrdersId;
+                TempData["PaymentMethod"] = "E-wallet";
+
+                // Return JSON with redirectUrl (avoids CORS)
+                return Json(new { success = true, redirectUrl = checkoutUrl });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
         }
         public async Task<IActionResult> SuccessPurchaseProduct()
         {
@@ -261,6 +318,7 @@ namespace iskipmakliw.Controllers
                         ProductVariantsId = payment.ProductVariantsId,
                         Quantity = payment.Quantity,
                         Price = total,
+                        Source = "ProductVariants",
                         PaymentStatus = status switch
                         {
                             "paid" => "Paid",
@@ -283,6 +341,64 @@ namespace iskipmakliw.Controllers
             }
             TempData["Success"] = "Payment successful!";
             return RedirectToAction("Index", "Home");
+        }
+        public async Task<IActionResult> Success3dPurchaseProduct()
+        {
+            var userId = int.Parse(User.FindFirst("UsersId")?.Value);
+            var sessionId = TempData["SessionId"]?.ToString();
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                return BadRequest("Session not found.");
+            }
+
+            // Ask PayMongo about this checkout session
+            var sessionJson = await _paymongo.GetCheckoutSession(sessionId);
+            dynamic session = JsonConvert.DeserializeObject(sessionJson);
+
+            // payments is an array; get first payment
+            var payments = session?.data?.attributes?.payments as IEnumerable<dynamic>;
+            var first = payments?.FirstOrDefault();
+            string status = first?.attributes?.status;
+
+            var billingId = TempData["BillingsId"]?.ToString();
+            var amount = TempData["Amount"]?.ToString();
+            var CustomizationOrdersId = TempData["CustomizationOrdersId"]?.ToString();
+            if (string.IsNullOrEmpty(billingId) || string.IsNullOrEmpty(amount) || string.IsNullOrEmpty(CustomizationOrdersId))
+            {
+                return BadRequest("Invalid payment data");
+            }
+
+            // Parse amount to double
+            if (!double.TryParse(amount, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double parsedAmount))
+            {
+                return BadRequest("Invalid amount format");
+            }
+            var purchasedProduct = new PurchasedProduct
+            {
+                UsersId = userId,
+                Quantity = 1,
+                Price = parsedAmount,
+                CustomizationOrdersId = int.Parse(CustomizationOrdersId),
+                Source = "CustomizationOrders",
+                PaymentStatus = status switch
+                {
+                    "paid" => "Paid",
+                    "succeeded" => "Paid",
+                    "failed" => "Failed",
+                    _ => "Pending"
+                },
+                PaymentMethod = "E-wallet",
+                PurchasedDate = DateTime.Now,
+                BillingsId = int.Parse(billingId)
+            };
+             _context.PurchasedProduct.Add(purchasedProduct);
+             await _context.SaveChangesAsync();
+            var customizationProduct = _context.CustomizationOrders.Find(int.Parse(CustomizationOrdersId));
+            customizationProduct.PaymentStatus = "Paid";
+            _context.CustomizationOrders.Update(customizationProduct);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Payment successful!";
+            return RedirectToAction("Chat", "Home");
         }
         public async Task<IActionResult> Success()
         {

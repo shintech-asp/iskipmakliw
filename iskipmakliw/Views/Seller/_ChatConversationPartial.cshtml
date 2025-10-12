@@ -1,4 +1,5 @@
-﻿@model List<CustomizationChat>
+﻿@using System.Globalization
+@model List<CustomizationChat>
 
 
 <style>
@@ -118,11 +119,35 @@ else
                 <div class="p-3 bg-white border-top">
                     <input type="hidden" name="CustomizationOrdersId" value="@selectedChat.CustomizationOrdersId" />
                     <div class="input-group">
+
+                        @{
+                            string content;
+                            bool isDone; // Use bool to control disabled state
+
+                            if (selectedChat?.CustomizationOrders?.TransactionStatus == "Completed")
+                            {
+                                content = "Transaction completed";
+                                isDone = true;
+                            }
+                            else if (selectedChat?.CustomizationOrders?.TransactionStatus == "Cancelled")
+                            {
+                                content = "Transaction cancelled";
+                                isDone = true;
+                            }
+                            else
+                            {
+                                content = "Type your message...";
+                                isDone = false;
+                            }
+                        }
                         <input type="text" id="Message" name="Message" class="form-control border-0"
-                               placeholder="Type your message..." autocomplete="off" required />
-                        <button type="button" id="Send" class="btn btn-primary px-4">
-                            <i class="bi bi-send-fill"></i> Send
-                        </button>
+                               placeholder="@content" autocomplete="off" required @(isDone ? "disabled" : "") />
+                        @if (!isDone)
+                        {
+                            <button type="button" id="Send" class="btn btn-primary px-4">
+                                <i class="bi bi-send-fill"></i> Send
+                            </button>
+                        }
                     </div>
                 </div>
             </div>
@@ -172,6 +197,18 @@ else
                                 <small class="text-muted d-block">Dimensions</small>
                                 <span class="fw-semibold small">@($"{selectedChat.CustomizationOrders?.Width} × {selectedChat.CustomizationOrders?.Height} × {selectedChat.CustomizationOrders?.Scale}")</span>
                             </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Price</small>
+                                <span class="fw-semibold">
+                                    @(selectedChat.CustomizationOrders?.Price.HasValue == true && selectedChat.CustomizationOrders.Price > 0
+                                                                    ? $"P {selectedChat.CustomizationOrders.Price.Value.ToString("N2")}"
+                                                                    : "Not set")
+                                </span>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Payment Mode</small>
+                                <span class="fw-semibold">@(selectedChat.CustomizationOrders?.ModeOfPayment ?? "Not set")</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -194,7 +231,7 @@ else
                         <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
                             <div>
                                 <small class="text-muted d-block">Transaction</small>
-                                <span class="fw-semibold">@selectedChat.CustomizationOrders?.TransactionStatus</span>
+                                <span class="fw-semibold">@(selectedChat.CustomizationOrders?.TransactionStatus != null ? selectedChat.CustomizationOrders.TransactionStatus : "Pending")</span>
                             </div>
                             <span class="badge status-badge bg-@(selectedChat.CustomizationOrders?.TransactionStatus == "Completed" ? "success" : "secondary")">
                                 <i class="bi bi-@(selectedChat.CustomizationOrders?.TransactionStatus == "Completed" ? "check-circle" : "hourglass-split")"></i>
@@ -203,7 +240,7 @@ else
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <small class="text-muted d-block">Payment</small>
-                                <span class="fw-semibold">@selectedChat.CustomizationOrders?.PaymentStatus</span>
+                                <span class="fw-semibold">@(selectedChat.CustomizationOrders?.PaymentStatus != null ? selectedChat.CustomizationOrders.PaymentStatus : "Pending")</span>
                             </div>
                             <span class="badge status-badge bg-@(selectedChat.CustomizationOrders?.PaymentStatus == "Paid" ? "success" : "danger")">
                                 <i class="bi bi-@(selectedChat.CustomizationOrders?.PaymentStatus == "Paid" ? "check-circle" : "x-circle")"></i>
@@ -211,15 +248,46 @@ else
                         </div>
                     </div>
                 </div>
-
                 <!-- Actions -->
                 <div class="d-grid gap-2">
-                    <button class="btn btn-outline-success">
-                        <i class="bi bi-flag me-2"></i>Add price
-                    </button>
-                    <button class="btn btn-outline-danger">
-                        <i class="bi bi-flag me-2"></i>Cancel order
-                    </button>
+                    @if(selectedChat.CustomizationOrders?.SellerStatus != "Approved")
+                    {
+                        <button id="ApproveOrder" data-id="@selectedChat.CustomizationOrdersId" type="button" class="btn btn-outline-primary">
+                            <i class="bi bi-check-circle me-2"></i>Approve order
+                        </button>
+                    }
+                    else if (selectedChat.CustomizationOrders?.Price == null)
+                    {
+                        <button id="AddPrice" data-id="@selectedChat.CustomizationOrdersId" type="button" class="btn btn-outline-primary">
+                            <i class="bi bi-money me-2"></i>Add price
+                        </button>
+                    }
+                    else if(selectedChat.CustomizationOrders?.PaymentStatus != "Paid")
+                    {
+                        <button id="ModifyPrice" type="button" class="btn btn-outline-warning">
+                            <i class="bi bi-money me-2"></i>Modify price
+                        </button>
+                    }
+                    else if (selectedChat.CustomizationOrders?.TransactionStatus == null && selectedChat.CustomizationOrders?.PaymentStatus == "Paid")
+                    {
+
+                        <button id="DeliverOrder" data-id="@selectedChat.CustomizationOrdersId" type="button" class="btn btn-outline-success">
+                            <i class="bi bi-clipboard-check me-2"></i>Ship product
+                        </button>
+                    }
+                    else if(selectedChat.CustomizationOrders?.TransactionStatus == "Shipping" && selectedChat.CustomizationOrders?.PaymentStatus == "Paid")
+                    {
+
+                        <button id="MarkAsComplete" data-id="@selectedChat.CustomizationOrdersId" type="button" class="btn btn-outline-success">
+                            <i class="bi bi-clipboard-check me-2"></i>Mark as completed
+                        </button>
+                    }
+                    @if (selectedChat.CustomizationOrders?.TransactionStatus != "Completed" && selectedChat.CustomizationOrders?.PaymentStatus != "Paid")
+                    {
+                        <button id="CancelOrder" type="button" class="btn btn-outline-danger">
+                            <i class="bi bi-flag me-2"></i>Cancel order
+                        </button>
+                    }
                 </div>
             </div>
         </div>
@@ -243,5 +311,6 @@ else
             // This will be controlled by the Three.js controls
             console.log('Auto-rotate:', autoRotateEnabled);
         }
+       
     </script>
 }

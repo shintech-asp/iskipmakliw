@@ -108,6 +108,14 @@ namespace iskipmakliw.Controllers
                                     .Include(u => u.PurchasedProduct)
                                         .ThenInclude(u => u.Users)
                                             .ThenInclude(u => u.UserDetails)
+                                    .Include(u => u.PurchasedProduct)
+                                        .ThenInclude(pp => pp.CustomizationOrders)
+                                            .ThenInclude(pp => pp.Sellers)
+                                                .ThenInclude(pp => pp.UserDetails)
+                                    .Include(u => u.PurchasedProduct)
+                                        .ThenInclude(pp => pp.CustomizationOrders)
+                                            .ThenInclude(pp => pp.Users)
+                                                .ThenInclude(pp => pp.UserDetails)
                                     .Where(u => u.PurchasedProduct.Id == Id)
                                     .FirstOrDefault();
             var Rated = _context.Ratings
@@ -115,6 +123,17 @@ namespace iskipmakliw.Controllers
                                 .ThenInclude(u => u.Product)
                             .ThenInclude(u => u.Users)
                                 .ThenInclude(u => u.UserDetails)
+                            .Include(u => u.PurchasedProduct)
+                                .ThenInclude(u => u.Users)
+                                    .ThenInclude(u => u.UserDetails)
+                            .Include(u => u.PurchasedProduct)
+                                .ThenInclude(pp => pp.CustomizationOrders)
+                                    .ThenInclude(pp => pp.Sellers)
+                                        .ThenInclude(pp => pp.UserDetails)
+                            .Include(u => u.PurchasedProduct)
+                                .ThenInclude(pp => pp.CustomizationOrders)
+                                    .ThenInclude(pp => pp.Users)
+                                        .ThenInclude(pp => pp.UserDetails)
                             .Where(u => u.PurchasedProductId == Id)
                             .FirstOrDefault();
 
@@ -168,6 +187,14 @@ namespace iskipmakliw.Controllers
                             .ThenInclude(u => u.Product)
                                 .ThenInclude(u => u.Users)
                                     .ThenInclude(u => u.UserDetails)
+                        .Include(u => u.Users)
+                            .ThenInclude(u => u.UserDetails)
+                        .Include(pp => pp.CustomizationOrders)
+                            .ThenInclude(pp => pp.Sellers)
+                                .ThenInclude(pp => pp.UserDetails)
+                        .Include(pp => pp.CustomizationOrders)
+                            .ThenInclude(pp => pp.Users)
+                                .ThenInclude(pp => pp.UserDetails)
                         .Where(u => u.UsersId == usersId)
                         .ToList();
             return View(data);
@@ -227,7 +254,7 @@ namespace iskipmakliw.Controllers
         }
 
         [HttpPost]
-        public IActionResult SubmitRating(int Id, int purchasedId, int selectedRating, string? Review, IFormFile? ImageFile)
+        public IActionResult SubmitRating(int? Id, int purchasedId, int selectedRating, string? Review, IFormFile? ImageFile)
         {
             int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
             string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
@@ -251,16 +278,32 @@ namespace iskipmakliw.Controllers
                 // Save relative path in DB
                 path = $"/uploads/{govFileName}";
             }
-            var data = new Ratings
+            if(Id != null)
             {
-                ProductVariantsId = Id,
-                UsersId = usersId,
-                Stars = selectedRating,
-                Review = Review,
-                Image = path,
-                PurchasedProductId = purchasedId,
-            };
-            _context.Ratings.Add(data);
+                var data = new Ratings
+                {
+                    ProductVariantsId = Id,
+                    UsersId = usersId,
+                    Stars = selectedRating,
+                    Review = Review,
+                    Image = path,
+                    PurchasedProductId = purchasedId,
+                };
+                _context.Ratings.Add(data);
+            }
+            else
+            {
+                var data = new Ratings
+                {
+                    UsersId = usersId,
+                    Stars = selectedRating,
+                    Review = Review,
+                    Image = path,
+                    PurchasedProductId = purchasedId,
+                };
+                _context.Ratings.Add(data);
+            }
+
             var getPurchased = _context.PurchasedProduct.Find(purchasedId);
             getPurchased.TransactionStatus = "Completed";
             _context.PurchasedProduct.Update(getPurchased);
@@ -397,6 +440,9 @@ namespace iskipmakliw.Controllers
                 .Include(c => c.CustomizationOrders)
                 .Include(c => c.Sellers)
                 .Include(c => c.Users)
+                    .ThenInclude(u => u.Billings)
+                .Include(u => u.Users)
+                    .ThenInclude(u => u.PaymentMethod)
                 .OrderBy(c => c.DateSent)
                 .ToList();
 

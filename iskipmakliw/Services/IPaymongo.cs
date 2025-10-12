@@ -19,6 +19,14 @@
                               string productNames,
                               string paymentMethod);
         public Task<string> GetCheckoutSession(string sessionId);
+        public Task<string> Create3dCheckoutSession(
+        decimal amount, // Can be removed or kept for validation
+        string currency,
+        string name,
+        string email,
+        string contact,
+        List<(string name, decimal price, int quantity)> productDetails,
+        string paymentMethod);
         public void Dispose();
     }
 }

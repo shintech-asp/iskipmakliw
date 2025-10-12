@@ -119,11 +119,34 @@ else
                 <div class="p-3 bg-white border-top">
                     <input type="hidden" name="CustomizationOrdersId" value="@selectedChat.CustomizationOrdersId" />
                     <div class="input-group">
+                        @{
+                            string content;
+                            bool isDone; // Use bool to control disabled state
+
+                            if (selectedChat?.CustomizationOrders?.TransactionStatus == "Completed")
+                            {
+                                content = "Transaction completed";
+                                isDone = true;
+                            }
+                            else if (selectedChat?.CustomizationOrders?.TransactionStatus == "Cancelled")
+                            {
+                                content = "Transaction cancelled";
+                                isDone = true;
+                            }
+                            else
+                            {
+                                content = "Type your message...";
+                                isDone = false;
+                            }
+                        }
                         <input type="text" id="Message" name="Message" class="form-control border-0"
-                                placeholder="Type your message..." autocomplete="off" required />
-                        <button type="button" id="Send" class="btn btn-primary px-4">
-                            <i class="bi bi-send-fill"></i> Send
-                        </button>
+                               placeholder="@content" autocomplete="off" required @(isDone ? "disabled" : "") />
+                        @if (!isDone)
+                        {
+                            <button type="button" id="Send" class="btn btn-primary px-4">
+                                <i class="bi bi-send-fill"></i> Send
+                            </button>
+                        }
                     </div>
                 </div>
             </div>
@@ -173,6 +196,18 @@ else
                                 <small class="text-muted d-block">Dimensions</small>
                                 <span class="fw-semibold small">@($"{selectedChat.CustomizationOrders?.Width} × {selectedChat.CustomizationOrders?.Height} × {selectedChat.CustomizationOrders?.Scale}")</span>
                             </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Price</small>
+                            <span class="fw-semibold">
+                                @(selectedChat.CustomizationOrders?.Price.HasValue == true && selectedChat.CustomizationOrders.Price > 0
+                                                                ? $"P {selectedChat.CustomizationOrders.Price.Value.ToString("N2")}"
+                                                                : "Not set")
+                            </span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Payment Mode</small>
+                            <span class="fw-semibold">@(selectedChat.CustomizationOrders?.ModeOfPayment ?? "Not set")</span>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -195,7 +230,7 @@ else
                         <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
                             <div>
                                 <small class="text-muted d-block">Transaction</small>
-                                <span class="fw-semibold">@selectedChat.CustomizationOrders?.TransactionStatus</span>
+                                <span class="fw-semibold">@(selectedChat.CustomizationOrders?.TransactionStatus != null ? selectedChat.CustomizationOrders.TransactionStatus : "Pending")</span>
                             </div>
                             <span class="badge status-badge bg-@(selectedChat.CustomizationOrders?.TransactionStatus == "Completed" ? "success" : "secondary")">
                                 <i class="bi bi-@(selectedChat.CustomizationOrders?.TransactionStatus == "Completed" ? "check-circle" : "hourglass-split")"></i>
@@ -204,7 +239,7 @@ else
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <small class="text-muted d-block">Payment</small>
-                                <span class="fw-semibold">@selectedChat.CustomizationOrders?.PaymentStatus</span>
+                                <span class="fw-semibold">@(selectedChat.CustomizationOrders?.PaymentStatus != null ? selectedChat.CustomizationOrders.PaymentStatus : "Pending")</span>
                             </div>
                             <span class="badge status-badge bg-@(selectedChat.CustomizationOrders?.PaymentStatus == "Paid" ? "success" : "danger")">
                                 <i class="bi bi-@(selectedChat.CustomizationOrders?.PaymentStatus == "Paid" ? "check-circle" : "x-circle")"></i>
@@ -215,9 +250,110 @@ else
 
                 <!-- Actions -->
                 <div class="d-grid gap-2">
-                    <button class="btn btn-outline-danger">
-                        <i class="bi bi-flag me-2"></i>Cancel order
-                    </button>
+                    @if(selectedChat.CustomizationOrders?.Price != null && selectedChat.CustomizationOrders?.PaymentStatus != "Paid")
+                    {
+                        <button class="btn btn-outline-primary" id="PayOrderTrigger" data-id="@selectedChat.CustomizationOrdersId">
+                            <i class="bi bi-flag me-2"></i>Pay order
+                        </button>
+                    }
+                    @if (selectedChat.CustomizationOrders?.PaymentStatus != "Paid" && (selectedChat.CustomizationOrders?.TransactionStatus != "Completed" || selectedChat.CustomizationOrders?.TransactionStatus != "Cancelled"))
+                    {
+                        <button class="btn btn-outline-danger">
+                            <i class="bi bi-flag me-2"></i>Cancel order
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="modal fade" id="PayOrderModal" tabindex="-1" aria-labelledby="PayOrder" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content widget-card">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title" id="PayOrder">Payment Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>Price: </strong>
+                    <span id="PriceContainer">
+                        @(selectedChat.CustomizationOrders?.Price.HasValue == true && selectedChat.CustomizationOrders.Price > 0
+                                                ? $"P {selectedChat.CustomizationOrders.Price.Value.ToString("N2")}"
+                                                : "Not set")
+                    </span>
+                </div>
+
+                    <!-- Payment Method -->
+                    <div class="widget-card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0">Payment Method</h6>
+                        </div>
+                        <div class="card-body">
+                        @if (selectedChat.Users?.PaymentMethod?.Count > 0)
+                            {
+                                @foreach (var data in selectedChat.Users.PaymentMethod)
+                                {
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="form-check me-3">
+                                            <input class="form-check-input" type="radio" value="@data.Id" name="paymentMethodOnline" id="paymentMethod_@data.Id" required>
+                                            <label class="form-check-label" for="paymentMethod_@data.Id"></label>
+                                        </div>
+                                        <div class="payment-card me-3">
+                                            @if (data.Type == "Gcash")
+                                            {
+                                                <img src="~/src/assets/img/gcash.svg" alt="Gcash" style="height:40px;">
+                                            }
+                                            else if (data.Type == "Maya")
+                                            {
+                                                <img src="~/src/assets/img/maya.png" alt="Maya" style="height:40px;">
+                                            }
+                                        </div>
+                                        <div class="billing-content">
+                                            <strong>@data.Type</strong>
+                                            <p class="mb-0 text-muted">@data.Number</p>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="fst-italic text-center text-muted mb-0">Please register an online payment method first.</p>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Delivery Address -->
+                    <div class="widget-card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0">Delivery Address</h6>
+                        </div>
+                        <div class="card-body">
+                            @if (selectedChat.Users?.Billings?.Count > 0)
+                            {
+                                @foreach (var data in selectedChat.Users.Billings)
+                                {
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="radio" value="@data.Id" name="billings" id="billing_@data.Id" required>
+                                        <label class="form-check-label w-100" for="billing_@data.Id">
+                                            <strong>@data.Address</strong><br>
+                                            <small>Contact Person: @data.Name</small><br>
+                                            <small>Contact Number: @data.ContactNumber</small>
+                                        </label>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="fst-italic text-center text-muted mb-0">Please register your delivery address first.</p>
+                            }
+                        </div>
+                        <input type="hidden" id="AmountContainer" value="@selectedChat.CustomizationOrders.Price" />
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="SubmitPayment">Submit</button>
                 </div>
             </div>
         </div>

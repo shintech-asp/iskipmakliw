@@ -27,6 +27,14 @@ namespace iskipmakliw.Controllers
                                  .ThenInclude(pv => pv.Product)
                                      .ThenInclude(p => p.Users)
                                          .ThenInclude(u => u.UserDetails)
+                         .Include(dp => dp.PurchasedProduct)
+                            .ThenInclude(pp => pp.CustomizationOrders)
+                                .ThenInclude(pp => pp.Sellers)
+                                    .ThenInclude(pp => pp.UserDetails)
+                         .Include(dp => dp.PurchasedProduct)
+                            .ThenInclude(pp => pp.CustomizationOrders)
+                                .ThenInclude(pp => pp.Users)
+                                    .ThenInclude(pp => pp.UserDetails)
                          .Where(dp => dp.RiderId == null)
                          .ToList();
             return View(data);
@@ -34,18 +42,26 @@ namespace iskipmakliw.Controllers
         public IActionResult OrderView(int Id)
         {
             var data = _context.DeliverProduct
-                         .Include(dp => dp.PurchasedProduct)
-                             .ThenInclude(pp => pp.Billings)
-                         .Include(dp => dp.PurchasedProduct)
-                             .ThenInclude(pp => pp.ProductVariants)
-                                 .ThenInclude(pv => pv.Product)
-                                     .ThenInclude(p => p.Users)
-                                         .ThenInclude(u => u.UserDetails)
-                         .Include(dp => dp.PurchasedProduct)
+                .Include(dp => dp.PurchasedProduct)
+                    .ThenInclude(pp => pp.Billings)
+                .Include(dp => dp.PurchasedProduct)
+                    .ThenInclude(pp => pp.ProductVariants)
+                        .ThenInclude(pv => pv.Product)
                             .ThenInclude(p => p.Users)
                                 .ThenInclude(u => u.UserDetails)
-                         .Where(dp => dp.RiderId == null && dp.Id == Id)
-                         .FirstOrDefault();
+                .Include(dp => dp.PurchasedProduct)
+                    .ThenInclude(p => p.Users)
+                        .ThenInclude(u => u.UserDetails)
+                .Include(dp => dp.PurchasedProduct)
+                    .ThenInclude(pp => pp.CustomizationOrders)
+                        .ThenInclude(pp => pp.Sellers)
+                            .ThenInclude(pp => pp.UserDetails)
+                .Include(dp => dp.PurchasedProduct)
+                    .ThenInclude(pp => pp.CustomizationOrders)
+                        .ThenInclude(pp => pp.Users)
+                            .ThenInclude(pp => pp.UserDetails)
+                .Where(dp => dp.RiderId == null && dp.Id == Id)
+                .FirstOrDefault();
             return View(data);
         }
 
@@ -67,15 +83,23 @@ namespace iskipmakliw.Controllers
             var usersId = int.Parse(User.FindFirst("UsersId").Value);
             var data = _context.DeliverProduct
                          .Include(dp => dp.PurchasedProduct)
-                             .ThenInclude(pp => pp.Billings)
-                         .Include(dp => dp.PurchasedProduct)
-                             .ThenInclude(pp => pp.ProductVariants)
-                                 .ThenInclude(pv => pv.Product)
-                                     .ThenInclude(p => p.Users)
-                                         .ThenInclude(u => u.UserDetails)
-                         .Include(dp => dp.PurchasedProduct)
+                            .ThenInclude(pp => pp.Billings)
+                        .Include(dp => dp.PurchasedProduct)
+                            .ThenInclude(pp => pp.ProductVariants)
+                                .ThenInclude(pv => pv.Product)
+                                    .ThenInclude(p => p.Users)
+                                        .ThenInclude(u => u.UserDetails)
+                        .Include(dp => dp.PurchasedProduct)
                             .ThenInclude(p => p.Users)
                                 .ThenInclude(u => u.UserDetails)
+                        .Include(dp => dp.PurchasedProduct)
+                            .ThenInclude(pp => pp.CustomizationOrders)
+                                .ThenInclude(pp => pp.Sellers)
+                                    .ThenInclude(pp => pp.UserDetails)
+                        .Include(dp => dp.PurchasedProduct)
+                            .ThenInclude(pp => pp.CustomizationOrders)
+                                .ThenInclude(pp => pp.Users)
+                                    .ThenInclude(pp => pp.UserDetails)
                          .Where(dp => dp.RiderId == usersId && dp.DeliveredOn == null)
                          .FirstOrDefault();
             return View(data);
@@ -130,6 +154,9 @@ namespace iskipmakliw.Controllers
                     transaction.TransactionStatus = "To rate";
                     transaction.PaymentStatus = "Paid";
                     _context.PurchasedProduct.Update(transaction);
+                    var customization = _context.CustomizationOrders.Find(data.PurchasedProduct.CustomizationOrdersId);
+                    customization.TransactionStatus = "Completed";
+                    _context.CustomizationOrders.Update(customization);
                     _context.SaveChanges();
                     TempData["Success"] = "Yay! Delivery Complete!";
 

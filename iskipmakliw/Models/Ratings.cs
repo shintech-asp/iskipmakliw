@@ -3,8 +3,8 @@
     public class Ratings
     {
         public int Id { get; set; }
-        public int ProductVariantsId { get; set; }
-        public ProductVariants ProductVariants { get; set; }
+        public int? ProductVariantsId { get; set; }
+        public ProductVariants? ProductVariants { get; set; }
         public int UsersId { get; set; }
         public Users Users { get; set; }
         public int Stars { get; set; }

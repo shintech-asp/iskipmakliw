@@ -85,6 +85,64 @@ namespace iskipmakliw.Controllers
             };
             return View(data);
         }
+        public IActionResult Approve3DOrder(int Id)
+        {
+            var data = _context.CustomizationOrders.Find(Id);
+
+            data.SellerStatus = "Approved";
+            _context.CustomizationOrders.Update(data);
+            _context.SaveChanges();
+
+            return Json(new { success = true });
+        }
+        public IActionResult GetPrice(int Id)
+        {
+            var data = _context.CustomizationOrders.Where(u => u.Id == Id).FirstOrDefault();
+
+            return Json(new { success = true, Price = data?.Price ?? 0, ModeOfPayment = data?.ModeOfPayment ?? "No selected yet" });
+
+        }
+
+
+        public IActionResult Add3dPrice(int Id, decimal Price, string ModeOfPayment)
+        {
+            var data = _context.CustomizationOrders.Find(Id);
+
+            data.Price = Price;
+            data.ModeOfPayment = ModeOfPayment;
+            _context.CustomizationOrders.Update(data);
+            _context.SaveChanges();
+
+            return Json(new { success = true });
+        }
+        public IActionResult Deliver3d(int Id)
+        {
+            var data = _context.CustomizationOrders.Find(Id);
+            data.TransactionStatus = "Shipping";
+            _context.CustomizationOrders.Update(data);
+            var purchased3d = _context.PurchasedProduct.Where(u => u.CustomizationOrdersId == Id).FirstOrDefault();
+            var updatePurchase = _context.PurchasedProduct.Find(purchased3d.Id);
+            updatePurchase.TransactionStatus = "To deliver";
+            var deliverProduct = new DeliverProduct
+            {
+                PurchasedProductId = purchased3d.Id,
+                Status = "Pending",
+            };
+            _context.PurchasedProduct.Add(updatePurchase);
+            _context.DeliverProduct.Add(deliverProduct);
+            _context.SaveChanges();
+
+            return Json(new { success = true });
+        }
+        public IActionResult Mark3dAsComplete(int Id)
+        {
+            var data = _context.CustomizationOrders.Find(Id);
+            data.TransactionStatus = "Completed";
+            _context.CustomizationOrders.Update(data);
+            _context.SaveChanges();
+
+            return Json(new { success = true });
+        }
 
         [HttpPost]
         public IActionResult SendMessage(int Id, string Message)
@@ -336,9 +394,6 @@ namespace iskipmakliw.Controllers
             }
 
         }
-
-
-
         public IActionResult Users()
         {
             return View();
@@ -362,6 +417,14 @@ namespace iskipmakliw.Controllers
                                     .Include(u => u.PurchasedProduct)
                                         .ThenInclude(u => u.Users)
                                             .ThenInclude(u => u.UserDetails)
+                                    .Include(u => u.PurchasedProduct)
+                                        .ThenInclude(pp => pp.CustomizationOrders)
+                                            .ThenInclude(pp => pp.Sellers)
+                                                .ThenInclude(pp => pp.UserDetails)
+                                    .Include(u => u.PurchasedProduct)
+                                        .ThenInclude(pp => pp.CustomizationOrders)
+                                            .ThenInclude(pp => pp.Users)
+                                                .ThenInclude(pp => pp.UserDetails)
                                     .Where(u => u.PurchasedProduct.Id == Id)
                                     .FirstOrDefault();
             var Rated = _context.Ratings
@@ -369,6 +432,17 @@ namespace iskipmakliw.Controllers
                                 .ThenInclude(u => u.Product)
                             .ThenInclude(u => u.Users)
                                 .ThenInclude(u => u.UserDetails)
+                            .Include(u => u.PurchasedProduct)
+                                .ThenInclude(u => u.Users)
+                                    .ThenInclude(u => u.UserDetails)
+                            .Include(u => u.PurchasedProduct)
+                                .ThenInclude(pp => pp.CustomizationOrders)
+                                    .ThenInclude(pp => pp.Sellers)
+                                        .ThenInclude(pp => pp.UserDetails)
+                            .Include(u => u.PurchasedProduct)
+                                .ThenInclude(pp => pp.CustomizationOrders)
+                                    .ThenInclude(pp => pp.Users)
+                                        .ThenInclude(pp => pp.UserDetails)
                             .Where(u => u.PurchasedProductId == Id)
                             .FirstOrDefault();
 
@@ -406,7 +480,13 @@ namespace iskipmakliw.Controllers
                                     .ThenInclude(u => u.UserDetails)
                         .Include(u => u.Users)
                             .ThenInclude(u => u.UserDetails)
-                        .Where(u => u.ProductVariants.Product.Users.Id == usersId)
+                        .Include(pp => pp.CustomizationOrders)
+                            .ThenInclude(pp => pp.Sellers)
+                                .ThenInclude(pp => pp.UserDetails)
+                        .Include(pp => pp.CustomizationOrders)
+                            .ThenInclude(pp => pp.Users)
+                                .ThenInclude(pp => pp.UserDetails)
+                        .Where(u => u.ProductVariants.Product.Users.Id == usersId || u.CustomizationOrders.SellersId == usersId)
                         .ToList();
             var toDeliver = _context.DeliverProduct
                                     .Include(u => u.PurchasedProduct)
@@ -417,6 +497,17 @@ namespace iskipmakliw.Controllers
                                     .Include(u => u.PurchasedProduct)
                                         .ThenInclude(u => u.Users)
                                             .ThenInclude(u => u.UserDetails)
+                                    .Include(dp => dp.PurchasedProduct)
+                                        .ThenInclude(p => p.Users)
+                                            .ThenInclude(u => u.UserDetails)
+                                    .Include(dp => dp.PurchasedProduct)
+                                        .ThenInclude(pp => pp.CustomizationOrders)
+                                            .ThenInclude(pp => pp.Sellers)
+                                                .ThenInclude(pp => pp.UserDetails)
+                                    .Include(dp => dp.PurchasedProduct)
+                                        .ThenInclude(pp => pp.CustomizationOrders)
+                                            .ThenInclude(pp => pp.Users)
+                                                .ThenInclude(pp => pp.UserDetails)
                                     .Where(u => u.PurchasedProduct.ProductVariants.Product.Users.Id == usersId)
                                     .ToList();
             var order = new SellerOrderViewModel

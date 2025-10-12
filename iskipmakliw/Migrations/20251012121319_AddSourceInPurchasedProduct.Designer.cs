@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iskipmakliw.Data;
 
@@ -11,9 +12,11 @@ using iskipmakliw.Data;
 namespace iskipmakliw.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251012121319_AddSourceInPurchasedProduct")]
+    partial class AddSourceInPurchasedProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -491,7 +494,7 @@ namespace iskipmakliw.Migrations
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ProductVariantsId")
+                    b.Property<int>("ProductVariantsId")
                         .HasColumnType("int");
 
                     b.Property<int>("PurchasedProductId")
@@ -754,7 +757,7 @@ namespace iskipmakliw.Migrations
             modelBuilder.Entity("iskipmakliw.Models.PaymentMethod", b =>
                 {
                     b.HasOne("iskipmakliw.Models.Users", "Users")
-                        .WithMany("PaymentMethod")
+                        .WithMany()
                         .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -830,7 +833,9 @@ namespace iskipmakliw.Migrations
                 {
                     b.HasOne("iskipmakliw.Models.ProductVariants", "ProductVariants")
                         .WithMany("Ratings")
-                        .HasForeignKey("ProductVariantsId");
+                        .HasForeignKey("ProductVariantsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("iskipmakliw.Models.PurchasedProduct", "PurchasedProduct")
                         .WithMany()
@@ -914,8 +919,6 @@ namespace iskipmakliw.Migrations
                     b.Navigation("Billings");
 
                     b.Navigation("Carts");
-
-                    b.Navigation("PaymentMethod");
 
                     b.Navigation("Payments");
 
