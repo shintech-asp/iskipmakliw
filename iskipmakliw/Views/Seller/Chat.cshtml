@@ -294,6 +294,48 @@
                 }
             });
         });
+        $("#chatArea").on("click", "#CancelOrder", function(){
+            const orderId = $(this).data("id")
+            console.log("Cancel clicked");
+            Swal.fire({
+                title: "Cancel Order?",
+                text: "Are you sure you want to cancel this order?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Yes, cancel it",
+                cancelButtonText: "Cancel"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    // Add AJAX call to approve the order
+                    $.ajax({
+                        url: "/Seller/Cancel3d",
+                        method: "POST",
+                        data: { Id: orderId },
+                        success: function(response) {
+                            console.log("Order cancelled:", response);
+                            Swal.fire({
+                                title: "Success",
+                                text: "Order has been cancelled!",
+                                icon: "success",
+                                confirmButtonText: "OK"
+                            });
+                            location.reload();
+                            loadChat(currentOrderId);
+                        },
+                        error: function(xhr) {
+                            console.error("Error approving order:", xhr.responseText);
+                            Swal.fire({
+                                title: "Error",
+                                text: "Failed to cancel order. Please try again.",
+                                icon: "error",
+                                confirmButtonText: "OK"
+                            });
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        });
         $("#chatArea").on("click", "#ModifyPrice", function(){
             const orderId = $(this).data("id") || currentOrderId;
             console.log("ModifyPrice clicked for order ID:", orderId);

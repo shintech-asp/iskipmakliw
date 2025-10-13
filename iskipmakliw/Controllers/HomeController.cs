@@ -165,7 +165,17 @@ namespace iskipmakliw.Controllers
 
             return View(data);
         }
+        public IActionResult Cancel3d(int Id)
+        {
+            var data = _context.CustomizationOrders.Find(Id);
+            data.TransactionStatus = "Cancelled";
+            data.SellerStatus = "Cancelled";
+            data.PaymentStatus = "Cancelled";
+            _context.CustomizationOrders.Update(data);
+            _context.SaveChanges();
 
+            return Json(new { success = true });
+        }
         public IActionResult Account()
         {
             var usersId = int.Parse(User.FindFirst("UsersId")?.Value);

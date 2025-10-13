@@ -143,7 +143,15 @@ namespace iskipmakliw.Controllers
 
             return Json(new { success = true });
         }
+        public IActionResult Cancel3d(int Id)
+        {
+            var data = _context.CustomizationOrders.Find(Id);
+            data.TransactionStatus = "Cancelled";
+            _context.CustomizationOrders.Update(data);
+            _context.SaveChanges();
 
+            return Json(new { success = true });
+        }
         [HttpPost]
         public IActionResult SendMessage(int Id, string Message)
         {

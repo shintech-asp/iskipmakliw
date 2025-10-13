@@ -256,9 +256,9 @@ else
                             <i class="bi bi-flag me-2"></i>Pay order
                         </button>
                     }
-                    @if (selectedChat.CustomizationOrders?.PaymentStatus != "Paid" && (selectedChat.CustomizationOrders?.TransactionStatus != "Completed" || selectedChat.CustomizationOrders?.TransactionStatus != "Cancelled"))
+                    @if (selectedChat.CustomizationOrders?.PaymentStatus != "Paid" && selectedChat.CustomizationOrders?.TransactionStatus != "Cancelled" && selectedChat.CustomizationOrders?.TransactionStatus != "Completed")
                     {
-                        <button class="btn btn-outline-danger">
+                        <button id="CancelOrder" data-id="@selectedChat.CustomizationOrdersId" class="btn btn-outline-danger">
                             <i class="bi bi-flag me-2"></i>Cancel order
                         </button>
                     }

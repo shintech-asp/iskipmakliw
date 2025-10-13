@@ -158,6 +158,7 @@
         let currentOrderId = null;
         let lastMessageId = 0;
         let pollInterval = null;
+
         // Search functionality
         document.getElementById('searchChats')?.addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
@@ -166,19 +167,63 @@
                 item.style.display = text.includes(searchTerm) ? '' : 'none';
             });
         });
+
+        $("#chatArea").on("click", "#CancelOrder", function(){
+            const orderId = $(this).data("id")
+            console.log("Cancel clicked");
+            Swal.fire({
+                title: "Cancel Order?",
+                text: "Are you sure you want to cancel this order?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Yes, cancel it",
+                cancelButtonText: "Cancel"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "/Home/Cancel3d",
+                        method: "POST",
+                        data: { Id: orderId },
+                        success: function(response) {
+                            console.log("Order cancelled:", response);
+                            Swal.fire({
+                                title: "Success",
+                                text: "Order has been cancelled!",
+                                icon: "success",
+                                confirmButtonText: "OK"
+                            });
+                            location.reload();
+                            loadChat(currentOrderId);
+                        },
+                        error: function(xhr) {
+                            console.error("Error approving order:", xhr.responseText);
+                            Swal.fire({
+                                title: "Error",
+                                text: "Failed to cancel order. Please try again.",
+                                icon: "error",
+                                confirmButtonText: "OK"
+                            });
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        });
+
         $("#chatArea").on("click", "#PayOrderTrigger", function(){
             const CustomizationOrderId = $(this).data("Id");
             console.log(CustomizationOrderId)
            $("#PayOrderModal").modal("show")
         })
-                $("#chatArea").on("click", "#SubmitPayment", function() {
+
+        $("#chatArea").on("click", "#SubmitPayment", function() {
             const orderId = currentOrderId || $(this).data("id");
             console.log("SubmitPayment clicked for order ID:", orderId);
 
             const paymentMethodId = $("input[name='paymentMethodOnline']:checked").val();
             const billingId = $("input[name='billings']:checked").val();
             const amount = parseFloat($("#AmountContainer").val()) || 0;
-            const amountInCents = Math.round(amount * 100); // Integer cents
+            const amountInCents = Math.round(amount * 100);
 
             if (!paymentMethodId || !billingId || isNaN(amount) || amount <= 0 || amountInCents <= 0) {
                 Swal.fire({
@@ -192,7 +237,7 @@
                 return;
             }
 
-            const formattedPrice = "P " + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'); // P 12,999.00
+            const formattedPrice = "P " + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
 
             Swal.fire({
                 title: "Confirm Payment",
@@ -219,7 +264,7 @@
                         },
                         success: function(response) {
                             if (response.success && response.redirectUrl) {
-                                window.location.href = response.redirectUrl; // Client-side redirect
+                                window.location.href = response.redirectUrl;
                             } else {
                                 Swal.fire({
                                     title: "Error",
@@ -246,23 +291,22 @@
                 }
             });
         });
+
         // Load chat partial
         function loadChat(orderId) {
             if (currentOrderId === orderId) return;
             currentOrderId = orderId;
 
-            // Clear previous polling
             if (pollInterval) {
                 clearInterval(pollInterval);
                 pollInterval = null;
             }
 
-            // Update active state
             document.querySelectorAll('.chat-item').forEach(item => {
                 item.classList.remove('active');
             });
             document.querySelector(`[data-order-id="${orderId}"]`)?.classList.add('active');
-            
+
             const chatArea = document.getElementById("chatArea");
             chatArea.innerHTML = `
                 <div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
@@ -278,15 +322,13 @@
                 .then(response => response.text())
                 .then(html => {
                     chatArea.innerHTML = html;
-                    chatArea.style.height = '80vh'; // Ensure height is maintained
+                    chatArea.style.height = '80vh';
 
-                    // Scroll to bottom of chat
                     const chatBox = document.getElementById('chatBox');
                     if (chatBox) {
                         chatBox.scrollTop = chatBox.scrollHeight;
                     }
 
-                    // Fetch all messages to determine the last message ID without reprinting
                     fetch(`/Home/GetNewMessages?orderId=${orderId}&lastMessageId=0`)
                         .then(response => response.json())
                         .then(allMessages => {
@@ -302,7 +344,6 @@
                             lastMessageId = 0;
                         })
                         .finally(() => {
-                            // Start polling after setting lastMessageId
                             startPolling();
                         });
 
@@ -319,7 +360,6 @@
                                                     const isBuyer = msg.isCustomer;
                                                     const avatar = "/src/assets/img/user-profile.jpeg";
 
-                                                    // Robust date parsing with exact format match
                                                     let timeStr = new Date().toLocaleTimeString('en-US', {
                                                         hour: '2-digit',
                                                         minute: '2-digit',
@@ -359,10 +399,7 @@
                                                     chatBox.insertAdjacentHTML('beforeend', html);
                                                 });
 
-                                                // Update lastMessageId to the latest
                                                 lastMessageId = Math.max(...newMessages.map(m => m.id));
-
-                                                // Scroll to bottom
                                                 chatBox.scrollTop = chatBox.scrollHeight;
                                             }
                                         }
@@ -371,7 +408,7 @@
                                         console.error('Error fetching new messages:', err);
                                     });
                             }
-                        }, 1000); // Poll every 5 seconds
+                        }, 1000);
                     }
 
                     // Initialize 3D viewer
@@ -404,7 +441,6 @@
                             success: function(response){
                                 console.log(response);
                                 $("#Message").val('');
-                                // The new message will be appended on next poll
                             },
                             error: function(xhr){
                                 console.log(xhr.responseText);
@@ -466,7 +502,12 @@
             scene.background = new THREE.Color(0xf0f2f5);
 
             const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            const renderer = new THREE.WebGLRenderer({
+                canvas,
+                antialias: true,
+                alpha: true,
+                premultipliedAlpha: false
+            });
             renderer.setSize(canvas.clientWidth, canvas.clientHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.outputEncoding = THREE.sRGBEncoding;
@@ -500,6 +541,8 @@
 
             // Load model
             const loader = new THREE.GLTFLoader();
+            const originalMaterials = new Map();
+
             loader.load(
                 modelPath,
                 (gltf) => {
@@ -508,14 +551,47 @@
                     const textureName = texture || null;
                     const textureLoader = new THREE.TextureLoader();
 
-                    // Apply materials with proper handling
+                    // Store original materials and apply customizations
                     model.traverse((node) => {
                         if (node.isMesh && node.material) {
                             node.castShadow = true;
                             node.receiveShadow = true;
 
+                            // Store original material properties BEFORE any modifications
+                            if (!originalMaterials.has(node)) {
+                                originalMaterials.set(node, {
+                                    color: node.material.color.clone(),
+                                    transparent: node.material.transparent,
+                                    opacity: node.material.opacity !== undefined ? node.material.opacity : 1.0,
+                                    metalness: node.material.metalness,
+                                    roughness: node.material.roughness,
+                                    transmission: node.material.transmission,
+                                    side: node.material.side
+                                });
+                            }
+
                             // Clone material to avoid modifying shared materials
                             node.material = node.material.clone();
+
+                            const original = originalMaterials.get(node);
+
+                            // CRITICAL: Preserve transparency and glass properties
+                            if (original.transparent || original.opacity < 1) {
+                                node.material.transparent = true;
+                                node.material.opacity = original.opacity;
+                                node.material.side = THREE.DoubleSide;
+                                node.material.depthWrite = false;
+                                console.log("🪟 Glass material detected - preserving transparency:", {
+                                    opacity: original.opacity,
+                                    transparent: original.transparent
+                                });
+                            }
+
+                            // Preserve PBR properties for realistic materials (glass, metal)
+                            if (original.metalness !== undefined) {
+                                node.material.metalness = original.metalness;
+                                node.material.roughness = original.roughness;
+                            }
 
                             // Apply texture if specified
                             if (textureName && textureName.trim() !== '') {
@@ -525,16 +601,21 @@
                                 textureLoader.load(
                                     texturePath,
                                     (tex) => {
-                                        // Configure texture
                                         tex.encoding = THREE.sRGBEncoding;
                                         tex.wrapS = THREE.RepeatWrapping;
                                         tex.wrapT = THREE.RepeatWrapping;
                                         tex.repeat.set(1, 1);
 
-                                        // Apply texture to material
                                         node.material.map = tex;
-                                        node.material.needsUpdate = true;
 
+                                        // If color is white (default), keep original color
+                                        if (colorHex.toLowerCase() === "#ffffff") {
+                                            node.material.color.copy(original.color);
+                                        } else {
+                                            node.material.color = new THREE.Color(colorHex);
+                                        }
+
+                                        node.material.needsUpdate = true;
                                         console.log("✅ Texture loaded successfully:", textureName);
                                     },
                                     undefined,
@@ -543,12 +624,19 @@
                                     }
                                 );
                             } else {
-                                // No texture, just apply color
+                                // No texture specified
                                 node.material.map = null;
+
+                                // Only apply color if it's not white (default)
+                                if (colorHex.toLowerCase() === "#ffffff") {
+                                    // Keep original color for glass/transparent parts
+                                    node.material.color.copy(original.color);
+                                } else {
+                                    // Apply custom color
+                                    node.material.color = new THREE.Color(colorHex);
+                                }
                             }
 
-                            // Apply color (will be combined with texture if present)
-                            node.material.color = new THREE.Color(colorHex);
                             node.material.needsUpdate = true;
                         }
                     });
@@ -564,14 +652,14 @@
                     // Normalize the model size first
                     const maxDim = Math.max(size.x, size.y, size.z);
                     if (maxDim > 0) {
-                        const normalizeScale = 2 / maxDim; // Normalize to size 2
+                        const normalizeScale = 2 / maxDim;
                         model.scale.multiplyScalar(normalizeScale);
                     }
 
                     // Apply custom proportions based on width and height
                     model.scale.x *= width;
                     model.scale.y *= height;
-                    model.scale.z *= width; // Use width for depth to maintain proportions
+                    model.scale.z *= width;
 
                     // Recalculate center after scaling
                     box.setFromObject(model);
@@ -616,6 +704,6 @@
             });
             resizeObserver.observe(canvas);
         }
-        
+
     </script>
 }

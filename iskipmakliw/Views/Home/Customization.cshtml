@@ -21,10 +21,28 @@
                 <div class="card-body p-4">
                     <!-- Model Selector -->
                     <h5 class="fw-semibold mb-3">Select Model</h5>
-                    <div class="btn-group w-100 mb-3 d-flex">
-                        <button class="btn btn-outline-primary flex-fill" onclick="loadModel('/models/chair.glb')">Chair</button>
-                        <button class="btn btn-outline-primary flex-fill" onclick="loadModel('/models/drawer.glb')">Drawer</button>
-                        <button class="btn btn-outline-primary flex-fill" onclick="loadModel('/models/table.glb')">Table</button>
+                    <div class="dropdown w-100 mb-3">
+                        <button class="btn btn-outline-primary dropdown-toggle w-100" type="button" id="modelDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            Select Furniture
+                        </button>
+                        <ul class="dropdown-menu w-100" aria-labelledby="modelDropdown">
+                            <li><h6 class="dropdown-header">Chairs</h6></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/chairs/Modern_Chair.glb')">Modern Chair</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/chairs/Designed_Chair.glb')">Designed Chair</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/chairs/Designed_Chair2.glb')">Designed Chair 2</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/chairs/Classic_Single_Chair.glb')">Classic Single Chair</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/chairs/Rustic_Chair.glb')">Modern Chair 2</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Tables</h6></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/tables/Classic_Table.glb')">Classic Tables</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/tables/Family_Table.glb')">Family Tables</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/tables/Office_Table.glb')">Office Tables</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/tables/Wooden_Round_Table.glb')">Wooden Round Tables</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Drawer</h6></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/drawers/Classic_Drawer.glb')">Classic Drawer</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/drawers/Classic_Drawer2.glb')">Classic Drawer 2</a></li>
+                        </ul>
                     </div>
 
                     <!-- Color -->
@@ -35,9 +53,10 @@
                     <h5 class="fw-semibold mt-4 mb-2">Apply Texture</h5>
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         <img src="/textures/oak.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('oak')" />
-                        <img src="/textures/synthetic_wood.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('synthetic_wood')" />
                         <img src="/textures/wood_table_worn.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('wood_table_worn')" />
-                        <img src="/textures/wooden_planks.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('wooden_planks')" />
+                        <img src="/textures/spanish_cedar.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('spanish_cedar')" />
+                        <img src="/textures/walnut.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('walnut')" />
+                        <img src="/textures/white_ash.jpg" class="img-thumbnail texture-thumb" onclick="applyTexture('white_ash')" />
                     </div>
 
                     <!-- Resizing -->
@@ -95,6 +114,9 @@
 </style>
 
 @section Scripts {
+    <!-- jQuery (required for submitCustomization) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <!-- Import Map for Three.js -->
     <script type="importmap">
         {
@@ -116,16 +138,19 @@
         let selectedModelPath = "/models/chair.glb";
         let selectedColor = "#ffffff";
         let selectedTexture = "";
-        let originalModelSize = null; // Store original model dimensions
+        let originalModelSize = null;
+        let texturePath = "";
         const dimensions = { scale: 1.0, width: 1.0, height: 1.0 };
-
         const canvas = document.getElementById("viewer");
 
+        // Store original material colors for each mesh
+        let originalMaterialColors = new Map();
+
         // ---------------------
-        // 🎬 Scene Setup (Matching Chat Rendering)
+        // 🎬 Scene Setup
         // ---------------------
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf0f2f5); // Match chat background
+        scene.background = new THREE.Color(0xf0f2f5);
 
         camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
         camera.position.set(0, 1.5, 4);
@@ -138,7 +163,7 @@
         renderer.toneMappingExposure = 1.2;
         renderer.shadowMap.enabled = true;
 
-        // Lighting setup (matching chat)
+        // Lighting setup
         const ambient = new THREE.AmbientLight(0xffffff, 0.8);
         const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
         hemiLight.position.set(0, 20, 0);
@@ -154,7 +179,7 @@
 
         scene.add(ambient, hemiLight, dirLight, rimLight);
 
-        // Controls (matching chat)
+        // Controls
         controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
@@ -162,9 +187,16 @@
         controls.autoRotateSpeed = 1.0;
 
         // ---------------------
-        // 🧱 Model Loading (EXACT SAME LOGIC AS CHAT)
+        // 🧱 Model Loading
         // ---------------------
         window.loadModel = (path) => {
+            // Validate path
+            if (typeof path !== "string" || !path) {
+                console.error("Invalid model path:", path);
+                alert("Error: Invalid model path. Please check the model file URL.");
+                return;
+            }
+
             selectedModelPath = path;
             const loader = new GLTFLoader();
 
@@ -176,51 +208,92 @@
                     if (model) scene.remove(model);
                     model = gltf.scene;
 
-                    // Apply materials
+                    // Store original material colors and apply initial settings
+                    originalMaterialColors.clear();
                     model.traverse((child) => {
                         if (child.isMesh && child.material) {
                             child.castShadow = true;
                             child.receiveShadow = true;
 
-                            // Apply color
-                            child.material.color = new THREE.Color(selectedColor);
-                            child.material.needsUpdate = true;
+                            // Store the original material color
+                            originalMaterialColors.set(child, child.material.color.clone());
+
+                            // Apply color or texture based on current settings
+                            if (selectedColor.toLowerCase() === "#ffffff") {
+                                if (selectedTexture && texturePath) {
+                                    const textureLoader = new THREE.TextureLoader();
+                                    textureLoader.load(
+                                        texturePath,
+                                        (texture) => {
+                                            texture.encoding = THREE.sRGBEncoding;
+                                            texture.wrapS = THREE.RepeatWrapping;
+                                            texture.wrapT = THREE.RepeatWrapping;
+                                            texture.repeat.set(1, 1);
+                                            child.material.map = texture;
+                                            child.material.color.copy(originalMaterialColors.get(child));
+                                            child.material.needsUpdate = true;
+                                        },
+                                        undefined,
+                                        (error) => console.error("❌ Error loading texture:", error)
+                                    );
+                                } else {
+                                    child.material.map = null;
+                                    child.material.color.copy(originalMaterialColors.get(child));
+                                    child.material.needsUpdate = true;
+                                }
+                            } else {
+                                child.material.color.set(selectedColor);
+                                if (selectedTexture && texturePath) {
+                                    const textureLoader = new THREE.TextureLoader();
+                                    textureLoader.load(
+                                        texturePath,
+                                        (texture) => {
+                                            texture.encoding = THREE.sRGBEncoding;
+                                            texture.wrapS = THREE.RepeatWrapping;
+                                            texture.wrapT = THREE.RepeatWrapping;
+                                            texture.repeat.set(1, 1);
+                                            child.material.map = texture;
+                                            child.material.needsUpdate = true;
+                                        },
+                                        undefined,
+                                        (error) => console.error("❌ Error loading texture:", error)
+                                    );
+                                } else {
+                                    child.material.map = null;
+                                }
+                                child.material.needsUpdate = true;
+                            }
                         }
                     });
 
-                    // Calculate bounding box for the model (SAME AS CHAT)
+                    // Calculate bounding box
                     const box = new THREE.Box3().setFromObject(model);
                     const size = box.getSize(new THREE.Vector3());
-                    originalModelSize = size.clone(); // Store original size
+                    originalModelSize = size.clone();
 
-                    // Apply custom scale from dimensions
+                    // Apply custom scale
                     const { scale, width, height } = dimensions;
                     model.scale.set(scale, scale, scale);
 
-                    // Normalize the model size first (SAME AS CHAT)
                     const maxDim = Math.max(size.x, size.y, size.z);
                     if (maxDim > 0) {
-                        const normalizeScale = 2 / maxDim; // Normalize to size 2
+                        const normalizeScale = 2 / maxDim;
                         model.scale.multiplyScalar(normalizeScale);
                     }
 
-                    // Apply custom proportions based on width and height (SAME AS CHAT)
                     model.scale.x *= width;
                     model.scale.y *= height;
-                    model.scale.z *= width; // Use width for depth to maintain proportions
+                    model.scale.z *= width;
 
-                    // Recalculate center after scaling (SAME AS CHAT)
                     box.setFromObject(model);
                     const newCenter = box.getCenter(new THREE.Vector3());
 
-                    // Center the model (SAME AS CHAT)
                     model.position.x = -newCenter.x;
                     model.position.y = -newCenter.y;
                     model.position.z = -newCenter.z;
 
                     scene.add(model);
 
-                    // Adjust camera based on model size (SAME AS CHAT)
                     const finalSize = box.getSize(new THREE.Vector3());
                     const maxFinalDim = Math.max(finalSize.x, finalSize.y, finalSize.z);
                     const cameraDistance = maxFinalDim * 2.5;
@@ -230,7 +303,10 @@
                     console.log(`✅ Model loaded with dimensions - W: ${width}, H: ${height}, S: ${scale}`);
                 },
                 (xhr) => console.log(`Loading: ${(xhr.loaded / xhr.total * 100).toFixed(1)}%`),
-                (error) => console.error("❌ Error loading model:", error)
+                (error) => {
+                    console.error("❌ Error loading model:", error);
+                    alert("Failed to load model. Please check the console for details.");
+                }
             );
         };
 
@@ -240,31 +316,91 @@
         window.changeColor = (hex) => {
             selectedColor = hex;
             if (!model) return;
+
             model.traverse((child) => {
                 if (child.isMesh && child.material) {
-                    child.material.color.set(hex);
-                    child.material.needsUpdate = true;
+                    if (hex.toLowerCase() === "#ffffff") {
+                        // Use texture's default color or original material color
+                        if (selectedTexture && texturePath) {
+                            const textureLoader = new THREE.TextureLoader();
+                            textureLoader.load(
+                                texturePath,
+                                (texture) => {
+                                    texture.encoding = THREE.sRGBEncoding;
+                                    texture.wrapS = THREE.RepeatWrapping;
+                                    texture.wrapT = THREE.RepeatWrapping;
+                                    texture.repeat.set(1, 1);
+                                    child.material.map = texture;
+                                    child.material.color.copy(originalMaterialColors.get(child) || new THREE.Color(0xffffff));
+                                    child.material.needsUpdate = true;
+                                },
+                                undefined,
+                                (error) => console.error("❌ Error loading texture:", error)
+                            );
+                        } else {
+                            child.material.map = null;
+                            child.material.color.copy(originalMaterialColors.get(child) || new THREE.Color(0xffffff));
+                            child.material.needsUpdate = true;
+                        }
+                    } else {
+                        // Apply selected color, keep texture if present
+                        child.material.color.set(hex);
+                        if (selectedTexture && texturePath) {
+                            const textureLoader = new THREE.TextureLoader();
+                            textureLoader.load(
+                                texturePath,
+                                (texture) => {
+                                    texture.encoding = THREE.sRGBEncoding;
+                                    texture.wrapS = THREE.RepeatWrapping;
+                                    texture.wrapT = THREE.RepeatWrapping;
+                                    texture.repeat.set(1, 1);
+                                    child.material.map = texture;
+                                    child.material.needsUpdate = true;
+                                },
+                                undefined,
+                                (error) => console.error("❌ Error loading texture:", error)
+                            );
+                        } else {
+                            child.material.map = null;
+                        }
+                        child.material.needsUpdate = true;
+                    }
                 }
             });
         };
 
         window.applyTexture = (textureName) => {
             selectedTexture = textureName;
-            const texturePath = `/textures/${textureName.toLowerCase()}.jpg`;
-            const textureLoader = new THREE.TextureLoader();
+            texturePath = `/textures/${textureName.toLowerCase()}.jpg`;
+            if (!model) return;
 
-            textureLoader.load(texturePath, (texture) => {
-                model.traverse((child) => {
-                    if (child.isMesh && child.material) {
-                        child.material.map = texture;
-                        child.material.needsUpdate = true;
-                    }
-                });
-            });
+            const textureLoader = new THREE.TextureLoader();
+            textureLoader.load(
+                texturePath,
+                (texture) => {
+                    texture.encoding = THREE.sRGBEncoding;
+                    texture.wrapS = THREE.RepeatWrapping;
+                    texture.wrapT = THREE.RepeatWrapping;
+                    texture.repeat.set(1, 1);
+                    model.traverse((child) => {
+                        if (child.isMesh && child.material) {
+                            child.material.map = texture;
+                            if (selectedColor.toLowerCase() === "#ffffff") {
+                                child.material.color.copy(originalMaterialColors.get(child) || new THREE.Color(0xffffff));
+                            } else {
+                                child.material.color.set(selectedColor);
+                            }
+                            child.material.needsUpdate = true;
+                        }
+                    });
+                },
+                undefined,
+                (error) => console.error("❌ Error loading texture:", error)
+            );
         };
 
         // ---------------------
-        // 📏 Dimension Controls (USING CHAT LOGIC)
+        // 📏 Dimension Controls
         // ---------------------
         window.changeScale = (val) => updateDimension("scale", val);
         window.changeWidth = (val) => updateDimension("width", val);
@@ -279,45 +415,36 @@
         function updateModelScale() {
             if (!model || !originalModelSize) return;
 
-            // Remove model from scene to recalculate
             const hadModel = scene.children.includes(model);
             if (hadModel) scene.remove(model);
 
-            // Reset scale
             model.scale.set(1, 1, 1);
 
-            // Calculate bounding box
             const box = new THREE.Box3().setFromObject(model);
             const size = box.getSize(new THREE.Vector3());
 
-            // Apply custom scale
             const { scale, width, height } = dimensions;
             model.scale.set(scale, scale, scale);
 
-            // Normalize the model size (SAME AS CHAT)
             const maxDim = Math.max(size.x, size.y, size.z);
             if (maxDim > 0) {
                 const normalizeScale = 2 / maxDim;
                 model.scale.multiplyScalar(normalizeScale);
             }
 
-            // Apply custom proportions (SAME AS CHAT)
             model.scale.x *= width;
             model.scale.y *= height;
             model.scale.z *= width;
 
-            // Recalculate center (SAME AS CHAT)
             box.setFromObject(model);
             const newCenter = box.getCenter(new THREE.Vector3());
 
-            // Center the model (SAME AS CHAT)
             model.position.x = -newCenter.x;
             model.position.y = -newCenter.y;
             model.position.z = -newCenter.z;
 
             if (hadModel) scene.add(model);
 
-            // Adjust camera (SAME AS CHAT)
             const finalSize = box.getSize(new THREE.Vector3());
             const maxFinalDim = Math.max(finalSize.x, finalSize.y, finalSize.z);
             const cameraDistance = maxFinalDim * 2.5;
@@ -343,7 +470,7 @@
             const data = {
                 Model: selectedModelPath,
                 color: selectedColor,
-                texture: selectedTexture,
+                texture: texturePath,
                 scale: dimensions.scale,
                 width: dimensions.width,
                 height: dimensions.height,
@@ -360,6 +487,7 @@
                 },
                 error: function (xhr) {
                     console.error("❌ Error:", xhr.responseText);
+                    alert("Failed to save customization. Please check the console for details.");
                 }
             });
         };
@@ -385,6 +513,7 @@
         }
 
         // Initialize
+        console.log("Initializing 3D viewer...");
         animate();
         loadModel(selectedModelPath);
     </script>

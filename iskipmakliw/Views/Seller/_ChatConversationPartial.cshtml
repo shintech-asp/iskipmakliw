@@ -282,9 +282,9 @@ else
                             <i class="bi bi-clipboard-check me-2"></i>Mark as completed
                         </button>
                     }
-                    @if (selectedChat.CustomizationOrders?.TransactionStatus != "Completed" && selectedChat.CustomizationOrders?.PaymentStatus != "Paid")
+                    @if (selectedChat.CustomizationOrders?.TransactionStatus != "Cancelled" && selectedChat.CustomizationOrders?.TransactionStatus != "Completed" && selectedChat.CustomizationOrders?.PaymentStatus != "Paid")
                     {
-                        <button id="CancelOrder" type="button" class="btn btn-outline-danger">
+                        <button id="CancelOrder" data-id="@selectedChat.CustomizationOrdersId" type="button" class="btn btn-outline-danger">
                             <i class="bi bi-flag me-2"></i>Cancel order
                         </button>
                     }
