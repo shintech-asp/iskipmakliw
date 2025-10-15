@@ -309,22 +309,32 @@ else if (Model.Users.UserDetails?.Status == "Approved")
                                 </div>
                             </div>
                             <ul>
-                                @foreach (var data in Model.PurchasedProduct.Distinct())
+                                @if (Model.PurchasedProduct.Any())
+                                {
+                                    @foreach (var data in Model.PurchasedProduct.Distinct())
+                                    {
+                                        <li>
+                                            <div class="category-info">
+                                                <div class="category-icon">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                              d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                                                    </svg>
+                                                </div>
+                                                <span class="category-name">@data.ProductVariants.Material - @data.ProductVariants.Product.Name</span><br />
+                                                <p>@data.Quantity pcs</p>
+                                            </div>
+                                            <div class="category-value">@($"₱{data.Price:N2}")</div>
+                                        </li>
+                                    }
+                                }
+                                else
                                 {
                                     <li>
-                                        <div class="category-info">
-                                            <div class="category-icon">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                          d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-                                                </svg>
-                                            </div>
-                                            <span class="category-name">@data.ProductVariants.Material - @data.ProductVariants.Product.Name</span><br />
-                                            <p>@data.Quantity pcs</p>
-                                        </div>
-                                        <div class="category-value">@($"₱{data.Price:N2}")</div>
+                                        <p class="text-center fst-italic">No sales yet</p>
                                     </li>
                                 }
+
                             </ul>
                         </div>
                     </div>
@@ -350,28 +360,37 @@ else if (Model.Users.UserDetails?.Status == "Approved")
                                 </tr>
                             </thead>
                             <tbody>
-                                    @foreach(var data in Model.PurchasedProduct)
+                                    @if (Model.PurchasedProduct.Any())
+                                    {
+                                        @foreach (var data in Model.PurchasedProduct)
+                                        {
+                                            <tr>
+                                                <td><div class="td-content customer-name"><img src="~/src/assets/img/OakMartLogo.png" alt="avatar"><span>@data.Users.Username</span></div></td>
+                                                <td><div class="td-content product-brand text-primary">@data.ProductVariants.Material - @data.ProductVariants.Product.Name</div></td>
+                                                <td><div class="td-content product-invoice">#1000@(data.Id)</div></td>
+                                                <td>
+                                                    <div class="td-content pricing">
+                                                        <span class="">
+                                                            @($"₱{data.Price:N2}")
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                @if (data.PaymentStatus == "Pending")
+                                                {
+                                                    <td><div class="td-content"><span class="badge badge-warning">Pending</span></div></td>
+                                                }
+                                                else
+                                                {
+                                                    <td><div class="td-content"><span class="badge badge-success">Paid</span></div></td>
+                                                }
+                                            </tr>
+                                        }
+                                    }
+                                    else
                                     {
                                         <tr>
-                                            <td><div class="td-content customer-name"><img src="~/src/assets/img/OakMartLogo.png" alt="avatar"><span>@data.Users.Username</span></div></td>
-                                            <td><div class="td-content product-brand text-primary">@data.ProductVariants.Material - @data.ProductVariants.Product.Name</div></td>
-                                            <td><div class="td-content product-invoice">#1000@(data.Id)</div></td>
-                                            <td>
-                                                <div class="td-content pricing">
-                                                    <span class="">
-                                                        @($"₱{data.Price:N2}")
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            @if (data.PaymentStatus == "Pending")
-                                            {
-                                                <td><div class="td-content"><span class="badge badge-warning">Pending</span></div></td>
-                                            }
-                                            else
-                                            {
-                                                <td><div class="td-content"><span class="badge badge-success">Paid</span></div></td>
-                                            }
-                                        </tr>
+                                            <td colspan="5" class="text-center fst-italic">No orders yet</td>
+                                        </tr> 
                                     }
                                 </tbody>
                         </table>
@@ -399,40 +418,49 @@ else if (Model.Users.UserDetails?.Status == "Approved")
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var data in Model.ProductVariants)
-                                {
-                                    <tr>
-                                        <td>
-                                            <div class="td-content product-name">
-                                                    @{
-                                                        if (data.ProductImage != null)
-                                                        {
-                                                            <img src="@data.ProductImage" alt="product">
+                                    @if (Model.ProductVariants.Any())
+                                    {
+                                        @foreach (var data in Model.ProductVariants)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <div class="td-content product-name">
+                                                        @{
+                                                            if (data.ProductImage != null)
+                                                            {
+                                                                <img src="@data.ProductImage" alt="product">
+                                                            }
+                                                            else
+                                                            {
+                                                                <img src="~/src/assets/img/OakMartLogo.png" alt"product" />
+                                                            }
                                                         }
-                                                        else
-                                                        {
-                                                            <img src="~/src/assets/img/OakMartLogo.png" alt"product" />
-                                                        }
-                                                    }
-                                                <div class="align-self-center">
-                                                    <p class="prd-name">@data.Product.Name</p>
-                                                    <p class="prd-category text-primary">@data.Material</p>
-                                                    <p class="text-mute">@(data.Dimension ?? "Default")</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><div class="td-content"><span class="pricing">₱@data.Price.ToString("N2")</span></div></td>
-                                            <td>
-                                                <div class="td-content">
-                                                    <span class="discount-pricing">
-                                                        @(data.Discount.HasValue ? $"{data.Discount.Value}%" : "No discount")
-                                                    </span>
-                                                </div>
-                                            </td>
-                                        <td><div class="td-content">@data.PurchasedProduct.Sum(u => u.Quantity)</div></td>
-                                    </tr>
-                                }
-                            </tbody>
+                                                        <div class="align-self-center">
+                                                            <p class="prd-name">@data.Product.Name</p>
+                                                            <p class="prd-category text-primary">@data.Material</p>
+                                                            <p class="text-mute">@(data.Dimension ?? "Default")</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td><div class="td-content"><span class="pricing">₱@data.Price.ToString("N2")</span></div></td>
+                                                <td>
+                                                    <div class="td-content">
+                                                        <span class="discount-pricing">
+                                                            @(data.Discount.HasValue ? $"{data.Discount.Value}%" : "No discount")
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td><div class="td-content">@data.PurchasedProduct.Sum(u => u.Quantity)</div></td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="4" class="text-center fst-italic">No product found</td>
+                                        </tr>
+                                    }
+                                </tbody>
                         </table>
                     </div>
                 </div>
@@ -444,40 +472,58 @@ else if (Model.Users.UserDetails?.Status == "Approved")
 
 }
 @{
-    // Base range (oldest purchase to today)
-    var startDate = Model.PurchasedProduct.Min(p => p.PurchasedDate);
-    var endDate = DateTime.Now;
+    var purchasedProducts = Model.PurchasedProduct ?? new List<PurchasedProduct>();
 
-    // Build datasets
-    var dailyData = Enumerable.Range(0, (endDate - startDate).Days + 1)
-        .Select(i => startDate.AddDays(i))
-        .Select(date => new
-        {
-            Label = date.ToString("MMM dd"),
-            Value = Model.PurchasedProduct
-                .Where(p => p.PurchasedDate.Date == date.Date)
-                .Sum(p => (double?)p.Price ?? 0)
-        }).ToList();
+    // Declare datasets (with clear structure)
+    List<(string Label, double Value)> dailyData;
+    List<(string Label, double Value)> weeklyData;
+    List<(string Label, double Value)> monthlyData;
 
-    var weeklyData = Enumerable.Range(0, (int)Math.Ceiling((endDate - startDate).TotalDays / 7))
-        .Select(i => startDate.AddDays(i * 7))
-        .Select(weekStart => new
-        {
-            Label = $"{weekStart:MMM dd}",
-            Value = Model.PurchasedProduct
-                .Where(p => p.PurchasedDate >= weekStart && p.PurchasedDate < weekStart.AddDays(7))
-                .Sum(p => (double?)p.Price ?? 0)
-        }).ToList();
+    if (purchasedProducts.Any())
+    {
+        var startDate = purchasedProducts.Min(p => p.PurchasedDate);
+        var endDate = DateTime.Now;
 
-    var monthlyData = Enumerable.Range(0, ((endDate.Year - startDate.Year) * 12) + endDate.Month - startDate.Month + 1)
-        .Select(i => startDate.AddMonths(i))
-        .Select(month => new
-        {
-            Label = month.ToString("MMM yyyy"),
-            Value = Model.PurchasedProduct
-                .Where(p => p.PurchasedDate.Year == month.Year && p.PurchasedDate.Month == month.Month)
-                .Sum(p => (double?)p.Price ?? 0)
-        }).ToList();
+        // Daily data
+        dailyData = Enumerable.Range(0, (endDate - startDate).Days + 1)
+            .Select(i => startDate.AddDays(i))
+            .Select(date => (
+                Label: date.ToString("MMM dd"),
+                Value: purchasedProducts
+                    .Where(p => p.PurchasedDate.Date == date.Date)
+                    .Sum(p => (double?)p.Price ?? 0)
+            ))
+            .ToList();
+
+        // Weekly data
+        weeklyData = Enumerable.Range(0, (int)Math.Ceiling((endDate - startDate).TotalDays / 7))
+            .Select(i => startDate.AddDays(i * 7))
+            .Select(weekStart => (
+                Label: $"{weekStart:MMM dd}",
+                Value: purchasedProducts
+                    .Where(p => p.PurchasedDate >= weekStart && p.PurchasedDate < weekStart.AddDays(7))
+                    .Sum(p => (double?)p.Price ?? 0)
+            ))
+            .ToList();
+
+        // Monthly data
+        monthlyData = Enumerable.Range(0, ((endDate.Year - startDate.Year) * 12) + endDate.Month - startDate.Month + 1)
+            .Select(i => startDate.AddMonths(i))
+            .Select(month => (
+                Label: month.ToString("MMM yyyy"),
+                Value: purchasedProducts
+                    .Where(p => p.PurchasedDate.Year == month.Year && p.PurchasedDate.Month == month.Month)
+                    .Sum(p => (double?)p.Price ?? 0)
+            ))
+            .ToList();
+    }
+    else
+    {
+        // Default values for new accounts (no purchases yet)
+        dailyData = new() { ("No Data", 0.0) };
+        weeklyData = new() { ("No Data", 0.0) };
+        monthlyData = new() { ("No Data", 0.0) };
+    }
 }
 
 @section Scripts {

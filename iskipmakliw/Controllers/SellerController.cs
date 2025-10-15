@@ -128,7 +128,7 @@ namespace iskipmakliw.Controllers
                 PurchasedProductId = purchased3d.Id,
                 Status = "Pending",
             };
-            _context.PurchasedProduct.Add(updatePurchase);
+            _context.PurchasedProduct.Update(updatePurchase);
             _context.DeliverProduct.Add(deliverProduct);
             _context.SaveChanges();
 
