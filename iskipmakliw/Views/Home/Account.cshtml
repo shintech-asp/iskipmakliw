@@ -1,0 +1,420 @@
+﻿@using System.Security.Claims
+@using iskipmakliw.Models.ViewModels
+@{
+    ViewData["Title"] = "Account Settings";
+    Layout = "_LayoutCustomer";
+}
+@model BillingDetailsViewModel;
+<div class="account-settings-container layout-top-spacing">
+
+    <div class="account-content">
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <h2>Settings</h2>
+
+                <ul class="nav nav-pills" id="animateLine" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="animated-underline-home-tab" data-bs-toggle="tab" href="#animated-underline-home" role="tab" aria-controls="animated-underline-home" aria-selected="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> Home</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="animated-underline-profile-tab" data-bs-toggle="tab" href="#animated-underline-profile" role="tab" aria-controls="animated-underline-profile" aria-selected="false" tabindex="-1"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-dollar-sign"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Payment Details</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <form class="section general-info" id="profileForm" asp-action="Profile" asp-controller="Home" method="post">
+            <input type="hidden" id="submissionType" name="submissionType" value="" />
+            <div class="tab-content" id="animateLineContent-4">
+                <div class="tab-pane fade show active" id="animated-underline-home" role="tabpanel" aria-labelledby="animated-underline-home-tab">
+                    <div class="row">
+                        <div class="col-xl-12 col-lg-12 col-md-12 layout-spacing">
+                            <div class="info">
+                                <h6 class="">General Information</h6>
+                                <div class="row">
+                                    <div class="col-lg-11 mx-auto">
+                                        <div class="row">
+                                            <div class="col-xl-2 col-lg-12 col-md-4">
+                                                <div class="profile-image  mt-4 pe-md-4">
+                                                    <div class="img-uploader-content">
+                                                        <div class="filepond--root filepond filepond--hopper" data-style-panel-layout="compact circle" data-style-button-remove-item-position="left bottom" data-style-button-process-item-position="right bottom" data-style-load-indicator-position="center bottom" data-style-progress-indicator-position="right bottom" data-style-button-remove-item-align="false" style="height: 120px;"><input class="filepond--browser" type="file" id="filepond--browser-4jjyilwpi" name="filepond" aria-controls="filepond--assistant-4jjyilwpi" aria-labelledby="filepond--drop-label-4jjyilwpi" accept="image/png,image/jpeg,image/gif"><a class="filepond--credits" aria-hidden="true" href="https://pqina.nl/" target="_blank" rel="noopener noreferrer" style="transform: translateY(120px);">Powered by PQINA</a><div class="filepond--drop-label" style="transform: translate3d(0px, 30px, 0px); opacity: 0; visibility: hidden; pointer-events: none;"><label for="filepond--browser-4jjyilwpi" id="filepond--drop-label-4jjyilwpi" aria-hidden="true">Drag &amp; Drop your files or <span class="filepond--label-action" tabindex="0">Browse</span></label></div><div class="filepond--list-scroller" style="transform: translate3d(0px, 0px, 0px);"><ul class="filepond--list" role="list"><li class="filepond--item" id="filepond--item-73kpeiyuk" style="transform: translate3d(0px, 0px, 0px) scale3d(1, 1, 1); opacity: 1; height: 120px;" data-filepond-item-state="load-error"><fieldset class="filepond--file-wrapper"><legend></legend><div class="filepond--file"><button class="filepond--file-action-button filepond--action-abort-item-load" type="button" data-align="center bottom" style="transform: translate3d(0px, 0px, 0px) scale3d(1, 1, 1); opacity: 0; visibility: hidden; pointer-events: none;" disabled="disabled"><span>Abort</span></button><button class="filepond--file-action-button filepond--action-retry-item-load" type="button" data-align="right bottom" style="transform: translate3d(0px, 0px, 0px) scale3d(1, 1, 1); opacity: 1;"><svg width="26" height="26" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg"><path d="M10.81 9.185l-.038.02A4.997 4.997 0 0 0 8 13.683a5 5 0 0 0 5 5 5 5 0 0 0 5-5 1 1 0 0 1 2 0A7 7 0 1 1 9.722 7.496l-.842-.21a.999.999 0 1 1 .484-1.94l3.23.806c.535.133.86.675.73 1.21l-.804 3.233a.997.997 0 0 1-1.21.73.997.997 0 0 1-.73-1.21l.23-.928v-.002z" fill="currentColor" fill-rule="nonzero"></path></svg><span>Retry</span></button><button class="filepond--file-action-button filepond--action-remove-item" type="button" data-align="left bottom" style="transform: translate3d(0px, 0px, 0px) scale3d(1, 1, 1); opacity: 1;"><svg width="26" height="26" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg"><path d="M11.586 13l-2.293 2.293a1 1 0 0 0 1.414 1.414L13 14.414l2.293 2.293a1 1 0 0 0 1.414-1.414L14.414 13l2.293-2.293a1 1 0 0 0-1.414-1.414L13 11.586l-2.293-2.293a1 1 0 0 0-1.414 1.414L11.586 13z" fill="currentColor" fill-rule="nonzero"></path></svg><span>Remove</span></button><div class="filepond--processing-complete-indicator" data-align="right bottom" style="transform: scale3d(0.75, 0.75, 1); opacity: 0; visibility: hidden; pointer-events: none;"><svg width="26" height="26" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg"><path d="M18.293 9.293a1 1 0 0 1 1.414 1.414l-7.002 7a1 1 0 0 1-1.414 0l-3.998-4a1 1 0 1 1 1.414-1.414L12 15.586l6.294-6.293z" fill="currentColor" fill-rule="nonzero"></path></svg></div><div class="filepond--file-info" style="transform: translate3d(38px, 0px, 0px);"><span class="filepond--file-info-main" aria-hidden="true">user-profile.jpeg</span><span class="filepond--file-info-sub">0 bytes</span></div><div class="filepond--file-status" style="transform: translate3d(0px, 0px, 0px); opacity: 1;"><span class="filepond--file-status-main">Error during load</span><span class="filepond--file-status-sub">tap to retry</span></div><div class="filepond--progress-indicator filepond--load-indicator" style="opacity: 0; visibility: hidden; pointer-events: none;" data-align="center bottom"><svg><path stroke-width="2" stroke-linecap="round" d="M 10 18 A 8 8 0 0 0 10 2" stroke-opacity="1"></path></svg></div><div class="filepond--progress-indicator filepond--process-indicator" style="opacity: 0; visibility: hidden; pointer-events: none;"><svg><path stroke-width="2" stroke-linecap="round"></path></svg></div></div></fieldset><div class="filepond--panel filepond--item-panel" data-scalable="true"><div class="filepond--panel-top filepond--item-panel"></div><div class="filepond--panel-center filepond--item-panel" style="transform: translate3d(0px, 0px, 0px) scale3d(1, 1.2, 1);"></div><div class="filepond--panel-bottom filepond--item-panel" style="transform: translate3d(0px, 120px, 0px);"></div></div></li></ul></div><div class="filepond--panel filepond--panel-root" data-scalable="false"><div class="filepond--panel-top filepond--panel-root"></div><div class="filepond--panel-center filepond--panel-root" style="transform: translate3d(0px, 0px, 0px) scale3d(1, 1.2, 1);"></div><div class="filepond--panel-bottom filepond--panel-root" style="transform: translate3d(0px, 120px, 0px);"></div></div><span class="filepond--assistant" id="filepond--assistant-4jjyilwpi" role="status" aria-live="polite" aria-relevant="additions">Error during load user-profile.jpeg tap to retry</span><div class="filepond--drip"></div><fieldset class="filepond--data"><input type="hidden" name="filepond"></fieldset></div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="col-xl-10 col-lg-12 col-md-8 mt-md-0 mt-4">
+                                                <div class="form">
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div class="form-group">
+                                                                <label for="fullName">User Name</label>
+                                                                <input type="text" class="form-control mb-3" id="fullName" name="Username" placeholder="Full Name" value="@User.FindFirst(ClaimTypes.Name)?.Value">
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label for="profession">Email</label>
+                                                                <input type="text" class="form-control mb-3" id="profession" name="Email" value="@User.FindFirst(ClaimTypes.Email)?.Value ">
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label for="phone">Phone</label>
+                                                                <input type="text" class="form-control mb-3" id="phone" name="ContactNumber" placeholder="Write your phone number here" value="@User.FindFirst("ContactNumber")?.Value">
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                    <br />
+                                                    <h5>Change Password</h5>
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div class="form-group">
+                                                                <label for="fullName">Current Password</label>
+                                                                <input type="password" class="form-control mb-3" name="Password">
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-md-12">
+                                                            <div class="form-group">
+                                                                <label for="profession">New Password</label>
+                                                                <input type="password" class="form-control mb-3" name="NewPassword">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <div class="form-group">
+                                                                <label for="profession">Confirm New Password</label>
+                                                                <input type="password" class="form-control mb-3" name="ConfirmPassword">
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                    <div class="col-md-12 mt-1">
+                                                        <div class="form-group text-end">
+                                                            <button type="button" class="btn btn-secondary _effect--ripple waves-effect waves-light" id="ProfileSave">Save</button>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="animated-underline-profile" role="tabpanel" aria-labelledby="animated-underline-profile-tab">
+                    <div class="row">
+                        <div class="col-xl-6 col-lg-12 col-md-12 layout-spacing">
+                            <div class="section general-info payment-info">
+                                <div class="info">
+                                    <h6 class="">Billing Address</h6>
+                                    <p>Changes to your <span class="text-success">Billing</span> information will take effect starting with scheduled payment and will be refelected on your next invoice.</p>
+
+                                    <div class="list-group mt-4">
+                                        @foreach(var data in Model.Billings)
+                                        {
+                                            int id = 1;
+                                            <label class="list-group-item">
+                                                <div class="d-flex w-100">
+                                                    <div class="billing-content">
+                                                        <div class="fw-bold">Address #@id</div>
+                                                        <p>@data.Address</p>
+                                                    </div>
+                                                    <div class="billing-edit align-self-center ms-auto">
+                                                        <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6 col-lg-12 col-md-12 layout-spacing">
+                            <div class="section general-info payment-info">
+                                <div class="info">
+                                    <h6 class="">Payment Method</h6>
+                                    <p>Changes to your <span class="text-success">Payment Method</span> information will take effect starting with scheduled payment and will be refelected on your next invoice.</p>
+
+                                    <div class="list-group mt-4">
+
+                                        @foreach(var data in Model.PaymentMethod)
+                                        {
+                                            <label class="list-group-item">
+                                                <div class="d-flex w-100">
+                                                    <div class="payment-card me-2">
+                                                        @if (data.Type == "Gcash")
+                                                        {
+                                                            <img src="~/src/assets/img/gcash.svg" alt="gcash" style="height:40px; width:auto;">
+                                                        }
+                                                        else if (data.Type == "Maya")
+                                                        {
+                                                            <img src="~/src/assets/img/maya.png" alt="maya" style="height:40px; width:auto;">
+                                                        }
+                                                    </div>
+                                                    <div class="billing-content">
+                                                        <div class="fw-bold">@data.Type</div>
+                                                        <p>@data.Number</p>
+                                                    </div>
+                                                    <div class="billing-edit align-self-center ms-auto">
+                                                        <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        }
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6 col-lg-12 col-md-12 layout-spacing">
+                            <div class="section general-info payment-info">
+                                <div class="info">
+                                    <h6 class="">Add Billing Address</h6>
+                                    <p>Changes your New <span class="text-success">Billing</span> Information.</p>
+
+                                    <div class="row mt-4">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Name</label>
+                                                <input type="text" name="Name" class="form-control add-billing-address-input">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Contact Number</label>
+                                                <input type="text" name="ContactNumber" class="form-control" id="Contact">
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="mb-3">
+                                                <label class="form-label">Address</label>
+                                                <input type="text" name="Address" class="form-control" id="Address" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">City</label>
+                                                <input type="text" name="City" class="form-control" id="City" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">Country</label>
+                                                <input type="text" name="Country" class="form-control" id="Country" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">ZIP</label>
+                                                <input type="tel" name="Zip" class="form-control" id="Zip" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="mb-3">
+                                                <label class="form-label">Land Mark</label>
+                                                <input type="text" name="LandMark" class="form-control" id="AdditionalInformation">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-4">
+                                        <h4>Select Your Location</h4>
+                                        <div id="map"></div>
+
+                                        <!-- Display coordinates -->
+                                        <div class="mt-3">
+                                            <input type="text" name="Latitude" id="latitude" class="form-control" hidden>
+                                            <input type="text" name="Longitude" id="longitude" class="form-control" hidden>
+                                        </div>
+                                    </div>
+
+                                    <button type="button" class="btn btn-primary mt-4 _effect--ripple waves-effect waves-light" id="AddressSave">Add</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6 col-lg-12 col-md-12 layout-spacing">
+                            <div class="section general-info payment-info">
+                                <div class="info">
+                                    <h6 class="">Add Payment Method</h6>
+                                    <p>Changes your New <span class="text-success">Payment Method</span> Information.</p>
+
+                                    <div class="row mt-4">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Type</label>
+                                                <select class="form-select" name="PaymentType">
+                                                    <option value="gcash"><img src="~/src/assets/img/gcash.svg" class="flag-width" alt="flag"> Gcash</option>
+                                                    <option value="paymaya"><img src="~/src/assets/img/maya.png" class="flag-width" alt="flag"> Maya</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Number</label>
+                                                <input type="text" name="PaymentContactNumber" class="form-control add-payment-method-input">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
+                                                <label class="form-label">Holder Name</label>
+                                                <input type="text" name="HolderName" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button type="button"class="btn btn-primary mt-4 _effect--ripple waves-effect waves-light" id="PaymentSave">Add</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<style>
+    .section.general-info.payment-info {
+        overflow: visible !important;
+    }
+
+    #map {
+        height: 500px !important;
+        width: 100% !important;
+        min-height: 500px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .leaflet-container {
+        height: 100% !important;
+    }
+
+    .my-leaflet-map-container img {
+        max-height: none;
+    }
+</style>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            const form = $("#profileForm");
+            const submissionTypeInput = $("#submissionType");
+
+
+            function confirmAndSubmit(type, title, message) {
+                Swal.fire({
+                    title: title,
+                    text: message,
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes, continue",
+                    cancelButtonText: "Cancel",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        submissionTypeInput.val(type);
+                        form.submit(); // Regular POST submission
+                    }
+                });
+            }
+
+            $("#ProfileSave").on("click", function (e) {
+                e.preventDefault();
+                confirmAndSubmit(1, "Save Profile", "Do you want to save your profile changes?");
+            });
+            $("#AddressSave").on("click", function (e) {
+                e.preventDefault();
+                confirmAndSubmit(2, "Add Billing Address", "Do you want to add this billing address?");
+            });
+            $("#PaymentSave").on("click", function (e) {
+                e.preventDefault();
+                confirmAndSubmit(3, "Add Payment Method", "Do you want to add this payment method?");
+            });
+        });
+
+                      // Initialize map after everything is loaded
+        $(window).on('load', function () {
+            // Ensure map container has proper styling
+            $('#map').css({
+                'height': '500px',
+                'width': '100%',
+                'position': 'relative',
+                'display': 'block'
+            });
+
+            // Small delay to ensure Bootstrap layout is complete
+            setTimeout(function() {
+                // Create map instance
+                const map = L.map('map', { center: [14.5995, 120.9842], // Default: Manila 
+                    zoom: 13, scrollWheelZoom: true }); 
+                    // Add OpenStreetMap tile layer 
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+
+                let marker;
+
+                // Force multiple redraws to fix Bootstrap container issues
+                setTimeout(() => map.invalidateSize(), 100);
+                setTimeout(() => map.invalidateSize(), 300);
+                setTimeout(() => map.invalidateSize(), 600);
+
+                // Handle window resize
+                $(window).on('resize', function() {
+                    map.invalidateSize();
+                });
+
+                // Handle map click
+                map.on('click', async function (e) {
+                    const lat = e.latlng.lat.toFixed(6);
+                    const lng = e.latlng.lng.toFixed(6);
+
+                    // Update or create marker
+                    if (marker) {
+                        marker.setLatLng([lat, lng]);
+                    } else {
+                        marker = L.marker([lat, lng]).addTo(map);
+                    }
+
+                    // Update hidden input fields
+                    $('#latitude').val(lat);
+                    $('#longitude').val(lng);
+
+                    // Show loading state (optional)
+                    $('#Address').val('Loading address...');
+
+                    // Reverse Geocode using Nominatim
+                    try {
+
+                        const response = await fetch(`/reverse-geocode?lat=${lat}&lon=${lng}`);
+
+                        if (!response.ok) {
+                            throw new Error('Geocoding service unavailable');
+                        }
+
+                        const data = await response.json();
+
+                        // Safely extract address data
+                        const address = data.address || {};
+                        $('#Address').val(data.display_name || 'Address not found');
+                        $('#City').val(address.city || address.town || address.village || address.municipality || '');
+                        $('#Country').val(address.country || '');
+                        $('#Zip').val(address.postcode || '');
+                    } catch (err) {
+                        console.error('Reverse geocoding failed:', err);
+                        $('#Address').val('Unable to fetch address');
+                        alert('Failed to get address information. Please try again.');
+                    }
+                });
+            }, 250); // Initial delay for Bootstrap layout
+        });
+    </script>
+
+}

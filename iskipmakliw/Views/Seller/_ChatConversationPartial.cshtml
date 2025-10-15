@@ -1,0 +1,316 @@
+﻿@using System.Globalization
+@model List<CustomizationChat>
+
+
+<style>
+    .chat-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .message-bubble {
+        animation: slideIn 0.3s ease;
+        max-width: 75%;
+    }
+
+        .message-bubble.buyer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .message-bubble.seller {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .detail-card {
+        transition: all 0.2s ease;
+    }
+
+        .detail-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    #chatBox {
+        scroll-behavior: smooth;
+    }
+</style>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="d-flex justify-content-center align-items-center text-muted" style="min-height: 70vh;">
+        <div class="text-center">
+            <i class="bi bi-inbox fs-1 mb-3 text-primary"></i>
+            <h5 class="fw-semibold">No messages yet</h5>
+            <p class="text-muted">Start the conversation!</p>
+        </div>
+    </div>
+}
+else
+{
+    var selectedChat = Model.FirstOrDefault();
+    <div class="d-flex flex-column" style="height: 80vh;">
+        <!-- Header -->
+        <div class="chat-header text-white p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="~/src/assets/img/user-profile.jpeg"
+                         class="rounded-circle"
+                         style="width:45px; height:45px; object-fit:cover; border: 3px solid white;" />
+                    <div>
+                        <h5 class="mb-0 fw-bold">@selectedChat.Users?.Username</h5>
+                        <small class="opacity-75">
+                            <i class="bi bi-circle-fill text-success me-1" style="font-size: 0.5rem;"></i>Active now
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-grow-1 d-flex overflow-hidden">
+            <!-- Chat Messages Section -->
+            <div class="flex-grow-1 d-flex flex-column border-end" style="min-width: 0;">
+                <!-- Messages -->
+                <div id="chatBox" class="p-4 overflow-auto bg-light" style="height: calc(80vh - 140px);">
+                    @foreach (var message in Model)
+                    {
+                        <div class="d-flex mb-3 @(message.IsFromBuyer ? "justify-content-start" : "justify-content-end")">
+                            @if (message.IsFromBuyer)
+                            {
+                                <img src="~/src/assets/img/user-profile.jpeg"
+                                     class="rounded-circle me-2"
+                                     style="width:32px; height:32px; object-fit:cover;" />
+                            }
+                            <div class="message-bubble @(message.IsFromBuyer ? "seller" : "buyer") p-3 rounded-3 shadow-sm @(message.IsFromBuyer ? "text-dark" : "text-white")" data-id="@message.Id">
+                                <div class="mb-1">@message.Message</div>
+                                <div class="small @(message.IsFromBuyer ? "text-muted" : "text-white-50") text-end">
+                                    @message.DateSent.ToString("hh:mm tt")
+                                </div>
+                            </div>
+                            @if (!message.IsFromBuyer)
+                            {
+                                <img src="~/src/assets/img/user-profile.jpeg"
+                                     class="rounded-circle ms-2"
+                                     style="width:32px; height:32px; object-fit:cover;" />
+                            }
+                        </div>
+                    }
+                </div>
+
+                <!-- Message Input -->
+                <div class="p-3 bg-white border-top">
+                    <input type="hidden" name="CustomizationOrdersId" value="@selectedChat.CustomizationOrdersId" />
+                    <div class="input-group">
+
+                        @{
+                            string content;
+                            bool isDone; // Use bool to control disabled state
+
+                            if (selectedChat?.CustomizationOrders?.TransactionStatus == "Completed")
+                            {
+                                content = "Transaction completed";
+                                isDone = true;
+                            }
+                            else if (selectedChat?.CustomizationOrders?.TransactionStatus == "Cancelled")
+                            {
+                                content = "Transaction cancelled";
+                                isDone = true;
+                            }
+                            else
+                            {
+                                content = "Type your message...";
+                                isDone = false;
+                            }
+                        }
+                        <input type="text" id="Message" name="Message" class="form-control border-0"
+                               placeholder="@content" autocomplete="off" required @(isDone ? "disabled" : "") />
+                        @if (!isDone)
+                        {
+                            <button type="button" id="Send" class="btn btn-primary px-4">
+                                <i class="bi bi-send-fill"></i> Send
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Details Sidebar -->
+            <div class="bg-white p-4 overflow-auto" style="width: 380px; height: calc(80vh - 80px);">
+                <h5 class="fw-bold mb-4">
+                    <i class="bi bi-info-circle me-2 text-black"></i>Order Details
+                </h5>
+
+                <!-- 3D Viewer -->
+                <div class="viewer-container mb-4 position-relative">
+                    <canvas id="viewer"
+                            style="width:100%; height:280px; display: block;"
+                            data-model="@selectedChat.CustomizationOrders?.Model"
+                            data-color="@selectedChat.CustomizationOrders?.Color"
+                            data-texture="@selectedChat.CustomizationOrders?.Texture"
+                            data-scale="@selectedChat.CustomizationOrders?.Scale"
+                            data-width="@selectedChat.CustomizationOrders?.Width"
+                            data-height="@selectedChat.CustomizationOrders?.Height">
+                    </canvas>
+                </div>
+
+                <!-- Specifications -->
+                <div class="card detail-card border-0 shadow-sm mb-3">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3 text-primary">
+                            <i class="bi bi-box-seam me-2"></i>Specifications
+                        </h6>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <small class="text-muted d-block">Model</small>
+                                <span class="fw-semibold">@System.IO.Path.GetFileName(selectedChat.CustomizationOrders?.Model)</span>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Color</small>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div style="width:24px; height:24px; background:@selectedChat.CustomizationOrders?.Color; border-radius:6px; border:2px solid #dee2e6;"></div>
+                                    <small class="text-uppercase">@selectedChat.CustomizationOrders?.Color</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Texture</small>
+                                <span class="fw-semibold">@(System.IO.Path.GetFileName(selectedChat.CustomizationOrders?.Texture) ?? "None")</span>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Dimensions</small>
+                                <span class="fw-semibold small">@($"{selectedChat.CustomizationOrders?.Width} × {selectedChat.CustomizationOrders?.Height} × {selectedChat.CustomizationOrders?.Scale}")</span>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Price</small>
+                                <span class="fw-semibold">
+                                    @(selectedChat.CustomizationOrders?.Price.HasValue == true && selectedChat.CustomizationOrders.Price > 0
+                                                                    ? $"P {selectedChat.CustomizationOrders.Price.Value.ToString("N2")}"
+                                                                    : "Not set")
+                                </span>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Payment Mode</small>
+                                <span class="fw-semibold">@(selectedChat.CustomizationOrders?.ModeOfPayment ?? "Not set")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Cards -->
+                <div class="card detail-card border-0 shadow-sm mb-3">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3 text-primary">
+                            <i class="bi bi-clipboard-check me-2"></i>Status
+                        </h6>
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                            <div>
+                                <small class="text-muted d-block">Seller Approval</small>
+                                <span class="fw-semibold">@selectedChat.CustomizationOrders?.SellerStatus</span>
+                            </div>
+                            <span class="badge status-badge bg-@(selectedChat.CustomizationOrders?.SellerStatus == "Approved" ? "success" : "warning")">
+                                <i class="bi bi-@(selectedChat.CustomizationOrders?.SellerStatus == "Approved" ? "check-circle" : "clock")"></i>
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                            <div>
+                                <small class="text-muted d-block">Transaction</small>
+                                <span class="fw-semibold">@(selectedChat.CustomizationOrders?.TransactionStatus != null ? selectedChat.CustomizationOrders.TransactionStatus : "Pending")</span>
+                            </div>
+                            <span class="badge status-badge bg-@(selectedChat.CustomizationOrders?.TransactionStatus == "Completed" ? "success" : "secondary")">
+                                <i class="bi bi-@(selectedChat.CustomizationOrders?.TransactionStatus == "Completed" ? "check-circle" : "hourglass-split")"></i>
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted d-block">Payment</small>
+                                <span class="fw-semibold">@(selectedChat.CustomizationOrders?.PaymentStatus != null ? selectedChat.CustomizationOrders.PaymentStatus : "Pending")</span>
+                            </div>
+                            <span class="badge status-badge bg-@(selectedChat.CustomizationOrders?.PaymentStatus == "Paid" ? "success" : "danger")">
+                                <i class="bi bi-@(selectedChat.CustomizationOrders?.PaymentStatus == "Paid" ? "check-circle" : "x-circle")"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Actions -->
+                <div class="d-grid gap-2">
+                    @if(selectedChat.CustomizationOrders?.SellerStatus != "Approved")
+                    {
+                        <button id="ApproveOrder" data-id="@selectedChat.CustomizationOrdersId" type="button" class="btn btn-outline-primary">
+                            <i class="bi bi-check-circle me-2"></i>Approve order
+                        </button>
+                    }
+                    else if (selectedChat.CustomizationOrders?.Price == null)
+                    {
+                        <button id="AddPrice" data-id="@selectedChat.CustomizationOrdersId" type="button" class="btn btn-outline-primary">
+                            <i class="bi bi-money me-2"></i>Add price
+                        </button>
+                    }
+                    else if(selectedChat.CustomizationOrders?.PaymentStatus != "Paid")
+                    {
+                        <button id="ModifyPrice" type="button" class="btn btn-outline-warning">
+                            <i class="bi bi-money me-2"></i>Modify price
+                        </button>
+                    }
+                    else if (selectedChat.CustomizationOrders?.TransactionStatus == null && selectedChat.CustomizationOrders?.PaymentStatus == "Paid")
+                    {
+
+                        <button id="DeliverOrder" data-id="@selectedChat.CustomizationOrdersId" type="button" class="btn btn-outline-success">
+                            <i class="bi bi-clipboard-check me-2"></i>Ship product
+                        </button>
+                    }
+                    else if(selectedChat.CustomizationOrders?.TransactionStatus == "Shipping" && selectedChat.CustomizationOrders?.PaymentStatus == "Paid")
+                    {
+
+                        <button id="MarkAsComplete" data-id="@selectedChat.CustomizationOrdersId" type="button" class="btn btn-outline-success">
+                            <i class="bi bi-clipboard-check me-2"></i>Mark as completed
+                        </button>
+                    }
+                    @if (selectedChat.CustomizationOrders?.TransactionStatus != "Cancelled" && selectedChat.CustomizationOrders?.TransactionStatus != "Completed" && selectedChat.CustomizationOrders?.PaymentStatus != "Paid")
+                    {
+                        <button id="CancelOrder" data-id="@selectedChat.CustomizationOrdersId" type="button" class="btn btn-outline-danger">
+                            <i class="bi bi-flag me-2"></i>Cancel order
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+
+    <script>
+        // Auto-scroll to bottom on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatBox = document.getElementById('chatBox');
+            if (chatBox) {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        });
+
+        // Toggle auto-rotation for 3D viewer
+        let autoRotateEnabled = true;
+        function toggleAutoRotate() {
+            autoRotateEnabled = !autoRotateEnabled;
+            // This will be controlled by the Three.js controls
+            console.log('Auto-rotate:', autoRotateEnabled);
+        }
+       
+    </script>
+}

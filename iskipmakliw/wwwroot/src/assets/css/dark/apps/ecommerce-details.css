@@ -59,10 +59,13 @@ body.dark #main-slider .splide__list .glightbox {
   height: 100%;
 }
 body.dark #main-slider .splide__list .glightbox img {
-  display: block;
-  width: 100%;
-  border-radius: 12px;
-  height: 100%;
+    display: block;
+    width: auto; /* Keep natural width */
+    max-width: 100%; /* Don’t exceed container */
+    height: auto; /* Maintain aspect ratio */
+    max-height: 100%; /* Don’t overflow container */
+    border-radius: 12px;
+    object-fit: contain; /* Or 'cover' if you want crop */
 }
 body.dark #thumbnail-slider {
   margin-top: 30px;

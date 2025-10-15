@@ -1,0 +1,692 @@
+﻿@using iskipmakliw.Models.ViewModels
+@{
+    Layout = "_LayoutCustomer";
+}
+@model ProfileViewModel
+<style>
+    /* Profile Page Custom Styles */
+
+    /* Profile Card Styling */
+    .card {
+        border-radius: 12px;
+        border: none;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+        }
+
+        .card.shadow-sm {
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08) !important;
+        }
+
+    /* Profile Image */
+    .rounded-circle {
+        border: 4px solid #4a90e2;
+        box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+        transition: transform 0.3s ease;
+    }
+
+        .rounded-circle:hover {
+            transform: scale(1.05);
+        }
+
+    /* Profile Info Icons */
+    .card-body i {
+        color: #4a90e2;
+        margin-right: 8px;
+    }
+
+    /* Profile Action Buttons */
+    .profile-actions {
+        padding-top: 1rem;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .btn-follow {
+        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+    }
+
+        .btn-follow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+            background: linear-gradient(135deg, #357abd 0%, #2868a8 100%);
+            color: white;
+        }
+
+        .btn-follow i {
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+    .btn-message {
+        background: white;
+        color: #4a90e2;
+        border: 2px solid #4a90e2;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+        .btn-message:hover {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            color: white;
+            border-color: #357abd;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.3);
+        }
+
+        .btn-message i {
+            font-size: 1.1rem;
+        }
+
+    /* Active state for Follow button (when already following) */
+    .btn-follow.following {
+        background: linear-gradient(135deg, #28a745 0%, #20833a 100%);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+
+        .btn-follow.following:hover {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+        }
+
+        .btn-follow.following i {
+            content: "\f62a"; /* changes to check icon */
+        }
+
+    /* Card Headers */
+    .card-header {
+        border-radius: 12px 12px 0 0 !important;
+        border: none;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+        .card-header.bg-primary {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%) !important;
+        }
+
+        .card-header.bg-light {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+            color: #2c3e50;
+        }
+
+    /* Username/Title Styling */
+    .fw-bold {
+        color: #2c3e50;
+    }
+
+    /* Text Muted Refinement */
+    .text-muted {
+        color: #6c757d !important;
+    }
+
+    /* Rating Stars */
+    .bi-star-fill,
+    .bi-star {
+        font-size: 1.1rem;
+        margin: 0 2px;
+    }
+
+    .text-warning {
+        color: #ffc107 !important;
+    }
+
+    /* Product Cards */
+    .card.h-100 {
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+        .card.h-100:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+        }
+
+    .card-img-top {
+        transition: transform 0.3s ease;
+    }
+
+    .card.h-100:hover .card-img-top {
+        transform: scale(1.05);
+    }
+
+    .card-body h6 {
+        color: #2c3e50;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Add View Button Styles */
+    .btn-view {
+        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+        color: white;
+        border: none;
+        padding: 0.5rem 1.25rem;
+        border-radius: 25px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .btn-view:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+            color: white;
+        }
+
+        .btn-view i {
+            font-size: 1rem;
+        }
+
+    /* Table Styling */
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .table thead {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            color: white;
+        }
+
+            .table thead th {
+                border: none;
+                padding: 1rem;
+                font-weight: 600;
+                vertical-align: middle;
+            }
+
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+            .table tbody tr:hover {
+                background-color: #f8f9fa;
+                transform: scale(1.01);
+            }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #eee;
+        }
+
+    /* Badge Styling */
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+
+        .badge.bg-success {
+            background: linear-gradient(135deg, #28a745 0%, #20833a 100%) !important;
+        }
+
+        .badge.bg-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+        }
+
+        .badge.bg-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%) !important;
+        }
+
+    /* Empty State */
+    .text-muted.mb-0 {
+        font-style: italic;
+        padding: 2rem 0;
+        text-align: center;
+    }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 768px) {
+        .card-body
+
+    {
+        padding: 1rem;
+    }
+
+    .rounded-circle {
+        width: 100px !important;
+        height: 100px !important;
+    }
+
+    .table {
+        font-size: 0.875rem;
+    }
+
+    }
+
+    /* Seller Profile Card Styles */
+    .seller-profile-card .card-header,
+    .user-info-card .card-header {
+        display: flex;
+        align-items: center;
+        padding: 1.25rem 1.5rem;
+        font-size: 1.1rem;
+    }
+
+        .seller-profile-card .card-header i,
+        .user-info-card .card-header i {
+            font-size: 1.3rem;
+        }
+
+    /* Info Box Styles */
+    .info-box {
+        display: flex;
+        align-items: flex-start;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 10px;
+        border-left: 4px solid #4a90e2;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+        .info-box:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.2);
+            border-left-color: #357abd;
+        }
+
+    .info-icon {
+        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+        color: white;
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+        .info-icon i {
+            font-size: 1.3rem;
+        }
+
+    .info-content {
+        flex: 1;
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+        word-wrap: break-word;
+    }
+
+    /* Rating Section Styles */
+    .rating-section {
+        background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid #ffc107;
+    }
+
+    .rating-header {
+        display: flex;
+        align-items: center;
+    }
+
+        .rating-header i {
+            font-size: 1.5rem;
+        }
+
+        .rating-header h6 {
+            color: #2c3e50;
+        }
+
+    .rating-display {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .rating-score {
+        display: flex;
+        align-items: baseline;
+        gap: 0.25rem;
+    }
+
+    .rating-number {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #ffc107;
+        line-height: 1;
+    }
+
+    .rating-total {
+        font-size: 1.5rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .rating-stars-large {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+        .rating-stars-large i {
+            font-size: 1.8rem;
+        }
+
+    .rating-subtitle {
+        color: #6c757d;
+        font-style: italic;
+    }
+
+    /* User Info Card specific */
+    .user-info-card .info-box {
+        border-left-color: #4a90e2;
+    }
+
+        .user-info-card .info-box:hover {
+            border-left-color: #357abd;
+        }
+
+    /* Responsive for info boxes */
+    @@media (max-width: 768px) {
+        .info-box
+
+    {
+        padding: 1rem;
+    }
+
+    .info-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+        .info-icon i {
+            font-size: 1.1rem;
+        }
+
+    .info-value {
+        font-size: 0.9rem;
+    }
+
+    .rating-number {
+        font-size: 2.5rem;
+    }
+
+    .rating-stars-large i {
+        font-size: 1.5rem;
+    }
+
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row">
+        <!-- Left: Profile Card -->
+        <div class="col-lg-3 col-md-4 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <img src="~/src/assets/img/user-profile.jpeg"
+                         class="rounded-circle mb-3 img-fluid"
+                         style="width:120px; height:120px; object-fit:cover;"
+                         alt="User photo" />
+                    <h5 class="fw-bold mb-0">@Model.Users.Username</h5>
+                    <p class="text-muted">@Model.Users.Role</p>
+
+                    <hr />
+                    <p><i class="bi bi-envelope"></i> @Model.Users.Email</p>
+                    <p><i class="bi bi-geo-alt"></i> @(Model.Users.UserDetails != null ? Model.Users.UserDetails.Address : "No address")</p>
+
+                    <div class="profile-actions mt-3">
+                        @if(Model.Users.Role == "Seller")
+                        {
+                            <a class="btn btn-follow w-100 mb-2" asp-controller="Home" asp-action="Customization" asp-route-Id="@Model.Users.Id">
+                                <i class="bi bi-person-plus-fill"></i> Craft your product
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Dynamic Content -->
+        <div class="col-lg-9 col-md-8">
+            @if (Model.Users.Role == "Seller")
+            {
+                <!-- Seller Profile -->
+                <div class="card shadow-sm mb-4 border-0 seller-profile-card">
+                    <div class="card-header bg-primary text-white fw-bold">
+                        <i class="bi bi-shop me-2"></i>Seller Profile
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="info-box">
+                                    <div class="info-icon">
+                                        <i class="bi bi-shop-window"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Shop Name</label>
+                                        <p class="info-value">@Model.Users.Username</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="info-box">
+                                    <div class="info-icon">
+                                        <i class="bi bi-info-circle"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">About</label>
+                                        <p class="info-value">OAK STORE</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rating-section mt-4">
+                            <div class="rating-header mb-3">
+                                <i class="bi bi-star-fill text-warning me-2"></i>
+                                <h6 class="fw-bold mb-0">Overall Rating</h6>
+                            </div>
+                            <div class="rating-display">
+                                <div class="rating-score">
+                                    <span class="rating-number">@Model.Ratings.Sum(u => u.Stars).ToString("0.0")</span>
+                                    <span class="rating-total">/ 5.0</span>
+                                </div>
+                                <div class="rating-stars-large">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= Math.Round((decimal)Model.Ratings.Sum(u => u.Stars)))
+                                        {
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-star text-warning"></i>
+                                        }
+                                    }
+                                </div>
+                                <small class="rating-subtitle">Based on @Model.Ratings.Count() reviews</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seller Products -->
+                <div class="card shadow-sm mb-4 border-0">
+                    <div class="card-header bg-light fw-bold">
+                        Products Offered
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Users.Product.Any())
+                        {
+                            <div class="row">
+                                @foreach (var product in Model.Users.Product)
+                                {
+                                    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                                        <div class="card h-100 border-0 shadow-sm">
+                                            <img src="@(product.ProductVariants.FirstOrDefault().ProductImage != null ? product.ProductVariants.FirstOrDefault().ProductImage : "/src/assets/img/OakMartLogo.png")" class="card-img-top" style="height:180px; object-fit:cover;" alt="Product image" />
+                                            <div class="card-body">
+                                                <h6 class="fw-bold">@product.Name</h6>
+                                                <p class="text-muted mb-1">
+                                                    ₱@(
+                                                    product.ProductVariants.FirstOrDefault() != null
+                                                    ? Convert.ToDecimal(product.ProductVariants.FirstOrDefault().Price).ToString("N0")
+                                                    : "0"
+                                                                                )
+                                    </p>
+                                    <small class="text-secondary">@product.Name</small>
+                                    <div class="mt-3">
+                                        <a asp-controller="Home" asp-action="Product" asp-route-Id="@product.Id" asp-route-SellerId="@product.UsersId" class="btn btn-view w-100">
+                                            <i class="bi bi-eye"></i> View Product
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">No products listed yet.</p>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Customer Profile -->
+                <div class="card shadow-sm mb-4 border-0 user-info-card">
+                    <div class="card-header bg-primary text-white fw-bold">
+                        <i class="bi bi-person-circle me-2"></i>User Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="info-box">
+                                    <div class="info-icon">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Full Name</label>
+                                        <p class="info-value">@Model.Users.Username</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="info-box">
+                                    <div class="info-icon">
+                                        <i class="bi bi-envelope-fill"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Email</label>
+                                        <p class="info-value">@Model.Users.Email</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="info-box">
+                                    <div class="info-icon">
+                                        <i class="bi bi-calendar-check-fill"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Joined</label>
+                                        <p class="info-value">@Model.Users.DateCreated.ToString("MMMM dd, yyyy")</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order History -->
+                <div class="card shadow-sm mb-4 border-0">
+                    <div class="card-header bg-light fw-bold">
+                        Order History
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Users.PurchasedProduct.Any())
+                        {
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Date</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model.Users.PurchasedProduct)
+                                    {
+                                    <tr>
+                                        <td>#10000@(order.Id)</td>
+                                        <td>@order.PurchasedDate.ToString("MMM dd, yyyy")</td>
+                                        <td>₱@(Convert.ToDecimal(order.Price).ToString("N0"))</td>
+                                        <td>
+                                            <span class="badge bg-@(
+                                                    order.PaymentStatus == "Paid" ? "success" :
+                                                    order.PaymentStatus == "Pending" ? "warning text-dark" : "secondary")">
+                                                    @order.PaymentStatus
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a asp-action="OrderDetails" asp-controller="Home" asp-route-Id="@order.Id" asp-route-ProductId="@order.ProductVariantsId" class="btn btn-view btn-sm">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">No orders yet.</p>
+                        }
+                    </div>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>

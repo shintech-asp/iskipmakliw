@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
-    <title>@ViewData["title"]</title>
+    <title>Oak Mart</title>
     <link rel="icon" type="image/x-icon" href="~/src/assets/img/OakMartPNG.png" />
     <link href="~/layouts/collapsible-menu/css/light/loader.css" rel="stylesheet" type="text/css" />
     <link href="~/layouts/collapsible-menu/css/dark/loader.css" rel="stylesheet" type="text/css" />
@@ -60,6 +60,12 @@
 
     <link href="~/src/assets/css/light/apps/invoice-preview.css" rel="stylesheet" type="text/css">
     <link href="~/src/assets/css/dark/apps/invoice-preview.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="~/src/assets/css/light/scrollspyNav.css" rel="stylesheet" type="text/css" />
+    <link href="~/src/assets/css/light/components/timeline.css" rel="stylesheet" type="text/css" />
+
+    <link href="~/src/assets/css/dark/scrollspyNav.css" rel="stylesheet" type="text/css" />
+    <link href="~/src/assets/css/dark/components/timeline.css" rel="stylesheet" type="text/css" />
 </head>
 <body class="alt-menu">
     <!-- BEGIN LOADER -->
@@ -81,9 +87,9 @@
 
             <div class="search-animated toggle-search">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <form class="form-inline search-full form-inline search" role="search">
+                <form class="form-inline search-full form-inline search" role="search" asp-controller="Seller" asp-action="Search">
                     <div class="search-bar">
-                        <input type="text" class="form-control search-form-control  ml-lg-auto" placeholder="Search~.">
+                        <input type="text" class="form-control search-form-control  ml-lg-auto" placeholder="Search~." name="Query">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x search-close"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </div>
                 </form>
@@ -214,6 +220,7 @@
 
                 </li>
 
+                @using System.Security.Claims
                 <li class="nav-item dropdown user-profile-dropdown  order-lg-0 order-1">
                     <a href="javascript:void(0);" class="nav-link dropdown-toggle user" id="userProfileDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div class="avatar-container">
@@ -230,28 +237,23 @@
                                     &#x1F44B;
                                 </div>
                                 <div class="media-body">
-                                    <h5>Shaun Park</h5>
-                                    <p>Project Leader</p>
+                                    <h5>@User.FindFirst(ClaimTypes.Name)?.Value</h5>
+                                    <p>@User.FindFirst(ClaimTypes.Role)?.Value</p>
                                 </div>
                             </div>
                         </div>
                         <div class="dropdown-item">
-                            <a href="user-profile.html">
+                            <a asp-action="Account" asp-controller="Home">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> <span>Profile</span>
                             </a>
                         </div>
                         <div class="dropdown-item">
-                            <a asp-controller="Seller" asp-action="Chats">
+                            <a asp-controller="Seller" asp-action="Chat">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-inbox"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg> <span>Inbox</span>
                             </a>
                         </div>
                         <div class="dropdown-item">
-                            <a href="auth-boxed-lockscreen.html">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-lock"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> <span>Lock Screen</span>
-                            </a>
-                        </div>
-                        <div class="dropdown-item">
-                            <a asp-controller="Index" asp-action="Index">
+                            <a asp-controller="Account" asp-action="Logout">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> <span>Log Out</span>
                             </a>
                         </div>
@@ -343,115 +345,101 @@
                             </li>
                         </ul>
                     </li>
-
-                    <!-- Management -->
-                    <li class="menu menu-heading">
-                        <div class="heading">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-minus">
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            <span>Management</span>
-                        </div>
-                    </li>
-                    <li class="menu @(isUsersActive ? "active" : "")">
-                        <a asp-controller="Seller" asp-action="Users" aria-expanded="false" class="dropdown-toggle">
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="9" cy="7" r="4"></circle>
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    @if (@User.FindFirst("PaymentStatus")?.Value == "Paid")
+                    {
+                        <!-- Management -->
+                        <li class="menu menu-heading">
+                            <div class="heading">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-minus">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
                                 </svg>
-                                <span>Users</span>
+                                <span>Management</span>
                             </div>
-                        </a>
-                    </li>
+                        </li>
 
-                    <!-- Ecommerce -->
-                    <li class="menu @(isEcommerceActive ? "active" : "")">
-                        <a href="#ecommerce" data-bs-toggle="collapse" aria-expanded="@(isEcommerceActive.ToString().ToLower())" class="dropdown-toggle">
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart">
-                                    <circle cx="9" cy="21" r="1"></circle>
-                                    <circle cx="20" cy="21" r="1"></circle>
-                                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                                </svg>
-                                <span>Your shop</span>
-                            </div>
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
-                                    <polyline points="9 18 15 12 9 6"></polyline>
-                                </svg>
-                            </div>
-                        </a>
-                        <ul class="submenu list-unstyled collapse @(isEcommerceActive ? "show" : "")" id="ecommerce" data-bs-parent="#accordionExample">
-                            <li class="@(currentAction == "ProductList" ? "active" : "")">
-                                <a asp-controller="Seller" asp-action="ProductList"> List Product </a>
-                            </li>
-                            <li class="@(currentAction == "ProductAdd" ? "active" : "")">
-                                <a asp-controller="Seller" asp-action="ProductAdd"> Create Product </a>
-                            </li>
-                            <li class="@(currentAction == "ProductEdit" ? "active" : "")">
-                                <a asp-controller="Seller" asp-action="ProductEdit"> Edit Product </a>
-                            </li>
-                        </ul>
-                    </li>
+                        <!-- Ecommerce -->
+                        <li class="menu @(isEcommerceActive ? "active" : "")">
+                            <a href="#ecommerce" data-bs-toggle="collapse" aria-expanded="@(isEcommerceActive.ToString().ToLower())" class="dropdown-toggle">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart">
+                                        <circle cx="9" cy="21" r="1"></circle>
+                                        <circle cx="20" cy="21" r="1"></circle>
+                                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                                    </svg>
+                                    <span>Your shop</span>
+                                </div>
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                </div>
+                            </a>
+                            <ul class="submenu list-unstyled collapse @(isEcommerceActive ? "show" : "")" id="ecommerce" data-bs-parent="#accordionExample">
+                                <li class="@(currentAction == "ProductList" ? "active" : "")">
+                                    <a asp-controller="Seller" asp-action="ProductList"> List Product </a>
+                                </li>
+                                <li class="@(currentAction == "ProductAdd" ? "active" : "")">
+                                    <a asp-controller="Seller" asp-action="ProductAdd"> Create Product </a>
+                                </li>
+                            </ul>
+                        </li>
 
-                    <!-- Orders -->
-                    <li class="menu @(isOrdersActive ? "active" : "")">
-                        <a asp-controller="Seller" asp-action="Orders" aria-expanded="false" class="dropdown-toggle">
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list">
-                                    <path d="M9 18h6"></path>
-                                    <path d="M9 12h6"></path>
-                                    <path d="M9 6h6"></path>
-                                </svg>
-                                <span>Manage Orders</span>
-                            </div>
-                        </a>
-                    </li>
+                        <!-- Orders -->
+                        <li class="menu @(isOrdersActive ? "active" : "")">
+                            <a asp-controller="Seller" asp-action="Orders" aria-expanded="false" class="dropdown-toggle">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list">
+                                        <path d="M9 18h6"></path>
+                                        <path d="M9 12h6"></path>
+                                        <path d="M9 6h6"></path>
+                                    </svg>
+                                    <span>Manage Orders</span>
+                                </div>
+                            </a>
+                        </li>
 
-                    <!-- Reports -->
-                    <li class="menu menu-heading">
-                        <div class="heading">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-minus">
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            <span>Reports</span>
-                        </div>
-                    </li>
-                    <li class="menu @(isReportsActive ? "active" : "")">
-                        <a asp-controller="Seller" asp-action="Reports" aria-expanded="false" class="dropdown-toggle">
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file">
-                                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-                                    <polyline points="13 2 13 9 20 9"></polyline>
+                        <!-- Reports -->
+                        <li class="menu menu-heading">
+                            <div class="heading">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-minus">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
                                 </svg>
                                 <span>Reports</span>
                             </div>
-                        </a>
-                    </li>
+                        </li>
+                        <li class="menu @(isReportsActive ? "active" : "")">
+                            <a asp-controller="Seller" asp-action="Reports" aria-expanded="false" class="dropdown-toggle">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file">
+                                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                                        <polyline points="13 2 13 9 20 9"></polyline>
+                                    </svg>
+                                    <span>Reports</span>
+                                </div>
+                            </a>
+                        </li>
 
-                    <!-- Settings -->
-                    <li class="menu menu-heading">
-                        <div class="heading">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-minus">
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            <span>SETTINGS</span>
-                        </div>
-                    </li>
-                    <li class="menu @(isSettingsActive ? "active" : "")">
-                        <a asp-controller="Seller" asp-action="StoreSettings" aria-expanded="false" class="dropdown-toggle">
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings">
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        <!-- Settings -->
+                        <li class="menu menu-heading">
+                            <div class="heading">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-minus">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
                                 </svg>
-                                <span>Store Settings</span>
+                                <span>SETTINGS</span>
                             </div>
-                        </a>
-                    </li>
+                        </li>
+                        <li class="menu @(isSettingsActive ? "active" : "")">
+                            <a asp-controller="Seller" asp-action="StoreSettings" aria-expanded="false" class="dropdown-toggle">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings">
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                    </svg>
+                                    <span>Store Settings</span>
+                                </div>
+                            </a>
+                        </li>
+                    }
                 </ul>
             </nav>
 
@@ -526,5 +514,38 @@
     <script src="~/src/assets/js/apps/ecommerce-create.js"></script>
 
     <script src="~/src/assets/js/apps/invoice-preview.js"></script>
+    <script src="~/src/assets/js/scrollspyNav.js"></script>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            @if (TempData["Success"] != null)
+            {
+                            <text>
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: '@TempData["Success"]',
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                });
+                            </text>
+            }
+            @if (TempData["Error"] != null)
+            {
+                            <text>
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: '@TempData["Error"]',
+                                    confirmButtonColor: '#d33'
+                                });
+                            </text>
+            }
+        });
+    </script>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

@@ -1,0 +1,173 @@
+﻿@{
+    Layout = "_LayoutCustomer";
+}
+
+@model DeliverProduct
+
+<div class="row mt-4">
+    <!-- 🧾 Order Info -->
+    <div class="col-xl-4 col-lg-5 col-md-12 mt-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Order Information</h5>
+                <ul class="list-unstyled mb-0">
+                    <li><strong>Order ID:</strong> @Model.Id</li>
+                    <li><strong>Customer:</strong> @Model.PurchasedProduct?.Billings?.Name</li>
+                    <li><strong>Product:</strong> @Model.PurchasedProduct?.ProductVariants?.Material - @Model.PurchasedProduct?.ProductVariants?.Product?.Name</li>
+                    <li><strong>Price:</strong> ₱@Model.PurchasedProduct?.Price</li>
+                    <li><strong>Status:</strong> <span class="badge bg-primary">@Model.Status</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 🗺️ Location Info -->
+        <div class="card shadow-sm border-0 mt-3">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Location Details</h5>
+                <p class="mb-2"><strong>Pickup Address:</strong><br>@Model.PurchasedProduct.ProductVariants.Product.Users.UserDetails.Address</p>
+                <p class="mb-2"><strong>Drop-off Address:</strong><br>@Model.PurchasedProduct.Billings.Address</p>
+                <p><strong>Distance:</strong> <span id="distance">Calculating...</span></p>
+            </div>
+        </div>
+
+
+        @if (Model.PickUpOn == null)
+        {
+            <button class="mt-3 btn btn-warning w-100" disabled>Rider is on its way to pickup location</button>
+        }
+        else if (Model.PickUpOn != null && Model.DropOffOn == null)
+        {
+            <button class="mt-3 btn btn-secondary w-100" disabled>Rider is on its way to drop-off location</button>
+        }
+        else if (Model.PickUpOn != null && Model.DropOffOn != null)
+        {
+            <button class="mt-3 btn btn-success w-100" disabled>Delivered</button>
+        }
+    </div>
+
+    <!-- 🗺️ Map -->
+    <div class="col-xl-8 col-lg-7 col-md-12 mt-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">Delivery Route</h5>
+            </div>
+            <div class="card-body p-3">
+                <div id="order-map" style="height: 500px; width: 100%; border-radius: 0 0 8px 8px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // ✅ Fixed Data
+            const dropoffLat = @Model.PurchasedProduct.Billings.Latitude;
+            const dropoffLng = @Model.PurchasedProduct.Billings.Longitude;
+            const pickupLat = @Model.PurchasedProduct.ProductVariants.Product.Users.UserDetails.Latitude;
+            const pickupLng = @Model.PurchasedProduct.ProductVariants.Product.Users.UserDetails.Longitude;
+            const deliveryId = @Model.Id;
+
+            // ✅ Initialize Map
+            const map = L.map('order-map').setView([pickupLat, pickupLng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // ✅ Icons
+            const pickupIcon = L.icon({
+                iconUrl: 'https://cdn-icons-png.flaticon.com/512/149/149059.png',
+                iconSize: [32, 32],
+                iconAnchor: [16, 32]
+            });
+            const dropoffIcon = L.icon({
+                iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+                iconSize: [32, 32],
+                iconAnchor: [16, 32]
+            });
+            const driverIcon = L.icon({
+                iconUrl: 'https://cdn-icons-png.flaticon.com/512/3097/3097161.png',
+                iconSize: [40, 40],
+                iconAnchor: [20, 40]
+            });
+
+            // ✅ Static Markers
+            L.marker([pickupLat, pickupLng], { icon: pickupIcon }).addTo(map)
+                .bindPopup("<b>Pickup Location</b><br>@Model.PurchasedProduct.ProductVariants.Product.Users.UserDetails.Address");
+            L.marker([dropoffLat, dropoffLng], { icon: dropoffIcon }).addTo(map)
+                .bindPopup("<b>Your Location</b><br>@Model.PurchasedProduct.Billings.Address");
+
+            let driverMarker = null;
+            let routingControl = null;
+
+            // ✅ Draw Route
+            function drawRoute(fromLat, fromLng, toLat, toLng) {
+                if (routingControl) map.removeControl(routingControl);
+
+                routingControl = L.Routing.control({
+                    waypoints: [L.latLng(fromLat, fromLng), L.latLng(toLat, toLng)],
+                    lineOptions: { styles: [{ color: '#007bff', weight: 5, opacity: 0.8 }] },
+                    addWaypoints: false,
+                    draggableWaypoints: false,
+                    fitSelectedRoutes: true,
+                    createMarker: () => null,
+                    show: false,
+                    router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' })
+                }).addTo(map);
+
+                routingControl.on('routeselected', () => {
+                    const panel = document.querySelector('.leaflet-routing-container');
+                    if (panel) panel.style.display = 'none';
+                });
+
+                routingControl.on('routesfound', e => {
+                    const route = e.routes[0];
+                    const distKm = (route.summary.totalDistance / 1000).toFixed(2);
+                    document.getElementById("distance").textContent = `${distKm} km (by road)`;
+                });
+            }
+
+            // ✅ Poll driver’s location every 5 seconds
+            async function updateDriverLocation() {
+                try {
+                    const res = await fetch(`/Home/GetDriverLocation?Id=${deliveryId}`);
+                    if (!res.ok) throw new Error("Network error");
+
+                    const text = await res.text(); // get text first
+                    if (!text) throw new Error("Empty response");
+
+                    const data = JSON.parse(text);
+
+                    if (data.success && data.lat && data.lng) {
+                        const lat = parseFloat(data.lat);
+                        const lng = parseFloat(data.lng);
+
+                        if (!driverMarker) {
+                            driverMarker = L.marker([lat, lng], { icon: driverIcon }).addTo(map)
+                                .bindPopup("<b>Rider's Current Location</b>");
+                            map.setView([lat, lng], 15);
+                        } else {
+                            driverMarker.setLatLng([lat, lng]);
+                        }
+
+                        drawRoute(lat, lng, dropoffLat, dropoffLng);
+                    } else {
+                        console.warn("Driver location missing or invalid:", data);
+                    }
+                } catch (err) {
+                    console.error("Error fetching driver location:", err);
+                }
+            }
+
+            setInterval(updateDriverLocation, 5000);
+            updateDriverLocation(); // Initial call
+
+            setTimeout(() => map.invalidateSize(), 800);
+        });
+
+    </script>
+}

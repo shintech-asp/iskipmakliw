@@ -1,0 +1,485 @@
+﻿@{
+    ViewData["Title"] = "Registration";
+    Layout = "_LayoutCustomer";
+}
+@model List<Plans>;
+<div class="row layout-top-spacing" id="cancel-row">
+    <div id="wizard_Default" class="col-lg-12 layout-spacing">
+        <div class="statbox widget box box-shadow">
+            <div class="widget-header">
+                <div class="row">
+                    <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                        <h4>Become a seller</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="widget-content widget-content-area">
+                <div class="bs-stepper stepper-form-one">
+                    <div class="bs-stepper-header" role="tablist">
+                        <div class="step" data-target="#defaultStep-one">
+                            <button type="button" class="step-trigger" role="tab">
+                                <span class="bs-stepper-circle">1</span>
+                                <span class="bs-stepper-label">Step One</span>
+                            </button>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step" data-target="#defaultStep-two">
+                            <button type="button" class="step-trigger" role="tab">
+                                <span class="bs-stepper-circle">2</span>
+                                <span class="bs-stepper-label">Step Two</span>
+                            </button>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step" data-target="#defaultStep-three">
+                            <button type="button" class="step-trigger" role="tab">
+                                <span class="bs-stepper-circle">3</span>
+                                <span class="bs-stepper-label">
+                                    <span class="bs-stepper-title">Step Three</span>
+                                </span>
+                            </button>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step" data-target="#defaultStep-threefive">
+                            <button type="button" class="step-trigger" role="tab">
+                                <span class="bs-stepper-circle">4</span>
+                                <span class="bs-stepper-label">
+                                    <span class="bs-stepper-title">Step Four</span>
+                                </span>
+                            </button>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step" data-target="#defaultStep-four">
+                            <button type="button" class="step-trigger" role="tab">
+                                <span class="bs-stepper-circle">5</span>
+                                <span class="bs-stepper-label">
+                                    <span class="bs-stepper-title">Final Step</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    <form asp-controller="Home" asp-action="BecomeSeller" method="post" enctype="multipart/form-data">
+                        <div class="bs-stepper-content">
+                            <div id="defaultStep-one" class="content" role="tabpanel">
+                                    <div class="statbox widget box box-shadow">
+                                        <div class="mb-3">
+                                            <label class="form-label">Type of ID: </label>
+                                            <select class="form-select" name="TypeId">
+                                                <option value="Drivers License">Drivers License</option>
+                                                <option value="PhilSys">PhilSys</option>
+                                                <option value="Passport">Passport</option>
+                                                <option value="Tin">TIN</option>
+                                            </select>
+                                        </div>
+                                        <label class="form-label">Upload ID: </label>
+                                        <div class="profile-image" hidden>
+
+                                            <div class="img-uploader-content">
+                                                <input type="file" class="filepond"
+                                                   name="GovernmentIdFile" accept="image/png, image/jpeg, image/gif" />
+                                            </div>
+
+                                        </div>
+                                        <div class="multiple-file-upload mt-5">
+                                            <input type="file"
+                                                   class="filepond file-upload-multiple"
+                                                    name="GovernmentIdFile"
+                                                   data-allow-reorder="true"
+                                                   data-max-file-size="3MB"
+                                                   data-max-files="1"
+                                                   id="govPicture"
+                                                   required>
+                                        </div>
+                                    </div>
+
+                                <div class="button-action mt-5">
+                                    <button type="button" class="btn btn-secondary btn-prev me-3" disabled>Prev</button>
+                                    <button type="button" class="btn btn-secondary btn-nxt">Next</button>
+                                </div>
+                            </div>
+                            <div id="defaultStep-two" class="content" role="tabpanel">
+
+                                <div class="container mt-4 text-center" id="cameraDiv">
+                                    <h4>Camera Preview</h4>
+                                    <video id="camera" width="640" height="480" autoplay class="border"></video>
+                                    <br />
+                                    <button id="capture" type="button" class="btn btn-primary mt-3">📸 Capture</button>
+                                </div>
+                                    <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="previewLabel">Preview Capture</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body text-center">
+                                                    <img id="capturedImg" class="img-fluid rounded" alt="Captured face" />
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" id="retake" class="btn btn-secondary" data-bs-dismiss="modal">Retake</button>
+                                                    <button type="button" id="accept" class="btn btn-success">Accept</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="profile-image" hidden>
+
+                                        <div class="img-uploader-content">
+                                        <input type="file" class="filepond"
+                                               name="CapturedIdFile" accept="image/png, image/jpeg, image/gif" />
+                                        </div>
+
+                                    </div>
+                                    <div class="multiple-file-upload mt-5">
+                                        <input type="file"
+                                               class="filepond file-upload-multiple"
+                                               name="CapturedIdFile"
+                                               data-allow-reorder="true"
+                                               data-max-file-size="3MB"
+                                               data-max-files="1"
+                                               id="idPicture"
+                                        required>
+                                    </div>
+
+                                <div class="button-action mt-5">
+                                    <button type="button" class="btn btn-secondary btn-prev me-3">Prev</button>
+                                    <button type="button" class="btn btn-secondary btn-nxt">Next</button>
+                                </div>
+                            </div>
+                            <div id="defaultStep-three" class="content" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <label for="defaultInputAddress" class="form-label">Name on Card</label>
+                                        <input name="CardName" type="text" class="form-control" id="defaultInputAddress" placeholder="John Dela Cruz">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="defaultInputAddress2" class="form-label">Card Number</label>
+                                        <input name="CardNumber" type="text" class="form-control" id="defaultInputAddress2" maxlength="12" pattern="\d{12}" inputmode="numeric">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="defaultInputCity" class="form-label">Expiry Date</label>
+                                        <input name="ExpirationDate" type="month" class="form-control" id="defaultInputCity" placeholder="MM/YY">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="defaultInputCity" class="form-label">CVV</label>
+                                        <input name="Cvv" type="text" class="form-control" id="defaultInputCity" maxlength="3" pattern="\d{3}" inputmode="numeric">
+                                    </div>
+                                </div>
+                                <div class="button-action mt-5">
+                                    <button type="button" class="btn btn-secondary btn-prev me-3">Prev</button>
+                                    <button type="button" class="btn btn-secondary btn-nxt">Next</button>
+                                </div>
+                            </div>
+                            <div id="defaultStep-threefive" class="content" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="row mt-4">
+                                            <div class="col-12">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Address</label>
+                                                    <input type="text" name="Address" class="form-control" id="Address" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label class="form-label">City</label>
+                                                    <input type="text" name="City" class="form-control" id="City" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Country</label>
+                                                    <input type="text" name="Country" class="form-control" id="Country" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label class="form-label">ZIP</label>
+                                                    <input type="tel" name="Zip" class="form-control" id="Zip" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Land Mark</label>
+                                                    <input type="text" name="LandMark" class="form-control" id="AdditionalInformation">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-4">
+                                            <h4>Select Your Location</h4>
+                                            <div id="map"></div>
+
+                                            <!-- Display coordinates -->
+                                            <div class="mt-3">
+                                                <input type="text" name="Latitude" id="latitude" class="form-control" hidden>
+                                                <input type="text" name="Longitude" id="longitude" class="form-control" hidden>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div class="button-action mt-5">
+                                    <button type="button" class="btn btn-secondary btn-prev me-3">Prev</button>
+                                    <button type="button" class="btn btn-secondary btn-nxt">Next</button>
+                                </div>
+                            </div>
+                            <div id="defaultStep-four" class="content" role="tabpanel">
+                                    <div class="statbox widget box box-shadow">
+                                        <div class="widget-content widget-content-area">
+
+                                            <div class="pricing-table-2 ">
+
+                                                <!-- Pricing Plans Container -->
+                                                <div class="pricing-plans-container mt-5 billed-yearly">
+                                                    <!-- Plan -->
+
+                                                    @foreach(var data in Model)
+                                                    {
+                                                        @if(data.Id != 1)
+                                                    {
+                                                        <div class="pricing-plan mb-5 recommanded">
+                                                            @{
+                                                                string recommend;
+                                                                if (data.Discount != 0)
+                                                                {
+                                                                    <span class="badge badge-pill badge-warning show">@data.Discount% Off</span>
+                                                                }
+                                                                <div class="pricing-header-section">
+                                                                    <div class="pricing-header">
+                                                                        <h3>@data.PlanName</h3>
+                                                                        @if (data.PlanName == "Annual")
+                                                                        {
+                                                                            <p>Recommended</p>
+                                                                        }
+                                                                    </div>
+                                                                    <div class="pricing-header-pricing">
+                                                                        <p class="pricing yearly-pricing">
+                                                                            @String.Format(new System.Globalization.CultureInfo("en-PH"), "{0:C}", data.Price)
+                                                                        </p>
+
+                                                                        <p class="sub-title monthly-pricing-label">@data.PlanName</p>
+                                                                    </div>
+                                                                </div>
+                                                            }
+
+
+
+
+
+                                                            <div class="pricing-plan-features mb-4">
+                                                                <ul>
+                                                                    <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> Unlimited</li>
+                                                                    <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> 3d Modeling for customer</li>
+                                                                    <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> Featured products</li>
+                                                                    @{
+                                                                        double? total = data.Price - (data.Price * (data.Discount / 100.0));
+                                                                    }
+                                                                    <li><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span> For just @total pesos \ @data.PlanName</li>
+                                                                </ul>
+                                                            </div>
+                                                            <div class="text-center">
+                                                                <input name="PlansId" class="form-check-input" type="radio" id="offer3" value="@data.Id">
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    }
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                <div class="button-action mt-3">
+                                    <button type="button" class="btn btn-secondary btn-prev me-3">Prev</button>
+                                    <button type="submit" class="btn btn-success me-3">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<canvas id="snapshot" width="640" height="480" style="display:none;"></canvas>
+@section Scripts {
+    <script>
+        const video = document.getElementById('camera');
+const canvas = document.getElementById('snapshot');
+const ctx = canvas.getContext('2d');
+const captureBtn = document.getElementById('capture');
+const capturedImg = document.getElementById('capturedImg');
+const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+
+let stream;
+
+// Start the camera
+function startCamera() {
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(s => {
+            stream = s;
+            video.srcObject = s;
+        })
+        .catch(err => console.error("Camera error:", err));
+}
+
+// Stop the camera
+function stopCamera() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+        stream = null;
+    }
+}
+
+// Start camera on page load
+startCamera();
+
+// ✅ Configure FilePond globally
+FilePond.setOptions({
+    server: null,  // Disable server processing
+    instantUpload: false,
+    allowMultiple: false,
+    maxFiles: 1
+});
+
+// Create FilePond instances
+const pondGov = FilePond.create(document.getElementById('govPicture'), {
+    name: 'GovernmentIdFile',  // ✅ Explicitly set the name
+    storeAsFile: true
+});
+
+const pondId = FilePond.create(document.getElementById('idPicture'), {
+    name: 'CapturedIdFile',  // ✅ Explicitly set the name
+    storeAsFile: true
+});
+
+// Capture photo
+captureBtn.addEventListener('click', () => {
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    capturedImg.src = canvas.toDataURL("image/png");
+    previewModal.show();
+});
+
+// Retake
+document.getElementById('retake').addEventListener('click', () => {
+    previewModal.hide();
+    startCamera();
+});
+
+// Accept → add captured image into FilePond
+document.getElementById('accept').addEventListener('click', () => {
+    fetch(capturedImg.src)
+        .then(res => res.blob())
+        .then(blob => {
+            const file = new File([blob], "capture.png", { type: "image/png" });
+            
+            // Add captured photo to CapturedIdFile only
+            pondId.removeFiles();
+            pondId.addFile(file);
+
+            previewModal.hide();
+            stopCamera();
+            $("#cameraDiv").hide();
+        });
+});
+
+// ✅ IMPORTANT: Before form submission, ensure FilePond processes files
+const form = document.querySelector('form');
+form.addEventListener('submit', function(e) {
+    // Check if files are present
+    const govFiles = pondGov.getFiles();
+    const idFiles = pondId.getFiles();
+    
+    console.log('Gov files:', govFiles);
+    console.log('ID files:', idFiles);
+    
+    // If no files, you might want to prevent submission
+    if (govFiles.length === 0 || idFiles.length === 0) {
+        e.preventDefault();
+        alert('Please upload both required files');
+        return false;
+    }
+});
+$(window).on('load', function () {
+    // Ensure map container has proper styling
+    $('#map').css({
+        'height': '500px',
+        'width': '100%',
+        'position': 'relative',
+        'display': 'block'
+    });
+
+    // Small delay to ensure Bootstrap layout is complete
+    setTimeout(function() {
+        // Create map instance
+        const map = L.map('map', {
+            center: [14.5995, 120.9842], // Default: Manila
+            zoom: 13,
+            scrollWheelZoom: true
+        });
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        let marker;
+
+        // Force multiple redraws to fix Bootstrap container issues
+        setTimeout(() => map.invalidateSize(), 100);
+        setTimeout(() => map.invalidateSize(), 300);
+        setTimeout(() => map.invalidateSize(), 600);
+
+        // Handle window resize
+        $(window).on('resize', function() {
+            map.invalidateSize();
+        });
+
+        // Handle map click
+        map.on('click', async function (e) {
+            const lat = e.latlng.lat.toFixed(6);
+            const lng = e.latlng.lng.toFixed(6);
+
+            // Update or create marker
+            if (marker) {
+                marker.setLatLng([lat, lng]);
+            } else {
+                marker = L.marker([lat, lng]).addTo(map);
+            }
+
+            // Update hidden input fields
+            $('#latitude').val(lat);
+            $('#longitude').val(lng);
+
+            // Show loading state (optional)
+            $('#Address').val('Loading address...');
+
+            // Reverse Geocode using Nominatim
+            try {
+                const response = await fetch(`/reverse-geocode?lat=${lat}&lon=${lng}`);
+                if (!response.ok) {
+                    throw new Error('Geocoding service unavailable');
+                }
+
+                const data = await response.json();
+
+                // Safely extract address data
+                const address = data.address || {};
+                $('#Address').val(data.display_name || 'Address not found');
+                $('#City').val(address.city || address.town || address.village || address.municipality || '');
+                $('#Country').val(address.country || '');
+                $('#Zip').val(address.postcode || '');
+            } catch (err) {
+                console.error('Reverse geocoding failed:', err);
+                $('#Address').val('Unable to fetch address');
+                alert('Failed to get address information. Please try again.');
+            }
+        });
+    }, 250);
+})
+    </script>
+}
+

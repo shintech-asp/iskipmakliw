@@ -1,0 +1,572 @@
+﻿@using iskipmakliw.Models.ViewModels
+@{
+    Layout = "_LayoutSeller";
+}
+@model TimelineViewModel;
+
+<style>
+    .statbox {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .widget-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        color: white;
+        margin-bottom: 0;
+    }
+
+        .widget-header h4 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0;
+        }
+
+    .product-info {
+        padding: 2rem;
+        background: linear-gradient(to right, #f8f9fa, #e9ecef);
+        border-bottom: 3px solid #667eea;
+    }
+
+    .product-card {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+    .product-image {
+        width: 100px;
+        height: 100px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 3px solid #667eea;
+    }
+
+    .product-details h5 {
+        font-size: 1.25rem;
+        color: #2d3748;
+        margin-bottom: 0.75rem;
+    }
+
+    .product-meta {
+        color: #718096;
+        line-height: 1.6;
+    }
+
+        .product-meta b {
+            color: #4a5568;
+        }
+
+    .price {
+        color: #667eea;
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    .timeline-container {
+        padding: 3rem 2rem;
+        position: relative;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 60px;
+    }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, #10b981, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 3rem;
+        opacity: 0;
+        animation: slideIn 0.5s ease forwards;
+    }
+
+        .timeline-item:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .timeline-item:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .timeline-item:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .timeline-item:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .timeline-item:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .timeline-dot {
+        position: absolute;
+        left: -49px;
+        top: 5px;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+        z-index: 2;
+    }
+
+    .timeline-item:hover .timeline-dot {
+        transform: scale(1.2) rotate(360deg);
+        transition: transform 0.6s ease;
+    }
+
+    .dot-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+
+    .dot-warning {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+    }
+
+    .dot-info {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+
+    .dot-primary {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+    }
+
+    .dot-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+
+    .timeline-content {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border-left: 4px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+
+    .timeline-item:hover .timeline-content {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        transform: translateX(5px);
+    }
+
+    .timeline-success .timeline-content {
+        border-left-color: #10b981;
+    }
+
+    .timeline-warning .timeline-content {
+        border-left-color: #f59e0b;
+    }
+
+    .timeline-info .timeline-content {
+        border-left-color: #3b82f6;
+    }
+
+    .timeline-primary .timeline-content {
+        border-left-color: #8b5cf6;
+    }
+
+    .timeline-danger .timeline-content {
+        border-left-color: #ef4444;
+    }
+
+    .timeline-time {
+        display: inline-block;
+        background: #f3f4f6;
+        color: #6b7280;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .timeline-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .timeline-date {
+        color: #9ca3af;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .timeline-meta {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+
+    .rating-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .stars {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    .star {
+        width: 20px;
+        height: 20px;
+        fill: #fbbf24;
+        stroke: #f59e0b;
+        animation: starPulse 2s ease infinite;
+    }
+
+    @@keyframes starPulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+    }
+
+    .star:nth-child(1) {
+        animation-delay: 0s;
+    }
+
+    .star:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+
+    .star:nth-child(3) {
+        animation-delay: 0.2s;
+    }
+
+    .star:nth-child(4) {
+        animation-delay: 0.3s;
+    }
+
+    .star:nth-child(5) {
+        animation-delay: 0.4s;
+    }
+
+    @@media (max-width: 768px) {
+        .product-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .timeline {
+            padding-left: 50px;
+        }
+
+        .timeline-dot {
+            left: -44px;
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+        }
+    }
+</style>
+@if (Model.DeliverProduct.PurchasedProduct.ProductVariantsId != null)
+{
+    <div class="statbox widget box box-shadow">
+        <!-- Header -->
+        <div class="widget-header">
+            <h4>🛒 Product Delivery Timeline</h4>
+        </div>
+
+        <!-- Product Information -->
+        <div class="product-info">
+            <div class="product-card">
+                <img src="@Model.DeliverProduct.PurchasedProduct.ProductVariants.ProductImage"
+                     alt="Product" class="product-image">
+                <div class="product-details">
+                    <h5>@Model.DeliverProduct.PurchasedProduct.ProductVariants.Material - @Model.DeliverProduct.PurchasedProduct.ProductVariants.Product.Name</h5>
+                    <div class="product-meta">
+                        <b>Order ID:</b> @Model.DeliverProduct.PurchasedProductId<br>
+                        <b>Buyer:</b> @Model.DeliverProduct.PurchasedProduct.Users.Username<br>
+                        <b>Price:</b> <span class="price">₱@Model.DeliverProduct.PurchasedProduct.Price</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline-container">
+            <div class="timeline">
+                <!-- Order Accepted -->
+                <div class="timeline-item timeline-success">
+                    <div class="timeline-dot dot-success">✓</div>
+                    <div class="timeline-content">
+                        <span class="timeline-time">@Model.DeliverProduct.PurchasedProduct.PurchasedDate.ToString("hh:mm tt")</span>
+                        <div class="timeline-title">Order Accepted</div>
+                        <div class="timeline-date">@Model.DeliverProduct.PurchasedProduct.PurchasedDate.ToString("MMM dd, yyyy")</div>
+                    </div>
+                </div>
+
+                <!-- Preparing Product -->
+                @if (Model.DeliverProduct.PickUpOn != null)
+                {
+                    <div class="timeline-item timeline-warning">
+                        <div class="timeline-dot dot-warning">📦</div>
+                        <div class="timeline-content">
+                            <span class="timeline-time">@Model.DeliverProduct.PickUpOn?.ToString("hh:mm tt")</span>
+                            <div class="timeline-title">Preparing Product</div>
+                            <div class="timeline-date">@Model.DeliverProduct.PickUpOn?.ToString("MMM dd, yyyy")</div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Drop Off -->
+                @if (Model.DeliverProduct.DropOffOn != null)
+                {
+                    <div class="timeline-item timeline-info">
+                        <div class="timeline-dot dot-info">🚚</div>
+                        <div class="timeline-content">
+                            <span class="timeline-time">@Model.DeliverProduct.DropOffOn?.ToString("hh:mm tt")</span>
+                            <div class="timeline-title">Out for Delivery</div>
+                            <div class="timeline-date">@Model.DeliverProduct.DropOffOn?.ToString("MMM dd, yyyy")</div>
+                            <div class="timeline-meta">Driver: @Model.DeliverProduct.RiderId</div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Delivered -->
+                @if (Model.DeliverProduct.DeliveredOn != null)
+                {
+                    <div class="timeline-item timeline-primary">
+                        <div class="timeline-dot dot-primary">✓</div>
+                        <div class="timeline-content">
+                            <span class="timeline-time">@Model.DeliverProduct.DeliveredOn?.ToString("hh:mm tt")</span>
+                            <div class="timeline-title">Delivered Successfully</div>
+                            <div class="timeline-date">@Model.DeliverProduct.DeliveredOn?.ToString("MMM dd, yyyy")</div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Rating -->
+                @if (Model.Ratings != null)
+                {
+
+                    @if (Model.Ratings.ProductVariants != null)
+                    {
+                        <div class="timeline-item timeline-danger">
+                            <div class="timeline-dot dot-danger">⭐</div>
+                            <div class="timeline-content">
+                                <span class="timeline-time">@Model.Ratings.CreatedAt.ToString("hh:mm tt")</span>
+                                <div class="timeline-title">Customer Review</div>
+                                <div class="timeline-date">@Model.Ratings.CreatedAt.ToString("MMM dd, yyyy")</div>
+                                <div class="timeline-meta"><b>Buyer:</b> @Model.DeliverProduct.PurchasedProduct.Users.Username</div>
+                                <div class="rating-container">
+                                    <b>Rating:</b> @Model.Ratings.Stars
+                                    <div class="stars">
+                                        @for (int i = 0; i < Model.Ratings.Stars; i++)
+                                        {
+                                            <svg class="star" viewBox="0 0 24 24">
+                                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                            </svg>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="timeline-item timeline-danger">
+                            <div class="timeline-dot dot-danger">⭐</div>
+                            <div class="timeline-content">
+                                <span class="timeline-time">@Model.Ratings.CreatedAt.ToString("hh:mm tt")</span>
+                                <div class="timeline-title">Customer Review</div>
+                                <div class="timeline-date">@Model.Ratings.CreatedAt.ToString("MMM dd, yyyy")</div>
+                                <div class="timeline-meta"><b>Buyer:</b> @Model.DeliverProduct.PurchasedProduct.Users.Username</div>
+                                <div class="rating-container">
+                                    <b>Rating:</b> @Model.Ratings.Stars
+                                    <div class="stars">
+                                        @for (int i = 0; i < Model.Ratings.Stars; i++)
+                                        {
+                                            <svg class="star" viewBox="0 0 24 24">
+                                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                            </svg>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}
+else
+{
+
+    <div class="statbox widget box box-shadow">
+        <!-- Header -->
+        <div class="widget-header">
+            <h4>🛒 Product Delivery Timeline</h4>
+        </div>
+
+        <!-- Product Information -->
+        <div class="product-info">
+            <div class="product-card">
+                <img src="~/src/assets/img/OakMartLogo.png"
+                     alt="Product" class="product-image">
+                <div class="product-details">
+                    <h5>Customization OrderId #1000@(Model.DeliverProduct.PurchasedProduct.CustomizationOrdersId)</h5>
+                    <div class="product-meta">
+                        <b>Order ID:</b> @Model.DeliverProduct.PurchasedProductId<br>
+                        <b>Buyer:</b> @Model.DeliverProduct.PurchasedProduct.Users.Username<br>
+                        <b>Price:</b> <span class="price">₱@Model.DeliverProduct.PurchasedProduct.Price</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline-container">
+            <div class="timeline">
+                <!-- Order Accepted -->
+                <div class="timeline-item timeline-success">
+                    <div class="timeline-dot dot-success">✓</div>
+                    <div class="timeline-content">
+                        <span class="timeline-time">@Model.DeliverProduct.PurchasedProduct.PurchasedDate.ToString("hh:mm tt")</span>
+                        <div class="timeline-title">Order Accepted</div>
+                        <div class="timeline-date">@Model.DeliverProduct.PurchasedProduct.PurchasedDate.ToString("MMM dd, yyyy")</div>
+                    </div>
+                </div>
+
+                <!-- Preparing Product -->
+                @if (Model.DeliverProduct.PickUpOn != null)
+                {
+                    <div class="timeline-item timeline-warning">
+                        <div class="timeline-dot dot-warning">📦</div>
+                        <div class="timeline-content">
+                            <span class="timeline-time">@Model.DeliverProduct.PickUpOn?.ToString("hh:mm tt")</span>
+                            <div class="timeline-title">Preparing Product</div>
+                            <div class="timeline-date">@Model.DeliverProduct.PickUpOn?.ToString("MMM dd, yyyy")</div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Drop Off -->
+                @if (Model.DeliverProduct.DropOffOn != null)
+                {
+                    <div class="timeline-item timeline-info">
+                        <div class="timeline-dot dot-info">🚚</div>
+                        <div class="timeline-content">
+                            <span class="timeline-time">@Model.DeliverProduct.DropOffOn?.ToString("hh:mm tt")</span>
+                            <div class="timeline-title">Out for Delivery</div>
+                            <div class="timeline-date">@Model.DeliverProduct.DropOffOn?.ToString("MMM dd, yyyy")</div>
+                            <div class="timeline-meta">Driver: @Model.DeliverProduct.RiderId</div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Delivered -->
+                @if (Model.DeliverProduct.DeliveredOn != null)
+                {
+                    <div class="timeline-item timeline-primary">
+                        <div class="timeline-dot dot-primary">✓</div>
+                        <div class="timeline-content">
+                            <span class="timeline-time">@Model.DeliverProduct.DeliveredOn?.ToString("hh:mm tt")</span>
+                            <div class="timeline-title">Delivered Successfully</div>
+                            <div class="timeline-date">@Model.DeliverProduct.DeliveredOn?.ToString("MMM dd, yyyy")</div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Rating -->
+                @if (Model.Ratings != null)
+                {
+                    <div class="timeline-item timeline-danger">
+                        <div class="timeline-dot dot-danger">⭐</div>
+                        <div class="timeline-content">
+                            <span class="timeline-time">@Model.Ratings.CreatedAt.ToString("hh:mm tt")</span>
+                            <div class="timeline-title">Customer Review</div>
+                            <div class="timeline-date">@Model.Ratings.CreatedAt.ToString("MMM dd, yyyy")</div>
+                            <div class="timeline-meta"><b>Buyer:</b> @Model.DeliverProduct.PurchasedProduct.Users.Username</div>
+                            <div class="rating-container">
+                                <b>Rating:</b> @Model.Ratings.Stars
+                                <div class="stars">
+                                    @for (int i = 0; i < Model.Ratings.Stars; i++)
+                                    {
+                                        <svg class="star" viewBox="0 0 24 24">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                        </svg>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
