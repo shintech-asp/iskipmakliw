@@ -341,6 +341,7 @@ namespace iskipmakliw.Controllers
             ModelState.Remove("ProductDetails.ProductId");
             ModelState.Remove("ProductDetails.Carts");
             ModelState.Remove("ProductDetails.PurchasedProduct");
+            ModelState.Remove("ProductDetails.Ratings");
             if (ModelState.IsValid)
             {
                 ProductVariants productVariant;
