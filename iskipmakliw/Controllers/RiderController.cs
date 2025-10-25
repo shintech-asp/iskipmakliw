@@ -154,9 +154,12 @@ namespace iskipmakliw.Controllers
                     transaction.TransactionStatus = "To rate";
                     transaction.PaymentStatus = "Paid";
                     _context.PurchasedProduct.Update(transaction);
-                    var customization = _context.CustomizationOrders.Find(data.PurchasedProduct.CustomizationOrdersId);
-                    customization.TransactionStatus = "Completed";
-                    _context.CustomizationOrders.Update(customization);
+                    var customization = _context.CustomizationOrders.Where(u => u.Id == data.PurchasedProduct.CustomizationOrdersId).FirstOrDefault();
+                    if(customization != null)
+                    {
+                        customization.TransactionStatus = "Completed";
+                        _context.CustomizationOrders.Update(customization);
+                    }
                     _context.SaveChanges();
                     TempData["Success"] = "Yay! Delivery Complete!";
 
