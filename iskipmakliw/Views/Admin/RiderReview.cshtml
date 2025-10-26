@@ -27,20 +27,6 @@
                                             </div>
                                         </div>
 
-                                        @*   <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="plan">Plan</label>
-                                                <input type="text" class="form-control mb-3" id="plan" value="@Model.Users?.UserDetails?.Plans?.PlanName" readonly>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="subscription">Subscription</label>
-                                                <input type="text" class="form-control mb-3" id="subscription" value="@Model.Users?.UserDetails?.Subscription" readonly>
-                                            </div>
-                                        </div> *@
-
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="phone">Phone</label>
@@ -52,6 +38,28 @@
                                             <div class="form-group">
                                                 <label for="email">Email</label>
                                                 <input type="text" class="form-control mb-3" id="email" value="@Model.Email" readonly>
+                                            </div>
+                                        </div>
+                                        <hr />
+
+                                        <h6 class="">Vehicle Information</h6>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="phone">Phone</label>
+                                                <input type="text" class="form-control mb-3" id="phone" value="@Model.UserDetails.VehicleType" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="email">Email</label>
+                                                <input type="text" class="form-control mb-3" id="email" value="@Model.UserDetails.VehicleBrand" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label for="email">Email</label>
+                                                <input type="text" class="form-control mb-3" id="email" value="@Model.UserDetails.PlateNumber" readonly>
                                             </div>
                                         </div>
                                     </div>
@@ -107,6 +115,7 @@
                 <h5 class="modal-title" id="documentsModalLabel">Client Documents</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+
             <div class="modal-body row text-center">
 
                 <!-- Government ID -->
@@ -139,7 +148,84 @@
                     }
                 </div>
 
+                <hr class="my-4" />
+
+                <!-- OR (Official Receipt) -->
+                <div class="col-md-6 mb-3">
+                    <h6>Official Receipt (OR)</h6>
+                    @if (!string.IsNullOrEmpty(Model.UserDetails?.OR))
+                    {
+                        <img src="@Model.UserDetails.OR"
+                             class="img-fluid border rounded"
+                             style="max-height:300px;" />
+                    }
+                    else
+                    {
+                        <p class="text-muted">No OR uploaded.</p>
+                    }
+                </div>
+
+                <!-- CR (Certificate of Registration) -->
+                <div class="col-md-6 mb-3">
+                    <h6>Certificate of Registration (CR)</h6>
+                    @if (!string.IsNullOrEmpty(Model.UserDetails?.CR))
+                    {
+                        <img src="@Model.UserDetails.CR"
+                             class="img-fluid border rounded"
+                             style="max-height:300px;" />
+                    }
+                    else
+                    {
+                        <p class="text-muted">No CR uploaded.</p>
+                    }
+                </div>
+
+                <!-- Deed of Sale (if applicable) -->
+                @if (!string.IsNullOrEmpty(Model.UserDetails?.DeedOfSale))
+                {
+                    <div class="col-md-12 mb-3">
+                        <h6>Deed of Sale (if applicable)</h6>
+                            <img src="@Model.UserDetails.DeedOfSale"
+                                 class="img-fluid border rounded"
+                                 style="max-height:300px;" />
+                    </div>
+                }
+
+                <!-- Vehicle Images Carousel -->
+                <div class="col-md-12 mb-3">
+                    <h6>Vehicle Images</h6>
+                    @if (Model.UserDetails?.VehicleImages?.Count > 0)
+                    {
+                        var carouselId = "vehicleCarousel";
+                        <div id="@carouselId" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                @for (int i = 0; i < Model.UserDetails.VehicleImages.Count; i++)
+                                {
+                                    var image = Model.UserDetails.VehicleImages[i].ImagePath;
+                                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                                        <img src="@image"
+                                             class="d-block w-100 border rounded"
+                                             style="max-height:400px; object-fit:contain;" />
+                                    </div>
+                                }
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#@carouselId" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#@carouselId" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No vehicle images uploaded.</p>
+                    }
+                </div>
             </div>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-light-dark" data-bs-dismiss="modal">Close</button>
             </div>

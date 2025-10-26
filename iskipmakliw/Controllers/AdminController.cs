@@ -73,6 +73,7 @@ namespace iskipmakliw.Controllers
         {
             var payments = _context.Users
                                 .Include(u => u.UserDetails)
+                                    .ThenInclude(u => u.VehicleImages)
                             .Where(u => u.Role == "Rider")
                             .ToList();
 
@@ -82,6 +83,7 @@ namespace iskipmakliw.Controllers
         {
             var data = _context.Users
                             .Include(u => u.UserDetails)
+                                    .ThenInclude(u => u.VehicleImages)
                             .Where(u => u.Id == Id)
                             .FirstOrDefault();
             return View(data);

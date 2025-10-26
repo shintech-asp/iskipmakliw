@@ -1,5 +1,6 @@
 ﻿using iskipmakliw.Data;
 using iskipmakliw.Filters;
+using iskipmakliw.Migrations;
 using iskipmakliw.Models;
 using iskipmakliw.Models.DTO;
 using iskipmakliw.Models.ViewModels;
@@ -85,7 +86,7 @@ namespace iskipmakliw.Controllers
             return View();
         }
         [HttpPost]
-        public IActionResult Rider(UserDetails userDetails, Users users, string Confirm)
+        public IActionResult Rider(Models.UserDetails userDetails, List<IFormFile> VehicleImagesFile, Users users, string Confirm)
         {
             ModelState.Remove("Role");
             ModelState.Remove("Carts");
@@ -107,7 +108,6 @@ namespace iskipmakliw.Controllers
                     {
                         Directory.CreateDirectory(uploadPath);
                     }
-
                     // Save GovernmentIdFile to disk
                     if (userDetails.GovernmentIdFile != null && userDetails.GovernmentIdFile.Length > 0)
                     {
@@ -137,6 +137,48 @@ namespace iskipmakliw.Controllers
                         // Save relative path in DB
                         userDetails.CapturedIdPath = $"/uploads/{capFileName}";
                     }
+                    // Save GovernmentIdFile to disk
+                    if (userDetails.ORFile != null && userDetails.ORFile.Length > 0)
+                    {
+                        string ORFileName = $"or_{Guid.NewGuid()}{Path.GetExtension(userDetails.ORFile.FileName)}";
+                        string ORFilePath = Path.Combine(uploadPath, ORFileName);
+
+                        using (var stream = new FileStream(ORFilePath, FileMode.Create))
+                        {
+                            userDetails.GovernmentIdFile.CopyTo(stream);
+                        }
+
+                        // Save relative path in DB
+                        userDetails.OR = $"/uploads/{ORFileName}";
+                    }
+                    // Save GovernmentIdFile to disk
+                    if (userDetails.CRFile != null && userDetails.CRFile.Length > 0)
+                    {
+                        string CRFileName = $"cr_{Guid.NewGuid()}{Path.GetExtension(userDetails.CRFile.FileName)}";
+                        string CRFilePath = Path.Combine(uploadPath, CRFileName);
+
+                        using (var stream = new FileStream(CRFilePath, FileMode.Create))
+                        {
+                            userDetails.GovernmentIdFile.CopyTo(stream);
+                        }
+
+                        // Save relative path in DB
+                        userDetails.CR = $"/uploads/{CRFileName}";
+                    }
+                    // Save GovernmentIdFile to disk
+                    if (userDetails.DeedOfSaleFile != null && userDetails.DeedOfSaleFile.Length > 0)
+                    {
+                        string dosFileName = $"dos_{Guid.NewGuid()}{Path.GetExtension(userDetails.DeedOfSaleFile.FileName)}";
+                        string dosFilePath = Path.Combine(uploadPath, dosFileName);
+
+                        using (var stream = new FileStream(dosFileName, FileMode.Create))
+                        {
+                            userDetails.DeedOfSaleFile.CopyTo(stream);
+                        }
+
+                        // Save relative path in DB
+                        userDetails.DeedOfSale = $"/uploads/{dosFileName}";
+                    }
 
                     var hasher = new PasswordHasher<Users>();
                     users.Password = hasher.HashPassword(users, users.Password);
@@ -147,6 +189,27 @@ namespace iskipmakliw.Controllers
                     userDetails.UsersId = users.Id;
                     _context.UserDetails.Add(userDetails);
                     _context.SaveChanges();
+
+                    if (VehicleImagesFile != null && VehicleImagesFile.Any())
+                    {
+                        foreach (var file in VehicleImagesFile)
+                        {
+                            var fileName = $"gov_{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                            var filePath = Path.Combine(uploadPath, fileName);
+
+                            using (var stream = new FileStream(filePath, FileMode.Create))
+                            {
+                                file.CopyTo(stream);
+                            }
+                            var vahicleImages = new Models.VehicleImages
+                            {
+                                ImagePath = $"/uploads/{fileName}",
+                                UserDetailsId = userDetails.Id
+                            };
+                            _context.VehicleImages.Add(vahicleImages);
+                            _context.SaveChanges();
+                        }
+                    }
                     TempData["Success"] = "Account created!";
                     return View();
                 }

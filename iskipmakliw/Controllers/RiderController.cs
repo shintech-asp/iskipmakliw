@@ -1,4 +1,5 @@
 ﻿using iskipmakliw.Data;
+using iskipmakliw.Models;
 using iskipmakliw.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,43 @@ namespace iskipmakliw.Controllers
         }
         public IActionResult Index()
         {
-            return View();
+            var usersId = int.Parse(User.FindFirst("UsersId").Value);
+            var data = _context.DeliverProduct
+                    .Include(u => u.PurchasedProduct)
+                        .ThenInclude(u => u.ProductVariants)
+                            .ThenInclude(u => u.Product)
+                                .ThenInclude(u => u.Users)
+                                    .ThenInclude(u => u.UserDetails)
+                    .Include(u => u.PurchasedProduct)
+                        .ThenInclude(u => u.CustomizationOrders)
+                            .ThenInclude(u => u.Users)
+                                .ThenInclude(u => u.UserDetails)
+                    .Where(u => u.RiderId == usersId)
+                    .ToList();
+            ViewBag.Status = _context.Users
+                            .Include(u => u.UserDetails)
+                            .Where(u => u.Id == usersId).FirstOrDefault();
+            return View(data);
+        }
+        public IActionResult Remit()
+        {
+            var data = _context.DeliverProduct.Where(u => !u.isRemitted && u.RiderId == int.Parse(User.FindFirst("UsersId").Value)).ToList();
+            if(data.Count == 0)
+            {
+                TempData["Error"] = "No remittance available";
+
+                return Json(new { response = data });
+            }
+            foreach (var item in data)
+            {
+                item.isRemitted = true;
+                item.RemittedOn = DateTime.Now; 
+            }
+            _context.SaveChanges();
+            TempData["Success"] = "Cash remitted successfully";
+
+            return Json(new { response = data });
+
         }
         public IActionResult Orders()
         {

@@ -18,6 +18,7 @@
         public string TransactionStatus { get; set; } = "Pending";
         public int BillingsId { get; set; }
         public Billings Billings { get; set; }
+        public List<DeliverProduct> DeliverProduct { get; set; }
 
     }
 }
