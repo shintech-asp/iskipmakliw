@@ -198,7 +198,8 @@ namespace iskipmakliw.Controllers
                         Source = "ProductVariants",
                         PaymentStatus = "Pending",
                         PaymentMethod = "Cash on Delivery",
-                        PurchasedDate = DateTime.Now
+                        PurchasedDate = DateTime.Now,
+                        BillingsId = billings
                     };
                     _context.PurchasedProduct.Add(purchasedProduct);
                     var updateProduct = _context.ProductVariants.FirstOrDefault(u => u.Id == payment.ProductVariantsId);

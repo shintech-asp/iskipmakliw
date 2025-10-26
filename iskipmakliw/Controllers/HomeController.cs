@@ -336,6 +336,9 @@ namespace iskipmakliw.Controllers
                          .Include(dp => dp.PurchasedProduct)
                             .ThenInclude(p => p.Users)
                                 .ThenInclude(u => u.UserDetails)
+                         .Include(dp => dp.Rider)
+                            .ThenInclude(u => u.UserDetails)
+                                .ThenInclude(u => u.VehicleImages)
                          .Where(dp => dp.PurchasedProductId == Id)
                          .FirstOrDefault();
             return View(data);

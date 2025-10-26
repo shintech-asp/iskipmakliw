@@ -33,6 +33,21 @@ namespace iskipmakliw.Models
 
         [NotMapped]
         public IFormFile? CapturedIdFile { get; set; }
+        [NotMapped]
+        public IFormFile? ORFile { get; set; }
+
+        [NotMapped]
+        public IFormFile? CRFile { get; set; }
+        [NotMapped]
+        public IFormFile? DeedOfSaleFile { get; set; }
+
+        public string? VehicleType { get; set; }
+        public string? VehicleBrand { get; set; }
+        public string? OR { get; set; }
+        public string? CR { get; set; }
+        public string? PlateNumber { get; set; }
+        public string? DeedOfSale { get; set; }
+        public List<VehicleImages>? VehicleImages { get; set; }
     }
 
 }

@@ -734,7 +734,7 @@
                 </div>
 
                 <div class="modal-footer justify-content-between">
-                    <button class="btn btn-light-dark" data-bs-dismiss="modal">Discard</button>
+                    <button type="button" class="btn btn-light-dark" data-bs-dismiss="modal">Discard</button>
                     <button type="submit" class="btn btn-primary" >Submit</button>
                 </div>
             </div>
@@ -771,7 +771,7 @@
             }
 
             // 🎯 Open rating modal
-            $("#RateModal").on("click", function () {
+            $(document).on("click","#RateModal", function () {
                 const id = $(this).data("id");
                 const purchasedId = $(this).data("purchasedidval");
                 $("#productId").val(id);

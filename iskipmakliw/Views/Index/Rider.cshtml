@@ -123,22 +123,29 @@
                                             <div class="step" data-target="#defaultStep-one">
                                                 <button type="button" class="step-trigger" role="tab">
                                                     <span class="bs-stepper-circle">1</span>
-                                                    <span class="bs-stepper-label">Step One</span>
+                                                    <span class="bs-stepper-label">Identification</span>
                                                 </button>
                                             </div>
                                             <div class="line"></div>
                                             <div class="step" data-target="#defaultStep-two">
                                                 <button type="button" class="step-trigger" role="tab">
                                                     <span class="bs-stepper-circle">2</span>
-                                                    <span class="bs-stepper-label">Step Two</span>
+                                                    <span class="bs-stepper-label">Verification</span>
+                                                </button>
+                                            </div>
+                                            <div class="line"></div>
+                                            <div class="step" data-target="#defaultStep-three">
+                                                <button type="button" class="step-trigger" role="tab">
+                                                    <span class="bs-stepper-circle">3</span>
+                                                    <span class="bs-stepper-label">Vehicle</span>
                                                 </button>
                                             </div>
                                             <div class="line"></div>
                                             <div class="step" data-target="#defaultStep-four">
                                                 <button type="button" class="step-trigger" role="tab">
-                                                    <span class="bs-stepper-circle">3</span>
+                                                    <span class="bs-stepper-circle">4</span>
                                                     <span class="bs-stepper-label">
-                                                        <span class="bs-stepper-title">Final Step</span>
+                                                        <span class="bs-stepper-title">Login details</span>
                                                     </span>
                                                 </button>
                                             </div>
@@ -156,23 +163,27 @@
                                                         </select>
                                                     </div>
                                                     <label class="form-label">Upload ID: </label>
-                                                    <div class="profile-image" hidden>
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <div class="profile-image" hidden>
 
-                                                        <div class="img-uploader-content">
-                                                            <input type="file" class="filepond"
-                                                                    name="GovernmentIdFile" accept="image/png, image/jpeg, image/gif" />
+                                                                <div class="img-uploader-content">
+                                                                    <input type="file" class="filepond"
+                                                                           name="GovernmentIdFile" accept="image/png, image/jpeg, image/gif" />
+                                                                </div>
+
+                                                            </div>
+                                                            <div class="multiple-file-upload mt-3 mb-5">
+                                                                <input type="file"
+                                                                       class="filepond file-upload-multiple"
+                                                                       name="GovernmentIdFile"
+                                                                       data-allow-reorder="true"
+                                                                       data-max-file-size="3MB"
+                                                                       data-max-files="1"
+                                                                       id="govPicture"
+                                                                       required>
+                                                            </div>
                                                         </div>
-
-                                                    </div>
-                                                    <div class="multiple-file-upload mt-3 mb-5">
-                                                        <input type="file"
-                                                                class="filepond file-upload-multiple"
-                                                                name="GovernmentIdFile"
-                                                                data-allow-reorder="true"
-                                                                data-max-file-size="3MB"
-                                                                data-max-files="1"
-                                                                id="govPicture"
-                                                                required>
                                                     </div>
                                                 </div>
                                                 <div class="button-action" style="margin-top: 300px;">
@@ -206,26 +217,107 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="profile-image" hidden>
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <div class="profile-image" hidden>
 
-                                                        <div class="img-uploader-content">
-                                                            <input type="file" class="filepond"
-                                                                    name="CapturedIdFile" accept="image/png, image/jpeg, image/gif" />
+                                                                <div class="img-uploader-content">
+                                                                    <input type="file" class="filepond"
+                                                                           name="CapturedIdFile" accept="image/png, image/jpeg, image/gif" />
+                                                                </div>
+
+                                                            </div>
+                                                            <div class="multiple-file-upload mt-5">
+                                                                <input type="file"
+                                                                       class="filepond file-upload-multiple"
+                                                                       name="CapturedIdFile"
+                                                                       data-allow-reorder="true"
+                                                                       data-max-file-size="3MB"
+                                                                       data-max-files="1"
+                                                                       id="idPicture"
+                                                                       required>
+                                                            </div>
                                                         </div>
-
-                                                    </div>
-                                                    <div class="multiple-file-upload mt-5">
-                                                        <input type="file"
-                                                                class="filepond file-upload-multiple"
-                                                                name="CapturedIdFile"
-                                                                data-allow-reorder="true"
-                                                                data-max-file-size="3MB"
-                                                                data-max-files="1"
-                                                                id="idPicture"
-                                                                required>
                                                     </div>
                                                 </div>
                                                 <div class="button-action mt-5">
+                                                    <button type="button" class="btn btn-secondary btn-prev me-3">Prev</button>
+                                                    <button type="button" class="btn btn-secondary btn-nxt">Next</button>
+                                                </div>
+                                            </div>
+                                            <div id="defaultStep-three" class="content" role="tabpanel">
+                                                <div class="mb-3">
+                                                    <div class="col-md-12">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Vehicle Type</label>
+                                                            <select class="form-select" name="VehicleType">
+                                                                <option value="L300">L300</option>
+                                                                <option value="Van">Van</option>
+                                                                <option value="Pickup">Pick-up</option>
+                                                                <option value="Truck">Truck</option>
+                                                                <option value="Car">Car</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Vehicle brand</label>
+                                                            <input name="VehicleBrand" type="text" class="form-control">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Vehicle Official Receipt (OR)</label>
+                                                            <div class="card">
+                                                                <div class="card-body">
+                                                                    <input type="file" name="ORFile" id="OfficialReceipt" class="filepond">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-12">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Certificate of Registration (CR)</label>
+                                                            <div class="card">
+                                                                <div class="card-body">
+                                                                    <input type="file" name="CRFile" id="CertificateOfRegistration" class="filepond" >
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-12">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Plate Number</label>
+                                                            <input name="PlateNumber" type="text" class="form-control" placeholder="Enter plate number" required>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-12">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Deed of Sale (if applicable)</label>
+                                                            <div class="card">
+                                                                <div class="card-body">
+                                                                    <input type="file" name="DeedOfSaleFile" id="DeedOfSale" class="filepond">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-12">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Vehicle Images (Front, Back, Side, Visible Plate)</label>
+                                                            <div class="card">
+                                                                <div class="card-body">
+                                                                    <input type="file" name="VehicleImagesFile" id="VehicleImages" class="filepond" multiple>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="button-action mt-3">
                                                     <button type="button" class="btn btn-secondary btn-prev me-3">Prev</button>
                                                     <button type="button" class="btn btn-secondary btn-nxt">Next</button>
                                                 </div>
@@ -369,20 +461,36 @@
         // Start camera on page load
         startCamera();
 
-        // ✅ Configure FilePond globally
         FilePond.setOptions({
-            server: null,  // Disable server processing
-            instantUpload: false,
-            allowMultiple: false,
-            maxFiles: 1
+            server: null,          // Disable instant uploads to server
+            instantUpload: false,  // Wait for form submission
+            allowMultiple: false,  // Default for all FilePond inputs
+            maxFiles: 1,           // Default max for single-file fields
+            storeAsFile: true      // Store file directly in FormData
         });
-
         // Create FilePond instances
         const pondGov = FilePond.create(document.getElementById('govPicture'), {
             name: 'GovernmentIdFile',  // ✅ Explicitly set the name
             storeAsFile: true
         });
-
+        const pondOR = FilePond.create(document.getElementById('OfficialReceipt'), {
+            name: 'ORFile',  // ✅ Explicitly set the name
+            storeAsFile: true
+        });
+        const pondCR = FilePond.create(document.getElementById('CertificateOfRegistration'), {
+            name: 'CRFile',  // ✅ Explicitly set the name
+            storeAsFile: true
+        });
+        const pondDeedOfSale = FilePond.create(document.getElementById('DeedOfSale'), {
+            name: 'DeedOfSaleFile',  // ✅ Explicitly set the name
+            storeAsFile: true
+        });
+        const pondVehicleImages = FilePond.create(document.getElementById('VehicleImages'), {
+            name: 'VehicleImagesFile',
+            allowMultiple: true,  // Allow multiple vehicle photos
+            maxFiles: 5,          // (Optional) limit number of uploads
+            storeAsFile: true
+        });
         const pondId = FilePond.create(document.getElementById('idPicture'), {
             name: 'CapturedIdFile',  // ✅ Explicitly set the name
             storeAsFile: true
@@ -424,12 +532,16 @@
             // Check if files are present
             const govFiles = pondGov.getFiles();
             const idFiles = pondId.getFiles();
+            const ORFiles = pondOR.getFiles();
+            const CRFiles = pondCR.getFiles();
+            const DOSFiles = pondDeedOfSale.getFiles();
+            const VehicleImagesFiles = pondVehicleImages.getFiles();
     
             console.log('Gov files:', govFiles);
             console.log('ID files:', idFiles);
     
             // If no files, you might want to prevent submission
-            if (govFiles.length === 0 || idFiles.length === 0) {
+            if (govFiles.length === 0 || idFiles.length === 0 || ORFiles.length === 0 || CRFiles.length === 0 || DOSFiles.length === 0 || VehicleImagesFiles.length === 0) {
                 e.preventDefault();
                 alert('Please upload both required files');
                 return false;

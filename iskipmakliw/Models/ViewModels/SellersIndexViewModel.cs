@@ -5,5 +5,6 @@
         public Users Users { get; set; }
         public List<PurchasedProduct> PurchasedProduct { get; set; }
         public List<ProductVariants> ProductVariants { get; set; }
+        public List<DeliverProduct> Sales { get; set; }
     }
 }

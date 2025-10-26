@@ -77,11 +77,17 @@ namespace iskipmakliw.Controllers
                           .Include(u => u.Product)
                           .Include(u => u.PurchasedProduct)
                           .Where(u => u.Product.UsersId == usersId).ToList();
+            var conSales = _context.DeliverProduct
+                            .Include(u => u.PurchasedProduct)
+                                .ThenInclude(u => u.ProductVariants)
+                                    .ThenInclude(u => u.Product)
+                .Where(u => u.Status == "Delivered" && u.PurchasedProduct.ProductVariants.Product.Users.Id == usersId).ToList();
             var data = new SellersIndexViewModel
             {
                 Users = user,
                 PurchasedProduct = recent,
-                ProductVariants = product
+                ProductVariants = product,
+                Sales = conSales
             };
             return View(data);
         }

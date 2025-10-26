@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iskipmakliw.Data;
 
@@ -11,9 +12,11 @@ using iskipmakliw.Data;
 namespace iskipmakliw.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251026143704_VehicleImages")]
+    partial class VehicleImages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -254,8 +257,6 @@ namespace iskipmakliw.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PurchasedProductId");
-
-                    b.HasIndex("RiderId");
 
                     b.ToTable("DeliverProduct");
                 });
@@ -791,18 +792,12 @@ namespace iskipmakliw.Migrations
             modelBuilder.Entity("iskipmakliw.Models.DeliverProduct", b =>
                 {
                     b.HasOne("iskipmakliw.Models.PurchasedProduct", "PurchasedProduct")
-                        .WithMany("DeliverProduct")
+                        .WithMany()
                         .HasForeignKey("PurchasedProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("iskipmakliw.Models.Users", "Rider")
-                        .WithMany()
-                        .HasForeignKey("RiderId");
-
                     b.Navigation("PurchasedProduct");
-
-                    b.Navigation("Rider");
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.PaymentMethod", b =>
@@ -972,11 +967,6 @@ namespace iskipmakliw.Migrations
                     b.Navigation("PurchasedProduct");
 
                     b.Navigation("Ratings");
-                });
-
-            modelBuilder.Entity("iskipmakliw.Models.PurchasedProduct", b =>
-                {
-                    b.Navigation("DeliverProduct");
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.UserDetails", b =>

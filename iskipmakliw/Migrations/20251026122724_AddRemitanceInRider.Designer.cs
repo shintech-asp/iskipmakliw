@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iskipmakliw.Data;
 
@@ -11,9 +12,11 @@ using iskipmakliw.Data;
 namespace iskipmakliw.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251026122724_AddRemitanceInRider")]
+    partial class AddRemitanceInRider
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -238,9 +241,6 @@ namespace iskipmakliw.Migrations
                     b.Property<int>("PurchasedProductId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("RemittedOn")
-                        .HasColumnType("datetime2");
-
                     b.Property<int?>("RiderId")
                         .HasColumnType("int");
 
@@ -254,8 +254,6 @@ namespace iskipmakliw.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PurchasedProductId");
-
-                    b.HasIndex("RiderId");
 
                     b.ToTable("DeliverProduct");
                 });
@@ -569,9 +567,6 @@ namespace iskipmakliw.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CR")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("CapturedIdPath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -591,9 +586,6 @@ namespace iskipmakliw.Migrations
                     b.Property<int?>("Cvv")
                         .HasColumnType("int");
 
-                    b.Property<string>("DeedOfSale")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime?>("ExpirationDate")
                         .HasColumnType("datetime2");
 
@@ -610,14 +602,8 @@ namespace iskipmakliw.Migrations
                     b.Property<string>("Longitude")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("OR")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int?>("PlansId")
                         .HasColumnType("int");
-
-                    b.Property<string>("PlateNumber")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
@@ -628,12 +614,6 @@ namespace iskipmakliw.Migrations
 
                     b.Property<int>("UsersId")
                         .HasColumnType("int");
-
-                    b.Property<string>("VehicleBrand")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("VehicleType")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Zip")
                         .HasColumnType("nvarchar(max)");
@@ -688,28 +668,6 @@ namespace iskipmakliw.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("iskipmakliw.Models.VehicleImages", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ImagePath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserDetailsId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserDetailsId");
-
-                    b.ToTable("VehicleImages");
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.Billings", b =>
@@ -791,18 +749,12 @@ namespace iskipmakliw.Migrations
             modelBuilder.Entity("iskipmakliw.Models.DeliverProduct", b =>
                 {
                     b.HasOne("iskipmakliw.Models.PurchasedProduct", "PurchasedProduct")
-                        .WithMany("DeliverProduct")
+                        .WithMany()
                         .HasForeignKey("PurchasedProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("iskipmakliw.Models.Users", "Rider")
-                        .WithMany()
-                        .HasForeignKey("RiderId");
-
                     b.Navigation("PurchasedProduct");
-
-                    b.Navigation("Rider");
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.PaymentMethod", b =>
@@ -939,17 +891,6 @@ namespace iskipmakliw.Migrations
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("iskipmakliw.Models.VehicleImages", b =>
-                {
-                    b.HasOne("iskipmakliw.Models.UserDetails", "UserDetails")
-                        .WithMany("VehicleImages")
-                        .HasForeignKey("UserDetailsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("UserDetails");
-                });
-
             modelBuilder.Entity("iskipmakliw.Models.CustomizationOrders", b =>
                 {
                     b.Navigation("CustomizationChat");
@@ -972,16 +913,6 @@ namespace iskipmakliw.Migrations
                     b.Navigation("PurchasedProduct");
 
                     b.Navigation("Ratings");
-                });
-
-            modelBuilder.Entity("iskipmakliw.Models.PurchasedProduct", b =>
-                {
-                    b.Navigation("DeliverProduct");
-                });
-
-            modelBuilder.Entity("iskipmakliw.Models.UserDetails", b =>
-                {
-                    b.Navigation("VehicleImages");
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.Users", b =>

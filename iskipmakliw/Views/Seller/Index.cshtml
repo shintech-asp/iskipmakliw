@@ -304,11 +304,22 @@ else if (Model.Users.UserDetails?.Status == "Approved")
                                     </div>
                                     <div class="alert-text">
                                         <div class="alert-label">Total Sales</div>
-                                        <div class="alert-value">@($"₱{Model.PurchasedProduct.Sum(u => u.Price):N2}")</div>
+                                        @if(Model.Sales.Count > 0)
+                                        {
+
+                                            <div class="alert-value">@($"₱{Model.PurchasedProduct.Sum(u => u.Price):N2}")</div>
+                                        }
+                                        else
+                                        {
+
+                                            <div class="alert-value">No sales</div>
+                                        }
                                     </div>
                                 </div>
                             </div>
                             <ul>
+                            @if (Model.Sales.Count > 0)
+                            {
                                 @if (Model.PurchasedProduct.Any())
                                 {
                                     @foreach (var data in Model.PurchasedProduct.Distinct())
@@ -328,13 +339,13 @@ else if (Model.Users.UserDetails?.Status == "Approved")
                                         </li>
                                     }
                                 }
+                                }
                                 else
                                 {
                                     <li>
                                         <p class="text-center fst-italic">No sales yet</p>
                                     </li>
                                 }
-
                             </ul>
                         </div>
                     </div>
