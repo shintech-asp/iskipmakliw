@@ -52,7 +52,9 @@ namespace iskipmakliw.Controllers
                     new Claim("ContactNumber", user.ContactNumber ?? ""),
                     new Claim(ClaimTypes.Role, user.Role),
                     new Claim("Status", user.UserDetails?.Status ?? "N/A"),
-                    new Claim("PaymentStatus", payments?.Status ?? "N/A")
+                    new Claim("PaymentStatus", payments?.Status ?? "N/A"),
+                    new Claim("isSeller", (user.UserDetails != null).ToString())
+
                 };
 
                     var identity = new ClaimsIdentity(claims, "MyCookieAuth");

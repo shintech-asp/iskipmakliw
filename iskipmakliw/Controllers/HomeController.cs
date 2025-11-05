@@ -1,4 +1,5 @@
 ﻿using iskipmakliw.Data;
+using iskipmakliw.Migrations;
 using iskipmakliw.Models;
 using iskipmakliw.Models.DTO;
 using iskipmakliw.Models.ViewModels;
@@ -148,6 +149,7 @@ namespace iskipmakliw.Controllers
         {
             var userId = int.Parse(User.FindFirst("UsersId")?.Value);
             var data = _context.Product
+                .Where(u => u.ProductVariants.Any())
                 .Select(p => new ClientViewModel
                 {
                     ProductId = p.Id,
@@ -163,6 +165,10 @@ namespace iskipmakliw.Controllers
                 })
                 .ToList();
 
+            var isBilling = _context.Billings.Any(u => u.UsersId == userId);
+            var isPaymentMethod = _context.PaymentMethod.Any(u => u.UsersId == userId);
+            ViewBag.IsBilling = isBilling;
+            ViewBag.IsPaymentMethod = isPaymentMethod;
             return View(data);
         }
         public IActionResult Cancel3d(int Id)
@@ -480,7 +486,7 @@ namespace iskipmakliw.Controllers
             return View(data);
         }
         [HttpPost]
-        public IActionResult BecomeSeller(UserDetails user, int PlansId)
+        public IActionResult BecomeSeller(Models.UserDetails user, int PlansId)
         {
             ModelState.Remove("Status");
             user.Status = "Pending";
@@ -548,7 +554,8 @@ namespace iskipmakliw.Controllers
                 new Claim(ClaimTypes.Email, roleChange.Email),
                 new Claim("ContactNumber", roleChange.ContactNumber ?? ""),
                 new Claim(ClaimTypes.Role, roleChange.Role),
-                new Claim("Status", roleChange.UserDetails?.Status ?? "N/A")
+                new Claim("Status", roleChange.UserDetails?.Status ?? "N/A"),
+                new Claim("isSeller", (roleChange.UserDetails != null).ToString())
             };
 
                     var identity = new ClaimsIdentity(claims, "MyCookieAuth");
@@ -563,7 +570,7 @@ namespace iskipmakliw.Controllers
                 {
                     double? amount = plan.Price - (plan.Price * (plan.Discount / 100.0));
 
-                    _context.Payments.Add(new Payments
+                    _context.Payments.Add(new Models.Payments
                     {
                         Amount = amount,
                         PaymentDetails = "Subscription",
@@ -669,6 +676,39 @@ namespace iskipmakliw.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        public IActionResult SwitchToSeller()
+        {
+            var usersId = int.Parse(User.FindFirst("UsersId").Value);
+            var data = _context.Users
+                        .Include(u => u.UserDetails) // ensure UserDetails is loaded
+                        .FirstOrDefault(u => u.Id == usersId);
+            var payments = _context.Payments.Where(p => p.UsersId == data.Id).OrderByDescending(p => p.Id).FirstOrDefault();
+            if (data != null)
+            {
+                data.Role = "Seller";
+                _context.Users.Update(data);
+                _context.SaveChanges();
+                var claims = new List<Claim>
+                {
+                new Claim("UsersId", data.Id.ToString()),
+                new Claim(ClaimTypes.Name, data.Username),
+                new Claim(ClaimTypes.Email, data.Email),
+                new Claim("ContactNumber", data.ContactNumber ?? ""),
+                new Claim(ClaimTypes.Role, data.Role),
+                new Claim("Status", data.UserDetails?.Status ?? "N/A"),
+                new Claim("PaymentStatus", payments?.Status ?? "N/A"),
+                new Claim("isSeller", (data.UserDetails != null).ToString())
+                 };
+
+                var identity = new ClaimsIdentity(claims, "MyCookieAuth");
+                var principal = new ClaimsPrincipal(identity);
+
+                HttpContext.SignInAsync("MyCookieAuth", principal);
+            }
+
+            return Json(new { success = true });
+        }
         [HttpPost]
         public async Task<IActionResult> Profile(int submissionType, Users user, Billings billing, string PaymentType, string PaymentContactNumber, string HolderName, string? NewPassword, string? ConfirmPassword)
         {
@@ -715,7 +755,8 @@ namespace iskipmakliw.Controllers
                     new Claim("ContactNumber", userDetails.ContactNumber ?? ""),
                     new Claim(ClaimTypes.Role, userDetails.Role),
                     new Claim("Status", userDetails.UserDetails?.Status ?? "N/A"),
-                    new Claim("PaymentStatus", userDetails.Payments?.FirstOrDefault()?.Status ?? "N/A")
+                    new Claim("PaymentStatus", userDetails.Payments?.FirstOrDefault()?.Status ?? "N/A"),
+                    new Claim("isSeller", (userDetails.UserDetails != null).ToString())
                 };
 
                     var identity = new ClaimsIdentity(claims, "MyCookieAuth");
@@ -771,7 +812,7 @@ namespace iskipmakliw.Controllers
                     TempData["Error"] = "Please fill up all the fields required!";
                 }
             }
-                return RedirectToAction("Index");
+                return RedirectToAction("Account");
         }
     }
 }
