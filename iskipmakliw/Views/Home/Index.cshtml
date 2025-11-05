@@ -5,7 +5,37 @@
 }
 @model IEnumerable<ClientViewModel>;
 <div class="row layout-top-spacing">
-
+    @if (!ViewBag.IsBilling || !ViewBag.IsPaymentMethod)
+    {
+        <div class="alert alert-info alert-dismissible fade show d-flex align-items-start gap-3 border-0 shadow-sm" role="alert">
+            <div class="flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                    <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z" />
+                </svg>
+            </div>
+            <div class="flex-grow-1">
+                <h6 class="alert-heading mb-2 fw-semibold">Action Required</h6>
+                @if (!ViewBag.IsBilling)
+                {
+                    <p class="mb-0">Please set up your billing information to continue. This is required to complete your account setup.</p>
+                }
+                else if (!ViewBag.IsPaymentMethod)
+                {
+                    <p class="mb-0">Please add a payment method to your account. This will allow you to make purchases and manage subscriptions.</p>
+                }
+            </div>
+            <div class="flex-shrink-0">
+                <a asp-action="Account" asp-controller="Home" asp-route-tab="payment" class="btn btn-primary btn-sm px-4">
+                    Complete Setup
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right ms-1" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z" />
+                    </svg>
+                </a>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
     <div class="row">
         @foreach(var data in Model)
         {

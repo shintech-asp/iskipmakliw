@@ -305,11 +305,17 @@
     }
 </style>
 @section Scripts {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/@@turf/turf/turf.min.js"></script>
+
     <script>
+        let mapInitialized = false;
+        let leafletMap = null;
+
         $(document).ready(function () {
             const form = $("#profileForm");
             const submissionTypeInput = $("#submissionType");
-
 
             function confirmAndSubmit(type, title, message) {
                 Swal.fire({
@@ -322,7 +328,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         submissionTypeInput.val(type);
-                        form.submit(); // Regular POST submission
+                        form.submit();
                     }
                 });
             }
@@ -339,11 +345,48 @@
                 e.preventDefault();
                 confirmAndSubmit(3, "Add Payment Method", "Do you want to add this payment method?");
             });
+
+            // Check if there's a tab parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+
+            if (tab === 'payment') {
+                const paymentTab = new bootstrap.Tab(document.getElementById('animated-underline-profile-tab'));
+                paymentTab.show();
+
+                setTimeout(function() {
+                    $('html, body').animate({
+                        scrollTop: $('.account-settings-container').offset().top - 20
+                    }, 500);
+                    // Initialize map after tab is shown
+                    initializeMap();
+                }, 100);
+            }
+
+            // Listen for tab changes
+            $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+                const target = $(e.target).attr('href');
+                if (target === '#animated-underline-profile') {
+                    // Payment Details tab is now visible, initialize map
+                    setTimeout(function() {
+                        initializeMap();
+                    }, 100);
+                }
+            });
         });
 
-                      // Initialize map after everything is loaded
-        $(window).on('load', function () {
-            // Ensure map container has proper styling
+        function initializeMap() {
+            if (mapInitialized) {
+                // Map already initialized, just refresh it
+                if (leafletMap) {
+                    leafletMap.invalidateSize();
+                }
+                return;
+            }
+
+            console.log('Initializing map...');
+            mapInitialized = true;
+
             $('#map').css({
                 'height': '500px',
                 'width': '100%',
@@ -351,70 +394,224 @@
                 'display': 'block'
             });
 
-            // Small delay to ensure Bootstrap layout is complete
-            setTimeout(function() {
-                // Create map instance
-                const map = L.map('map', { center: [14.5995, 120.9842], // Default: Manila 
-                    zoom: 13, scrollWheelZoom: true }); 
-                    // Add OpenStreetMap tile layer 
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+            // More accurate Cavite land boundary (excluding Manila Bay)
+            const caviteGeoJson = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[
+                        [120.9845, 14.4534], // Bacoor northeast
+                        [121.0123, 14.4389], // Imus east
+                        [121.0345, 14.4156], // Dasmarinas north
+                        [121.0489, 14.3834], // Dasmarinas east
+                        [121.0567, 14.3489], // Silang northeast
+                        [121.0612, 14.3134], // Silang east
+                        [121.0634, 14.2789], // Amadeo area
+                        [121.0589, 14.2434], // Indang east
+                        [121.0467, 14.2089], // General Aguinaldo
+                        [121.0289, 14.1756], // Magallanes east
+                        [121.0089, 14.1489], // Tagaytay east
+                        [120.9789, 14.1234], // Tagaytay south
+                        [120.9434, 14.1089], // Alfonso south
+                        [120.9089, 14.0989], // Mendez area
+                        [120.8734, 14.0923], // General Trias south
+                        [120.8389, 14.0889], // Tanza south
+                        [120.8034, 14.0912], // Naic south
+                        [120.7689, 14.1012], // Maragondon
+                        [120.7367, 14.1156], // Ternate northeast
+                        [120.7089, 14.1356], // Ternate (westernmost)
+                        [120.6912, 14.1589], // Ternate north
+                        [120.6789, 14.1856], // Maragondon north
+                        [120.6712, 14.2156], // Naic west
+                        [120.6689, 14.2456], // Tanza west
+                        [120.6734, 14.2756], // General Trias west
+                        [120.6834, 14.3056], // Trece Martires west
+                        [120.6967, 14.3356], // Tanza northwest
+                        [120.7156, 14.3634], // Rosario west
+                        [120.7389, 14.3889], // Noveleta
+                        [120.7689, 14.4089], // Kawit west
+                        [120.8089, 14.4256], // Kawit center
+                        [120.8489, 14.4389], // Bacoor west
+                        [120.8889, 14.4456], // Bacoor center
+                        [120.9289, 14.4489], // Bacoor east
+                        [120.9689, 14.4512], // Imus west
+                        [120.9845, 14.4534]  // Back to start
+                    ]]
+                },
+                "properties": { "name": "Cavite Province" }
+            };
 
-                let marker;
+            // Create inverse mask - covers entire world EXCEPT Cavite
+            const worldBounds = [
+                [180, 90],    // Northeast corner of world
+                [180, -90],   // Southeast corner of world
+                [-180, -90],  // Southwest corner of world
+                [-180, 90],   // Northwest corner of world
+                [180, 90]     // Close the polygon
+            ];
 
-                // Force multiple redraws to fix Bootstrap container issues
-                setTimeout(() => map.invalidateSize(), 100);
-                setTimeout(() => map.invalidateSize(), 300);
-                setTimeout(() => map.invalidateSize(), 600);
+            const inverseMask = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        worldBounds,
+                        caviteGeoJson.geometry.coordinates[0].slice().reverse() // Hole (reversed)
+                    ]
+                }
+            };
 
-                // Handle window resize
-                $(window).on('resize', function() {
-                    map.invalidateSize();
-                });
+            // Initialize map
+            leafletMap = L.map('map', {
+                center: [14.2789, 120.8689],
+                zoom: 11,
+                minZoom: 10,
+                maxZoom: 16,
+                scrollWheelZoom: true,
+                maxBounds: [
+                    [14.05, 120.65],
+                    [14.50, 121.08]
+                ],
+                maxBoundsViscosity: 1.0
+            });
 
-                // Handle map click
-                map.on('click', async function (e) {
-                    const lat = e.latlng.lat.toFixed(6);
-                    const lng = e.latlng.lng.toFixed(6);
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 16,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(leafletMap);
 
-                    // Update or create marker
-                    if (marker) {
-                        marker.setLatLng([lat, lng]);
-                    } else {
-                        marker = L.marker([lat, lng]).addTo(map);
-                    }
+            // Add inverse mask (blue covers everything outside Cavite)
+            L.geoJSON(inverseMask, {
+                style: {
+                    color: 'transparent',
+                    fillColor: '#3b82f6',
+                    fillOpacity: 0.5,
+                    weight: 0
+                },
+                interactive: false
+            }).addTo(leafletMap);
 
-                    // Update hidden input fields
-                    $('#latitude').val(lat);
-                    $('#longitude').val(lng);
+            // Add Cavite boundary line only
+            const caviteLayer = L.geoJSON(caviteGeoJson, {
+                style: {
+                    color: '#2563eb',
+                    weight: 3,
+                    fillColor: 'transparent',
+                    fillOpacity: 0,
+                    dashArray: '8, 4'
+                }
+            }).addTo(leafletMap);
 
-                    // Show loading state (optional)
-                    $('#Address').val('Loading address...');
+            // Fit map to Cavite bounds
+            leafletMap.fitBounds(caviteLayer.getBounds(), { padding: [30, 30] });
 
-                    // Reverse Geocode using Nominatim
-                    try {
+            let marker;
 
-                        const response = await fetch(`/reverse-geocode?lat=${lat}&lon=${lng}`);
+            // Handle map click
+            leafletMap.on('click', async function (e) {
+                const { lat, lng } = e.latlng;
+                const point = turf.point([lng, lat]);
 
-                        if (!response.ok) {
-                            throw new Error('Geocoding service unavailable');
+                // Check if click is inside Cavite boundary
+                const isInside = turf.booleanPointInPolygon(point, caviteGeoJson);
+
+                if (!isInside) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Location Outside Cavite',
+                        text: 'Please select a location within Cavite province only.',
+                        confirmButtonColor: '#2563eb',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    return;
+                }
+
+                // Add/update marker
+                if (marker) {
+                    marker.setLatLng([lat, lng]);
+                } else {
+                    marker = L.marker([lat, lng], {
+                        draggable: false,
+                        icon: L.divIcon({
+                            className: 'custom-marker',
+                            html: '<div style="background: #ef4444; width: 32px; height: 32px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.4);"><div style="width: 8px; height: 8px; background: white; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg);"></div></div>',
+                            iconSize: [32, 32],
+                            iconAnchor: [16, 32]
+                        })
+                    }).addTo(leafletMap);
+                }
+
+                // Update coordinates
+                $('#latitude').val(lat.toFixed(6));
+                $('#longitude').val(lng.toFixed(6));
+                $('#Address').val('Loading address...');
+                $('#City').val('');
+                $('#Country').val('');
+                $('#Zip').val('');
+
+                // Reverse geocode
+                try {
+                    const response = await fetch(`/reverse-geocode?lat=${lat}&lon=${lng}`);
+                    if (!response.ok) throw new Error('Geocoding failed');
+
+                    const data = await response.json();
+                    const address = data.address || {};
+
+                    // Verify it's in Cavite
+                    const state = (address.state || address.province || '').toLowerCase();
+                    if (!state.includes('cavite')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Invalid Location',
+                            text: 'This location is not within Cavite province. Please select another location.',
+                            confirmButtonColor: '#2563eb'
+                        });
+                        if (marker) {
+                            leafletMap.removeLayer(marker);
+                            marker = null;
                         }
-
-                        const data = await response.json();
-
-                        // Safely extract address data
-                        const address = data.address || {};
-                        $('#Address').val(data.display_name || 'Address not found');
-                        $('#City').val(address.city || address.town || address.village || address.municipality || '');
-                        $('#Country').val(address.country || '');
-                        $('#Zip').val(address.postcode || '');
-                    } catch (err) {
-                        console.error('Reverse geocoding failed:', err);
-                        $('#Address').val('Unable to fetch address');
-                        alert('Failed to get address information. Please try again.');
+                        $('#Address').val('');
+                        $('#latitude').val('');
+                        $('#longitude').val('');
+                        return;
                     }
-                });
-            }, 250); // Initial delay for Bootstrap layout
-        });
-    </script>
 
+                    const cityName = address.city || address.town || address.village || address.municipality || '';
+
+                    $('#Address').val(data.display_name || 'Address not found');
+                    $('#City').val(cityName);
+                    $('#Country').val('Philippines');
+                    $('#Zip').val(address.postcode || '');
+
+                    // Show popup
+                    marker.bindPopup(`
+                        <div style="min-width: 150px;">
+                            <b style="font-size: 14px; color: #2563eb;">${cityName}</b><br>
+                            <span style="font-size: 12px; color: #666;">Cavite, Philippines</span>
+                        </div>
+                    `).openPopup();
+
+                } catch (err) {
+                    console.error('Geocoding error:', err);
+                    $('#Address').val('Unable to fetch address');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Geocoding Error',
+                        text: 'Unable to retrieve address information. Please try again.',
+                        confirmButtonColor: '#2563eb'
+                    });
+                }
+            });
+
+            // Invalidate size to fix rendering issues
+            setTimeout(() => leafletMap.invalidateSize(), 100);
+            setTimeout(() => leafletMap.invalidateSize(), 300);
+            setTimeout(() => leafletMap.invalidateSize(), 600);
+        }
+    </script>
 }

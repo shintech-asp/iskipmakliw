@@ -157,7 +157,7 @@ namespace iskipmakliw.Controllers
             return Json(new { success = false, message = "Delivery not found" });
         }
         [HttpPost]
-        public IActionResult Delivery(int Id, int Type)
+        public IActionResult Delivery(int Id, int Type, IFormFile? ImageFile)
         {
             if(Id != null)
             {
@@ -183,22 +183,51 @@ namespace iskipmakliw.Controllers
                 }
                 else if (Type == 3)
                 {
-                    var data = _context.DeliverProduct.Where(u => u.Id == Id).FirstOrDefault();
-                    data.DeliveredOn = DateTime.Now;
-                    data.Status = "Delivered";
-                    _context.DeliverProduct.Update(data);
-                    var transaction = _context.PurchasedProduct.Where(u => u.Id == data.PurchasedProductId).FirstOrDefault();
-                    transaction.TransactionStatus = "To rate";
-                    transaction.PaymentStatus = "Paid";
-                    _context.PurchasedProduct.Update(transaction);
-                    var customization = _context.CustomizationOrders.Where(u => u.Id == data.PurchasedProduct.CustomizationOrdersId).FirstOrDefault();
-                    if(customization != null)
+                    if(ImageFile != null)
                     {
-                        customization.TransactionStatus = "Completed";
-                        _context.CustomizationOrders.Update(customization);
+                        string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                        string path = null;
+                        if (!Directory.Exists(uploadPath))
+                        {
+                            Directory.CreateDirectory(uploadPath);
+                        }
+
+                        // Save GovernmentIdFile to disk
+                        if (ImageFile != null)
+                        {
+                            string govFileName = $"gov_{Guid.NewGuid()}{Path.GetExtension(ImageFile.FileName)}";
+                            string govFilePath = Path.Combine(uploadPath, govFileName);
+
+                            using (var stream = new FileStream(govFilePath, FileMode.Create))
+                            {
+                                ImageFile.CopyTo(stream);
+                            }
+
+                            // Save relative path in DB
+                            path = $"/uploads/{govFileName}";
+                        }
+                        var data = _context.DeliverProduct.Where(u => u.Id == Id).FirstOrDefault();
+                        data.DeliveredOn = DateTime.Now;
+                        data.Status = "Delivered";
+                        data.ProofImage = path;
+                        _context.DeliverProduct.Update(data);
+                        var transaction = _context.PurchasedProduct.Where(u => u.Id == data.PurchasedProductId).FirstOrDefault();
+                        transaction.TransactionStatus = "To rate";
+                        transaction.PaymentStatus = "Paid";
+                        _context.PurchasedProduct.Update(transaction);
+                        var customization = _context.CustomizationOrders.Where(u => u.Id == data.PurchasedProduct.CustomizationOrdersId).FirstOrDefault();
+                        if (customization != null)
+                        {
+                            customization.TransactionStatus = "Completed";
+                            _context.CustomizationOrders.Update(customization);
+                        }
+                        _context.SaveChanges();
+                        TempData["Success"] = "Yay! Delivery Complete!";
                     }
-                    _context.SaveChanges();
-                    TempData["Success"] = "Yay! Delivery Complete!";
+                    else
+                    {
+                        TempData["Error"] = "Oops. Please submit an image first!";
+                    }
 
                 }
             }

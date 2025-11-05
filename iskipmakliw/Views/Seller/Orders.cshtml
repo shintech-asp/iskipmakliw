@@ -521,14 +521,14 @@
 </div>
 @section Scripts {
     <script>
-        $("#deliverBtn").on("click", function(){
+        $(document).on("click","#deliverBtn", function(){
             var id = $(this).data("id");
             Swal.fire({
-                title: "Proceed to Checkout?",
-                text: "Are you sure you want to place this order?",
+                title: "Deliver item?",
+                text: "Are you sure you want to deliver this order?",
                 icon: "question",
                 showCancelButton: true,
-                confirmButtonText: "Yes, Checkout",
+                confirmButtonText: "Yes, Deliver it",
                 cancelButtonText: "Cancel"
             }).then(result => {
                 if (result.isConfirmed) {

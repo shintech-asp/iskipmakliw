@@ -1,6 +1,7 @@
 ﻿using iskipmakliw.Data;
 using iskipmakliw.Models;
 using iskipmakliw.Models.ViewModels;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -90,6 +91,38 @@ namespace iskipmakliw.Controllers
                 Sales = conSales
             };
             return View(data);
+        }
+        public IActionResult SwitchToCustomer()
+        {
+            var usersId = int.Parse(User.FindFirst("UsersId").Value); 
+            var data = _context.Users
+                        .Include(u => u.UserDetails) // ensure UserDetails is loaded
+                        .FirstOrDefault(u => u.Id == usersId);
+            var payments = _context.Payments.Where(p => p.UsersId == data.Id).OrderByDescending(p => p.Id).FirstOrDefault();
+            if (data != null)
+            {
+                data.Role = "Customer";
+                _context.Users.Update(data);
+                _context.SaveChanges();
+                var claims = new List<Claim>
+                {
+                new Claim("UsersId", data.Id.ToString()),
+                new Claim(ClaimTypes.Name, data.Username),
+                new Claim(ClaimTypes.Email, data.Email),
+                new Claim("ContactNumber", data.ContactNumber ?? ""),
+                new Claim(ClaimTypes.Role, data.Role),
+                new Claim("Status", data.UserDetails?.Status ?? "N/A"),
+                new Claim("PaymentStatus", payments?.Status ?? "N/A"),
+                new Claim("isSeller", (data.UserDetails != null).ToString())
+                 };
+
+                var identity = new ClaimsIdentity(claims, "MyCookieAuth");
+                var principal = new ClaimsPrincipal(identity);
+
+                HttpContext.SignInAsync("MyCookieAuth", principal);
+            }
+
+            return Json(new { success = true });
         }
         public IActionResult Approve3DOrder(int Id)
         {
@@ -245,7 +278,7 @@ namespace iskipmakliw.Controllers
             else
             {
                 TempData["Error"] = "Fill up all the fields";
-                return View();
+                return RedirectToAction("ProductList");
             }
                 
         }

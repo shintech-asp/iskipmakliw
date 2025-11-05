@@ -64,7 +64,10 @@ namespace iskipmakliw.Controllers
         {
             var payments = _context.Payments
                             .Include(p => p.Users)
-                            .ThenInclude(u => u.UserDetails)
+                                .ThenInclude(u => u.UserDetails)
+                            .Include(p => p.Users)
+                                .ThenInclude(u => u.Subscription)
+                                    .ThenInclude(u => u.Plans)
                             .ToList();
 
             return View(payments);

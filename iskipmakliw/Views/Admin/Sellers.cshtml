@@ -17,10 +17,10 @@
                                         <input class="form-check-input chk-parent" type="checkbox" id="form-check-default">
                                     </div>
                                 </th>
-                                <th class="sorting_asc" tabindex="0" aria-controls="invoice-list" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Invoice Id: activate to sort column descending" style="width: 70px;">Invoice Id</th>
                                 <th class="sorting" tabindex="0" aria-controls="invoice-list" rowspan="1" colspan="1" aria-label="Name: activate to sort column ascending" style="width: 163px;">Name</th>
                                 <th class="sorting" tabindex="0" aria-controls="invoice-list" rowspan="1" colspan="1" aria-label="Email: activate to sort column ascending" style="width: 207px;">Email</th>
                                 <th class="sorting" tabindex="0" aria-controls="invoice-list" rowspan="1" colspan="1" aria-label="Status: activate to sort column ascending" style="width: 63px;">Status</th>
+                                <th class="sorting" tabindex="0" aria-controls="invoice-list" rowspan="1" colspan="1" aria-label="Amount: activate to sort column ascending" style="width: 62px;">Subscription</th>
                                 <th class="sorting" tabindex="0" aria-controls="invoice-list" rowspan="1" colspan="1" aria-label="Amount: activate to sort column ascending" style="width: 62px;">Amount</th>
                                 <th class="sorting" tabindex="0" aria-controls="invoice-list" rowspan="1" colspan="1" aria-label="Actions: activate to sort column ascending" style="width: 83px;">Actions</th>
                             </tr>
@@ -34,7 +34,6 @@
                                             <input class="form-check-input child-chk" type="checkbox" id="form-check-default">
                                         </div>
                                     </td>
-                                    <td class="sorting_1"><a href="./app-invoice-preview.html"><span class="inv-number">#081451</span></a></td>
                                     <td>
                                         <div class="d-flex">
                                             <div class="usr-img-frame me-2 rounded-circle">
@@ -66,7 +65,7 @@
                                         }
                                         else
                                         {
-                                            statusDetails = data.Users.UserDetails.Status;
+                                            statusDetails = data.Users?.UserDetails?.Status;
                                             switch (data.Users.UserDetails.Status.ToLower())
                                             {
                                                 case "pending":
@@ -84,6 +83,11 @@
                                             }
                                         }
                                     }
+                                    <td>
+                                        <span class="inv-status">
+                                            @(data.Users?.Subscription?.FirstOrDefault()?.Plans?.PlanName ?? "No Plan")
+                                        </span>
+                                    </td>
                                     <td><span class="@statusClass inv-status">@statusDetails</span></td>
                                     <td><span class="fw-bold">₱ </span>@data.Amount</td>
                                     <td>

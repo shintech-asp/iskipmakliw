@@ -16,5 +16,6 @@
         public string? DriversLong { get; set; }
         public bool isRemitted { get; set; } = false;
         public DateTime? RemittedOn { get; set; }
+        public string? ProofImage { get; set; }
     }
 }

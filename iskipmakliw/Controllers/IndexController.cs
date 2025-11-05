@@ -24,6 +24,7 @@ namespace iskipmakliw.Controllers
         public IActionResult Index()
         {
             var data = _context.Product
+                .Where(u => u.ProductVariants.Any())
                 .Select(p => new ClientViewModel
                 {
                     ProductId = p.Id,

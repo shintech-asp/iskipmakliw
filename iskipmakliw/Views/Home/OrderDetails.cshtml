@@ -405,6 +405,22 @@
                             <span class="timeline-time">@Model.DeliverProduct.DeliveredOn?.ToString("hh:mm tt")</span>
                             <div class="timeline-title">Delivered Successfully</div>
                             <div class="timeline-date">@Model.DeliverProduct.DeliveredOn?.ToString("MMM dd, yyyy")</div>
+                            @if (!string.IsNullOrEmpty(Model.DeliverProduct?.ProofImage))
+                            {
+                                <div class="mt-3">
+                                    <div class="fw-bold mb-1">Proof of Delivery:</div>
+                                    <a href="@Url.Content(Model.DeliverProduct.ProofImage)" target="_blank">
+                                        <img src="@Url.Content(Model.DeliverProduct.ProofImage)"
+                                             alt="Proof of Delivery"
+                                             class="img-fluid rounded border"
+                                             style="max-width: 250px; max-height: 250px; object-fit: cover;">
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mt-3 text-muted fst-italic">No proof image uploaded.</div>
+                            }
                         </div>
                     </div>
                 }
@@ -538,8 +554,25 @@ else
                             <span class="timeline-time">@Model.DeliverProduct.DeliveredOn?.ToString("hh:mm tt")</span>
                             <div class="timeline-title">Delivered Successfully</div>
                             <div class="timeline-date">@Model.DeliverProduct.DeliveredOn?.ToString("MMM dd, yyyy")</div>
+                            @if (!string.IsNullOrEmpty(Model.DeliverProduct?.ProofImage))
+                            {
+                                <div class="mt-3">
+                                    <div class="fw-bold mb-1">Proof of Delivery:</div>
+                                    <a href="@Url.Content(Model.DeliverProduct.ProofImage)" target="_blank">
+                                        <img src="@Url.Content(Model.DeliverProduct.ProofImage)"
+                                             alt="Proof of Delivery"
+                                             class="img-fluid rounded border"
+                                             style="max-width: 250px; max-height: 250px; object-fit: cover;">
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mt-3 text-muted fst-italic">No proof image uploaded.</div>
+                            }
                         </div>
                     </div>
+
                 }
 
                 <!-- Rating -->
