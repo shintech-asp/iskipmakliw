@@ -94,6 +94,7 @@ namespace iskipmakliw.Controllers
             ModelState.Remove("Users");
             ModelState.Remove("CapturedIdPath");
             ModelState.Remove("GovernmentIdPath");
+            ModelState.Remove("DeedOfSaleFile");
             if (ModelState.IsValid)
             {
                 if (Confirm != users.Password)
@@ -166,20 +167,6 @@ namespace iskipmakliw.Controllers
                         // Save relative path in DB
                         userDetails.CR = $"/uploads/{CRFileName}";
                     }
-                    // Save GovernmentIdFile to disk
-                    if (userDetails.DeedOfSaleFile != null && userDetails.DeedOfSaleFile.Length > 0)
-                    {
-                        string dosFileName = $"dos_{Guid.NewGuid()}{Path.GetExtension(userDetails.DeedOfSaleFile.FileName)}";
-                        string dosFilePath = Path.Combine(uploadPath, dosFileName);
-
-                        using (var stream = new FileStream(dosFileName, FileMode.Create))
-                        {
-                            userDetails.DeedOfSaleFile.CopyTo(stream);
-                        }
-
-                        // Save relative path in DB
-                        userDetails.DeedOfSale = $"/uploads/{dosFileName}";
-                    }
 
                     var hasher = new PasswordHasher<Users>();
                     users.Password = hasher.HashPassword(users, users.Password);
@@ -236,7 +223,7 @@ namespace iskipmakliw.Controllers
                 var existingUser = _context.Users.FirstOrDefault(u => u.Email == users.Email);
                 if (existingUser != null)
                 {
-                    ViewBag.Error = "Email already in use";
+                    TempData["Error"] = "Email already in use";
                     return View(users);
                 }
                 var hasher = new PasswordHasher<Users>();
@@ -247,9 +234,13 @@ namespace iskipmakliw.Controllers
                 return RedirectToAction("Login", "Account");
             }else if(Confirm != users.Password)
             {
-                ViewBag.Error = "Password and Confirm Password do not match";
+                TempData["Error"] = "Password and Confirm Password do not match";
             }
-            return View(users);
+            else
+            {
+                TempData["Error"] = "Fill up all required details";
+            }
+                return View(users);
         }
         
         public IActionResult Account()
