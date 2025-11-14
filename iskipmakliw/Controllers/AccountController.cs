@@ -63,7 +63,8 @@ namespace iskipmakliw.Controllers
                     // 🔹 Sign in with cookie auth
                     await HttpContext.SignInAsync("MyCookieAuth", principal);
 
-                // 🔹 Redirect based on role
+                    // 🔹 Redirect based on role
+                    TempData["Success"] = "Logged in!";
                 switch (user.Role)
                     {
                         case "Admin":
@@ -78,7 +79,7 @@ namespace iskipmakliw.Controllers
                 }
             }
 
-            ModelState.AddModelError("", "Invalid username or password");
+            TempData["Error"] = "Invalid username or password";
             return View(users);
         }
 

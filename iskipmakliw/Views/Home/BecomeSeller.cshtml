@@ -304,13 +304,9 @@
 </div>
 <canvas id="snapshot" width="640" height="480" style="display:none;"></canvas>
 @section Scripts {
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-          crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-            crossorigin=""></script>
-    <script src="https://unpkg.com/@@turf/turf@6.5.0/turf.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/@@turf/turf/turf.min.js"></script>
 
     <script>
         const video = document.getElementById('camera');
@@ -649,31 +645,30 @@
         }
 
         // Wait for DOM and libraries to be ready
-        $(document).ready(function() {
-            console.log('Document ready');
+        $(document).ready(function () {
+            $('.btn-nxt, .btn-prev').on('click', function () {
+                setTimeout(() => {
+                    const step = $('#defaultStep-two');
+                    const locationStep = $('#defaultStep-threefive');
 
-            // Listen to stepper next/prev button clicks
-            $('.btn-nxt, .btn-prev').on('click', function() {
-                setTimeout(function() {
-                    // Check if location step is now visible
-                    if ($('#defaultStep-threefive').hasClass('active') || $('#defaultStep-threefive').hasClass('show')) {
-                        console.log('Location step visible, initializing map...');
-                        setTimeout(function() {
-                            initMap();
-                            if (leafletMap) {
-                                leafletMap.invalidateSize();
-                            }
-                        }, 250);
+                    // STEP 2: VERIFICATION (Camera)
+                    if (step.hasClass('active')) {
+                        $("#cameraDiv").show();
+                        initCameraAndPond();  // ← INIT HERE
                     }
-                }, 100);
+
+                    // STEP 4: LOCATION
+                    if (locationStep.hasClass('active')) {
+                        initMap();
+                    }
+                }, 200);
             });
 
-            // Also try to initialize if we're already on that step
-            setTimeout(function() {
-                if ($('#defaultStep-threefive').hasClass('active')) {
-                    initMap();
-                }
-            }, 500);
+            // If already on step 2 on load
+            if ($('#defaultStep-two').hasClass('active')) {
+                $("#cameraDiv").show();
+                initCameraAndPond();
+            }
         });
     </script>
 }

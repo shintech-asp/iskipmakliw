@@ -55,7 +55,7 @@
                                                         <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label for="profession">Email</label>
-                                                                <input type="text" class="form-control mb-3" id="profession" name="Email" value="@User.FindFirst(ClaimTypes.Email)?.Value ">
+                                                                <input type="text" class="form-control mb-3" id="profession" value="@User.FindFirst(ClaimTypes.Email)?.Value" readonly>
                                                             </div>
                                                         </div>
 

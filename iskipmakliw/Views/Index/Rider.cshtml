@@ -129,9 +129,6 @@
                                                         <label class="form-label">Type of ID: </label>
                                                         <select class="form-select" name="TypeId">
                                                             <option value="Drivers License">Drivers License</option>
-                                                            <option value="PhilSys">PhilSys</option>
-                                                            <option value="Passport">Passport</option>
-                                                            <option value="Tin">TIN</option>
                                                         </select>
                                                     </div>
                                                     <label class="form-label">Upload ID: </label>
@@ -268,17 +265,6 @@
 
                                                     <div class="col-12">
                                                         <div class="mb-3">
-                                                            <label class="form-label">Deed of Sale (if applicable)</label>
-                                                            <div class="card">
-                                                                <div class="card-body">
-                                                                    <input type="file" name="DeedOfSaleFile" id="DeedOfSale" class="filepond">
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-12">
-                                                        <div class="mb-3">
                                                             <label class="form-label">Vehicle Images (Front, Back, Side, Visible Plate)</label>
                                                             <div class="card">
                                                                 <div class="card-body">
@@ -338,7 +324,6 @@
 
                                     <div class="col-12">
                                         <div class="text-center">
-                                            <p class="mb-0">Register as Rider <a asp-controller="Index" asp-action="Rider" class="text-warning">Rider Registration</a></p>
                                             <p class="mb-0">Already have an account ? <a asp-controller="Account" asp-action="Login" class="text-warning">Sign in</a></p>
                                         </div>
                                     </div>
@@ -513,11 +498,43 @@
             console.log('ID files:', idFiles);
     
             // If no files, you might want to prevent submission
-            if (govFiles.length === 0 || idFiles.length === 0 || ORFiles.length === 0 || CRFiles.length === 0 || DOSFiles.length === 0 || VehicleImagesFiles.length === 0) {
+            if (govFiles.length === 0 || idFiles.length === 0 || ORFiles.length === 0 || CRFiles.length === 0 || VehicleImagesFiles.length === 0) {
                 e.preventDefault();
-                alert('Please upload both required files');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Please upload both required files',
+                    confirmButtonColor: '#d33'
+                    });
                 return false;
             }
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        @if (TempData["Success"] != null)
+        {
+                <text>
+                    Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: '@TempData["Success"]',
+                    showConfirmButton: false,
+                    timer: 2000
+                    });
+                </text>
+        }
+        @if (TempData["Error"] != null)
+        {
+                <text>
+                    Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: '@TempData["Error"]',
+                    confirmButtonColor: '#d33'
+                    });
+                </text>
+        }
         });
     </script>
 </body>

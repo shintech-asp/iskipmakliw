@@ -720,10 +720,9 @@ namespace iskipmakliw.Controllers
                                 .Include(u => u.Payments)
                                 .Include(u => u.UserDetails)
                                 .FirstOrDefault(u => u.Id == usersId);
-                if (user.Username != null && user.Email != null && user.ContactNumber != null)
+                if (user.Username != null && user.ContactNumber != null)
                 {
                     userDetails.Username = user.Username;
-                    userDetails.Email = user.Email;
                     userDetails.ContactNumber = user.ContactNumber;
 
                     if (user.Password != null)
