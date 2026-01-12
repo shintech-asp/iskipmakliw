@@ -77,9 +77,9 @@ namespace iskipmakliw.Controllers
             return Redirect(checkoutUrl);
         }
         [HttpPost]
-        public async Task<IActionResult> PayProduct(List<int> cartSelect, int paymentMethod, int? paymentMethodOnline, int billings)
+        public async Task<IActionResult> PayProduct(List<int> cartSelect, string paymentMethod, int? paymentMethodOnline, int billings)
         {
-            if (paymentMethodOnline != null)
+            if (paymentMethodOnline != null && billings != null)
             {
                 if (cartSelect == null || !cartSelect.Any())
                 {
@@ -168,7 +168,7 @@ namespace iskipmakliw.Controllers
 
                 return Redirect(checkoutUrl);
             }
-            else
+            else if(paymentMethodOnline == null && billings != null && paymentMethod == "COD")
             {
                 var cartsData = _context.Cart.Include(p => p.ProductVariants).Where(p => cartSelect.Contains(p.Id)).ToList();
                 foreach (var payment in cartsData)
@@ -210,7 +210,12 @@ namespace iskipmakliw.Controllers
                 }
                 TempData["Success"] = "Purchase successfuly!";
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Cart", "Home");
+            }
+            else
+            {
+                TempData["Error"] = "Purchase error! Please select a payment method or billing address";
+                return RedirectToAction("Cart", "Home");
             }
 
         }

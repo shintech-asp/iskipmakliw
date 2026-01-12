@@ -47,6 +47,18 @@
     <link href="~/src/assets/css/light/scrollspyNav.css" rel="stylesheet" type="text/css" />
     <link href="~/src/assets/css/light/components/timeline.css" rel="stylesheet" type="text/css" />
 
+    <style>
+        @@media (max-width: 991px) {
+            .sidebar-wrapper {
+                left: -250px; /* hide sidebar by default */
+                transition: left 0.3s ease;
+            }
+
+                .sidebar-wrapper.active {
+                    left: 0;
+                }
+        }
+    </style>
 </head>
 <body class="alt-menu">
     <!-- BEGIN LOADER -->
@@ -169,12 +181,12 @@
                 <div class="navbar-nav theme-brand flex-row text-center">
                     <div class="nav-logo">
                         <div class="nav-item theme-logo">
-                            <a href="./index.html">
+                            <a href="#">
                                 <img src="@Url.Content("~/src/assets/img/OakMartPNG.png")" alt="OakMart Logo">
                             </a>
                         </div>
                         <div class="nav-item theme-text">
-                            <a href="./index.html" class="nav-link"> OakMart </a>
+                            <a href="#" class="nav-link"> OakMart </a>
                         </div>
                     </div>
                     <div class="nav-item sidebar-toggle">
@@ -386,6 +398,17 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const sidebarCollapse = document.querySelector(".sidebarCollapse");
+            const sidebarWrapper = document.querySelector(".sidebar-wrapper");
+
+            sidebarCollapse.addEventListener("click", function() {
+                sidebarWrapper.classList.toggle("active"); // toggle sidebar visibility
+            });
+        });
+    </script>
+
     <script>
         $("#switchToCustomer").on("click", function () {
             Swal.fire({

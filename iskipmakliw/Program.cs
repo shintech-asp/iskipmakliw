@@ -28,7 +28,7 @@ builder.Services
     .AddCookie("MyCookieAuth", options =>
     {
         options.Cookie.Name = "MyAuthCookie";
-        options.LoginPath = "/Index/Login";
+        options.LoginPath = "/Account/Login";
         options.AccessDeniedPath = "/Index/Index";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
     });
