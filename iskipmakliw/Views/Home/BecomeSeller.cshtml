@@ -153,7 +153,8 @@
                                     </div>
                                     <div class="col-12">
                                         <label for="defaultInputAddress2" class="form-label">Card Number</label>
-                                        <input name="CardNumber" type="text" class="form-control" id="defaultInputAddress2" maxlength="12" pattern="\d{12}" inputmode="numeric">
+                                        <input name="CardNumber" type="text" class="form-control" id="defaultInputAddress2" maxlength="12" pattern="\d{12}" inputmode="numeric"
+                                               oninput="this.value = this.value.replace(/\D/g, '')">
                                     </div>
                                     <div class="col-md-6">
                                         <label for="defaultInputCity" class="form-label">Expiry Date</label>

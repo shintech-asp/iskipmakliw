@@ -1,4 +1,4 @@
-/** 
+﻿/** 
  * 
  * Analytics
  * 
@@ -1420,7 +1420,7 @@ window.addEventListener("load", function(){
           }]
           },
           subtitle: {
-            text: '$10,840',
+            text: '₱122,086.00',
             align: 'left',
             margin: 0,
             offsetX: 100,
@@ -1866,7 +1866,7 @@ window.addEventListener("load", function(){
           }]
           },
           subtitle: {
-            text: '$10,840',
+            text: '₱122,086.00',
             align: 'left',
             margin: 0,
             offsetX: 100,

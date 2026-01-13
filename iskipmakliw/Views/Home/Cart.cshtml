@@ -63,7 +63,7 @@
                                                     <td>₱@price</td>
                                                     <td>
                                                         <input type="number"
-                                                               class="form-control w-50 quantity"
+                                                               class="form-control w-100 quantity"
                                                                name="Quantity"
                                                                data-id="@item.Id"
                                                                id="Quantity"
@@ -362,5 +362,21 @@
 
             })
         })
+                document.addEventListener("keydown", function (e) {
+            // Prevent ENTER from submitting the form
+            if (e.key === "Enter") {
+                e.preventDefault();
+                return false;
+            }
+        });
+                document.querySelectorAll(".quantity").forEach(input => {
+            input.addEventListener("keydown", function (e) {
+                // Block ALL keys except Arrow Up and Arrow Down
+                if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
+                    e.preventDefault();
+                }
+            });
+        });
+
     </script>
 }

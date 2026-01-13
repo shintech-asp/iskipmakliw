@@ -62,7 +62,15 @@
                                                         <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label for="phone">Phone</label>
-                                                                <input type="text" class="form-control mb-3" id="phone" name="ContactNumber" placeholder="Write your phone number here" value="@User.FindFirst("ContactNumber")?.Value">
+                                                                <input type="text"
+                                                                       name="ContactNumber"
+                                                                       class="form-control add-payment-method-input"
+                                                                       maxlength="11"
+                                                                       pattern="\d{11}"
+                                                                       inputmode="numeric"
+                                                                       oninput="this.value = this.value.replace(/\D/g, '')"
+                                                                       id="phone"
+                                                                       value="@User.FindFirst("ContactNumber")?.Value">
                                                             </div>
                                                         </div>
 
@@ -189,7 +197,14 @@
                                         <div class="col-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Contact Number</label>
-                                                <input type="text" name="ContactNumber" class="form-control" id="Contact">
+                                                <input type="text"
+                                                       name="ContactNumber"
+                                                       class="form-control"
+                                                       maxlength="11"
+                                                       pattern="\d{11}"
+                                                       inputmode="numeric"
+                                                       oninput="this.value = this.value.replace(/\D/g, '')"
+                                                       id="Contact">
                                             </div>
                                         </div>
                                         <div class="col-12">
@@ -259,7 +274,13 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Number</label>
-                                                <input type="text" name="PaymentContactNumber" class="form-control add-payment-method-input">
+                                                <input type="text"
+                                                    name="PaymentContactNumber"
+                                                    class="form-control add-payment-method-input"
+                                                   maxlength="11"
+                                                   pattern="\d{11}"
+                                                   inputmode="numeric"
+                                                   oninput="this.value = this.value.replace(/\D/g, '')">
                                             </div>
                                         </div>
                                         <div class="col-md-12">
