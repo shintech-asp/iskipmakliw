@@ -1,29 +1,682 @@
 ﻿@{
-    ViewData["Title"] = "Store Settings";
+    ViewData["Title"] = "3D Model Generator"; 
     Layout = "_LayoutSeller";
 }
+<style>
+    .card {
+        border-radius: 10px;
+    }
 
-<div class="statbox widget box box-shadow">
-    <div class="widget-header">
-        <div class="row">
-            <div class="col-xl-12 col-md-12 col-sm-12 col-12">
-                <h4>System Settings</h4>
-            </div>
-        </div>
-    </div>
-    <div class="widget-content widget-content-area">
+    .progress {
+        height: 28px;
+    }
 
-        <div class="row">
-            <div class="mb-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="custom3d" name="custom3d" value="Enable">
-                    <label class="form-check-label" for="custom3d">
-                        3D Customizations
-                    </label>
+    .progress-bar {
+        font-size: 14px;
+        line-height: 28px;
+    }
+
+    #viewer3D canvas {
+        border-radius: 8px;
+    }
+
+    .mode-btn {
+        border-radius: 20px;
+        transition: .2s;
+    }
+
+        .mode-btn.active {
+            background: #0d6efd !important;
+            color: #fff !important;
+            border-color: #0d6efd !important;
+        }
+
+    .preview-strip {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+
+    .preview-thumb {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        .preview-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-thumb .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(220,53,69,.85);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .preview-thumb .remove-btn:hover {
+                background: #dc3545;
+            }
+
+    #resumeBanner {
+        display: none;
+    }
+
+    /* loading overlay inside the viewer */
+    .viewer-loading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(240,240,240,.92);
+        border-radius: 8px;
+        z-index: 10;
+    }
+
+        .viewer-loading .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+</style>
+
+<!-- ─── RESUME BANNER ───────────────────────────────────────────────────── -->
+<div class="container mt-4 " id="isShowing" hidden>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div id="resumeBanner" class="alert alert-warning d-flex align-items-center shadow-sm" role="alert">
+                <i class="bi bi-hourglass-split fs-4 me-3 flex-shrink-0"></i>
+                <div class="flex-grow-1">
+                    <strong>You have a 3D generation still in progress.</strong><br>
+                    <small class="text-muted">Resuming automatically…</small>
                 </div>
-                <button class="btn btn-success">Save changes</button>
+                <button class="btn btn-sm btn-outline-danger" id="dismissResumeBtn">Discard</button>
             </div>
         </div>
-
     </div>
 </div>
+
+<!-- ─── MAIN CARD ───────────────────────────────────────────────────────── -->
+<div class="container mt-3">
+    <div class="row justify-content-center">
+        <div class="col">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">3d Image Upload</h5>
+                    <div id="removable">
+                        <!-- Mode toggle -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Upload Mode</label><br>
+                            <button type="button" class="btn btn-outline-primary mode-btn active" id="btnSingle" onclick="setMode('single')">
+                                <i class="bi bi-image"></i> Single Image
+                            </button>
+                            <button type="button" class="btn btn-outline-primary mode-btn" id="btnMulti" onclick="setMode('multi')">
+                                <i class="bi bi-images"></i> Multiple Images (2–4)
+                            </button>
+                        </div>
+
+                        <input type="file" id="fileInput" class="d-none" accept=".jpg,.jpeg,.png,.webp">
+
+                        <!-- Drop / click zone -->
+                        <div id="dropZone" class="border border-dashed rounded-3 p-4 text-center"
+                             style="cursor:pointer; min-height:140px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                            <i class="bi bi-cloud-upload" style="font-size:2rem; color:#6c757d;"></i>
+                            <p class="mb-0 text-muted" id="dropHint">Click or drag &amp; drop your image here</p>
+                            <small class="text-muted">JPG, PNG, WEBP supported</small>
+                        </div>
+
+                        <div class="preview-strip" id="previewStrip"></div>
+
+                        <div class="mt-3 mb-3">
+                            <label for="prompt" class="form-label">Description of the Image</label>
+                            <textarea class="form-control" id="prompt" rows="2" placeholder="Describe the 3D model you want…"></textarea>
+                        </div>
+                    </div>
+                    
+
+                    <button class="btn btn-primary btn-lg w-100" id="generateBtn" onclick="generate()" disabled>
+                        <i class="bi bi-magic"></i> Generate 3D Model
+                    </button>
+
+                    <!-- Progress -->
+                    <div id="progressSection" class="mt-4 d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h5 class="mb-0">Generating 3D Model…</h5>
+                            <span id="statusBadge" class="badge bg-secondary">Pending</span>
+                        </div>
+                        <div class="progress">
+                            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" style="width:0%">
+                                0%
+                            </div>
+                        </div>
+                        <p id="statusText" class="mt-2 text-muted mb-0">Initializing…</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- SAVED MODELS -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">Saved Models</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="savedModelsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── 3D PREVIEW MODAL ────────────────────────────────────────────────── -->
+<div class="modal fade" id="preview3DModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">3D Model Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label" required>Model</label>
+                <div id="viewer3D" style="width:100%; height:500px; background:#f0f0f0; position:relative;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="restartBtn">
+                    <i class="bi bi-arrow-clockwise"></i> Retry
+                </button>
+                <button class="btn btn-info" id="uploadNewBtn">
+                    <i class="bi bi-upload"></i> Upload New Image(s)
+                </button>
+                <button class="btn btn-success" id="saveModelBtn">
+                    <i class="bi bi-save"></i> Save Model
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── SCRIPTS ─────────────────────────────────────────────────────────── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+    // ════════════════════════════════════════════════════════════════════════════
+    // STATE
+    // ════════════════════════════════════════════════════════════════════════════
+    let currentMode     = 'single';
+    let selectedFiles   = [];
+    let currentTaskId   = null;
+    let currentIsMulti  = false;
+    let currentModelUrl = null;   // the raw Meshy signed URL (kept for Save)
+    let pollInterval    = null;
+    let scene, camera, renderer, controls;
+
+    const MAX_FILES = { single: 1, multi: 4 };
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // BOOT
+    // ════════════════════════════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', function () {
+        loadSavedModels();
+        tryResumeActiveTask();
+
+        document.getElementById('dropZone').addEventListener('click',
+            () => document.getElementById('fileInput').click());
+
+        document.getElementById('fileInput').addEventListener('change', function (e) {
+            addFiles(e.target.files);
+            this.value = '';
+        });
+
+        const dz = document.getElementById('dropZone');
+        dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('border-primary'); });
+        dz.addEventListener('dragleave', e => { e.preventDefault(); dz.classList.remove('border-primary'); });
+        dz.addEventListener('drop',      e => { e.preventDefault(); dz.classList.remove('border-primary'); addFiles(e.dataTransfer.files); });
+
+        document.getElementById('restartBtn').addEventListener('click', function () {
+            $('#preview3DModal').modal('hide');
+            document.getElementById('prompt').focus();
+        });
+
+        document.getElementById('uploadNewBtn').addEventListener('click', function () {
+            $('#preview3DModal').modal('hide');
+            clearSessionTask();
+            clearFiles();
+        });
+
+        document.getElementById('saveModelBtn').addEventListener('click', saveModel);
+
+            document.getElementById('dismissResumeBtn').addEventListener('click', function () {
+                Swal.fire({
+                    title: 'Discard progress?',
+                    text: 'Your current 3D generation will be permanently discarded.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, discard',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        clearSessionTask();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Discarded',
+                            text: 'The active generation has been removed.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            location.reload(); // ✅ reload AFTER Swal closes
+                        });
+                    }
+                });
+            });
+
+    });
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // RESUME
+    // ════════════════════════════════════════════════════════════════════════════
+    function tryResumeActiveTask() {
+        $.ajax({
+            url: '@Url.Action("GetActiveTask", "Seller")', type: 'GET',
+            success: function (res) {
+                if (!res.hasActiveTask) return;
+
+                currentTaskId  = res.taskId;
+                currentIsMulti = res.isMulti;
+
+                showBanner();
+                document.getElementById('progressSection').classList.remove('d-none');
+
+                document.getElementById('generateBtn').disabled = true;
+                document.getElementById('generateBtn').innerHTML =
+                    '<span class="spinner-border spinner-border-sm"></span> Generating…';
+
+                 $("#isShowing").removeAttr("hidden");
+                $("#removable").attr("hidden", true);
+                startPolling();
+            }
+        });
+    }
+
+    function showBanner() { document.getElementById('resumeBanner').style.display = 'flex'; }
+    function hideBanner() { document.getElementById('resumeBanner').style.display = 'none'; }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // MODE TOGGLE
+    // ════════════════════════════════════════════════════════════════════════════
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('btnSingle').classList.toggle('active', mode === 'single');
+        document.getElementById('btnMulti').classList.toggle('active', mode === 'multi');
+        document.getElementById('dropHint').textContent = mode === 'single'
+            ? 'Click or drag & drop your image here'
+            : 'Click or drag & drop 2–4 images here';
+        if (mode === 'single' && selectedFiles.length > 1) {
+            selectedFiles = [selectedFiles[0]];
+            renderPreviews();
+        }
+        syncGenerateBtn();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // FILE MANAGEMENT
+    // ════════════════════════════════════════════════════════════════════════════
+    function addFiles(fileList) {
+        const max     = MAX_FILES[currentMode];
+        const allowed = new Set(['.jpg','.jpeg','.png','.webp']);
+
+        for (const file of fileList) {
+            if (selectedFiles.length >= max) break;
+            const ext = '.' + file.name.split('.').pop().toLowerCase();
+            if (!allowed.has(ext)) { alert(`"${file.name}" not supported. Use JPG, PNG or WEBP.`); continue; }
+            if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) continue;
+            selectedFiles.push(file);
+        }
+        renderPreviews();
+        syncGenerateBtn();
+    }
+
+    function removeFile(index) {
+        selectedFiles.splice(index, 1);
+        renderPreviews();
+        syncGenerateBtn();
+    }
+
+    function clearFiles() {
+        selectedFiles = [];
+        renderPreviews();
+        syncGenerateBtn();
+    }
+
+    function renderPreviews() {
+        const strip = document.getElementById('previewStrip');
+        strip.innerHTML = '';
+
+        selectedFiles.forEach((file, i) => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const thumb = document.createElement('div');
+                thumb.className = 'preview-thumb';
+                thumb.innerHTML =
+                    `<img src="${e.target.result}" alt="Preview ${i+1}">
+                     <button class="remove-btn" onclick="removeFile(${i})">&times;</button>`;
+                strip.appendChild(thumb);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        if (currentMode === 'multi' && selectedFiles.length < 4) {
+            const plus = document.createElement('div');
+            plus.className = 'preview-thumb';
+            plus.style.cssText = 'border:2px dashed #adb5bd; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#adb5bd; font-size:1.5rem;';
+            plus.innerHTML = '<span>+</span>';
+            plus.onclick = () => document.getElementById('fileInput').click();
+            strip.appendChild(plus);
+        }
+    }
+
+    function syncGenerateBtn() {
+        const min = currentMode === 'single' ? 1 : 2;
+        document.getElementById('generateBtn').disabled =
+            !(selectedFiles.length >= min && selectedFiles.length <= MAX_FILES[currentMode]);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // GENERATE
+    // ════════════════════════════════════════════════════════════════════════════
+    function generate() {
+        const btn = document.getElementById('generateBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing…';
+        document.getElementById('progressSection').classList.remove('d-none');
+
+        const formData = new FormData();
+        selectedFiles.forEach(f => formData.append('imageFiles', f));
+        formData.append('mode', currentMode);
+
+        $.ajax({
+            url: '@Url.Action("UploadImage", "Seller")', type: 'POST',
+            data: formData, processData: false, contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    currentTaskId  = res.taskId;
+                    currentIsMulti = res.isMulti;
+                    startPolling();
+                } else { showError(res.message); }
+            },
+            error: function () { showError('Upload failed. Please try again.'); }
+        });
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // POLLING
+    // ════════════════════════════════════════════════════════════════════════════
+    function startPolling() {
+        if (pollInterval) clearInterval(pollInterval);
+
+        let count = 0;
+        pollInterval = setInterval(function () {
+            if (++count > 120) { clearInterval(pollInterval); showError('Generation timed out.'); return; }
+            checkStatus();
+        }, 5000);
+    }
+
+    function checkStatus() {
+        $.ajax({
+            url: '@Url.Action("CheckStatus", "Seller")', type: 'GET',
+            data: { taskId: currentTaskId, isMulti: currentIsMulti },
+            success: function (res) {
+                if (!res.success) { clearInterval(pollInterval); showError(res.message); return; }
+
+                $('#progressBar').css('width', res.progress + '%').text(res.progress + '%');
+                $('#statusText').text('Status: ' + res.status + ' (' + res.progress + '%)');
+
+                const badge = $('#statusBadge');
+                badge.text(res.status);
+                badge.removeClass('bg-secondary bg-info bg-success bg-danger');
+                if      (res.status === 'SUCCEEDED') badge.addClass('bg-success');
+                else if (res.status === 'FAILED')    badge.addClass('bg-danger');
+                else if (res.status === 'PENDING')   badge.addClass('bg-secondary');
+                else                                 badge.addClass('bg-info');
+
+                if (res.status === 'SUCCEEDED') {
+                    clearInterval(pollInterval);
+                    hideBanner();
+                    currentModelUrl = res.modelUrl;          // keep the real URL for saving
+                    show3DPreview(res.modelUrl);             // viewer gets proxied version inside
+                } else if (res.status === 'FAILED') {
+                    clearInterval(pollInterval);
+                    hideBanner();
+                    showError('Generation failed. Please try again.');
+                }
+            },
+            error: function () { clearInterval(pollInterval); showError('Status check failed.'); }
+        });
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // 3D VIEWER  –  all GLB fetches go through /Seller/ProxyModel to avoid CORS
+    // ════════════════════════════════════════════════════════════════════════════
+
+    // Build the proxy URL that Three.js will actually fetch
+    function proxyUrl(meshyUrl) {
+        return '@Url.Action("ProxyModel", "Seller")' + '?url=' + encodeURIComponent(meshyUrl);
+    }
+
+    function show3DPreview(meshyUrl) {
+        resetUI();
+        $('#preview3DModal').modal('show');
+        // small delay so the modal is visible before we start rendering
+        setTimeout(() => initViewer(proxyUrl(meshyUrl)), 600);
+    }
+
+    function initViewer(glbUrl) {
+        const container = document.getElementById('viewer3D');
+        container.innerHTML =
+            '<div class="viewer-loading">' +
+              '<div class="spinner-border text-primary" role="status"></div>' +
+              '<p class="mt-2 text-muted">Loading 3D model…</p>' +
+            '</div>';
+
+        // ── scene ─────────────────────────────────────────────────────────
+        scene  = new THREE.Scene();
+        scene.background = new THREE.Color(0xf0f0f0);
+
+        camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 2, 5);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+        dir.position.set(5, 5, 5);
+        scene.add(dir);
+
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.target.set(0, 0, 0);
+
+        // ── load GLB via proxy ────────────────────────────────────────────
+        new THREE.GLTFLoader().load(
+            glbUrl,
+            function (gltf) {
+                // remove loading overlay
+                const overlay = container.querySelector('.viewer-loading');
+                if (overlay) overlay.remove();
+
+                const model = gltf.scene;
+                const box   = new THREE.Box3().setFromObject(model);
+                model.position.sub(box.getCenter(new THREE.Vector3()));
+                const size  = box.getSize(new THREE.Vector3());
+                model.scale.multiplyScalar(3 / Math.max(size.x, size.y, size.z));
+                scene.add(model);
+            },
+            function (xhr) {
+                // progress callback – update overlay text if you like
+                if (xhr.lengthComputable) {
+                    const pct = Math.round((xhr.loaded / xhr.total) * 100);
+                    const p = container.querySelector('.viewer-loading p');
+                    if (p) p.textContent = `Loading 3D model… ${pct}%`;
+                }
+            },
+            function (err) {
+                console.error('GLB load error', err);
+                const overlay = container.querySelector('.viewer-loading');
+                if (overlay) overlay.innerHTML =
+                    '<i class="bi bi-exclamation-triangle fs-1 text-danger"></i>' +
+                    '<p class="text-danger mt-2">Failed to load 3D model.<br><small>Check the browser console for details.</small></p>';
+            }
+        );
+
+        // ── animate ───────────────────────────────────────────────────────
+        (function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        })();
+
+        // ── resize ────────────────────────────────────────────────────────
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // SAVE  –  still sends the real Meshy URL so the server downloads the actual file
+    // ════════════════════════════════════════════════════════════════════════════
+    function saveModel() {
+        const fileName = 'model_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+        if(fileName === null) return;
+        $('#preview3DModal').modal('hide');
+
+        Swal.fire({
+            title: 'Save 3D Model',
+            input: 'text',
+            inputValue: 'model_' + Date.now(),
+            showCancelButton: true,
+            confirmButtonText: 'Save',
+            cancelButtonText: 'Cancel',
+            inputValidator: (value) => {
+                if (!value) return 'Model name is required';
+            }
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+            doSave(result.value, fileName);
+        });
+    }
+
+    function doSave(modelName,fileName) {
+        const btn = document.getElementById('saveModelBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving…';
+        $("#isShowing").removeAttr("hidden");
+        $.ajax({
+            url: '@Url.Action("SaveModel", "Seller")', type: 'POST',
+            data: { modelUrl: currentModelUrl, fileName: fileName, modelName: modelName },
+            success: function (res) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-save"></i> Save Model';
+                $("#isShowing").attr("hidden", true);
+                $("#removable").removeAttr("hidden");
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Saved!',
+                        text: `Model "${res.modelName}" has been saved.`,
+                        timer: 1500,           // auto-close after 1.5s
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Save Failed',
+                        text: res.modelName
+                    });
+                }
+
+            },
+            error: function () {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-save"></i> Save Model';
+                alert('Save request failed.');
+            }
+        });
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // SESSION HELPERS
+    // ════════════════════════════════════════════════════════════════════════════
+    function clearSessionTask() {
+        $.ajax({ url: '@Url.Action("ClearActiveTask", "Seller")', type: 'POST' });
+        currentTaskId   = null;
+        currentModelUrl = null;
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // SAVED-MODELS LIST
+    // ════════════════════════════════════════════════════════════════════════════
+    function loadSavedModels() {
+        $.ajax({
+            url: '@Url.Action("GetSavedModels", "Seller")', type: 'GET',
+            success: function (res) { if (res.success) renderSavedModels(res.models); }
+        });
+    }
+
+    function renderSavedModels(models) {
+        const el = document.getElementById('savedModelsList');
+        if (!models || models.length === 0) { el.innerHTML = '<p class="text-muted">No saved models yet.</p>'; return; }
+        el.innerHTML = models.map(m => `
+            <div class="col-md-4 mb-3">
+              <div class="card">
+                <div class="card-body">
+                  <h6 class="card-title">${m.fileName}</h6>
+                  <p class="card-text small text-muted">Created: ${new Date(m.createdDate).toLocaleString()}</p>
+                  <a href="${m.filePath}" class="btn btn-sm btn-primary" download><i class="bi bi-download"></i> Download</a>
+                </div>
+              </div>
+            </div>
+        `).join('');
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // UTIL
+    // ════════════════════════════════════════════════════════════════════════════
+    function resetUI() {
+        document.getElementById('generateBtn').disabled = false;
+        document.getElementById('generateBtn').innerHTML = '<i class="bi bi-magic"></i> Generate 3D Model';
+        document.getElementById('progressSection').classList.add('d-none');
+    }
+
+    function showError(msg) {
+        clearInterval(pollInterval);
+        hideBanner();
+        resetUI();
+        alert(msg);
+    }
+</script>

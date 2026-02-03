@@ -14,14 +14,14 @@ builder.Services.AddControllersWithViews()
         options.JsonSerializerOptions.WriteIndented = true;
     });
 
+builder.Services.AddHttpClient();
 // Session
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(1);
+    options.IdleTimeout = TimeSpan.FromMinutes(40); // longer than max generation time
     options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
+    options.Cookie.IsEssential = true;                     // no consent banner needed
 });
-
 // Authentication & Authorization
 builder.Services
     .AddAuthentication("MyCookieAuth")
@@ -38,6 +38,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IPaymongo, Paymongo>();
+
+builder.Services.AddScoped<MeshyService>();
 
 builder.Services.AddHttpContextAccessor();
 

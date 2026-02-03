@@ -1,6 +1,8 @@
 ﻿using iskipmakliw.Data;
 using iskipmakliw.Models;
+using iskipmakliw.Models.DTO;
 using iskipmakliw.Models.ViewModels;
+using iskipmakliw.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,9 +17,15 @@ namespace iskipmakliw.Controllers
     public class SellerController : Controller
     {
         ApplicationDbContext _context;
-        public SellerController(ApplicationDbContext context)
+        private readonly MeshyService _meshyService;
+        private readonly IWebHostEnvironment _environment; 
+        private const string KEY_TASK_ID = "Meshy_TaskId";
+        private const string KEY_IS_MULTI = "Meshy_IsMulti";
+        public SellerController(MeshyService meshyService, ApplicationDbContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
+            _meshyService = meshyService;
         }
         public IActionResult Search(string query)
         {
@@ -564,6 +572,194 @@ namespace iskipmakliw.Controllers
                 DeliverProduct = toDeliver
             };
             return View(order);
+        }
+        [HttpPost]
+        public async Task<IActionResult> UploadImage(List<IFormFile> imageFiles, string mode)
+        {
+            try
+            {
+                if (imageFiles == null || imageFiles.Count == 0)
+                    return Json(new { success = false, message = "Please select at least one image." });
+
+                var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                    { ".jpg", ".jpeg", ".png", ".webp" };
+
+                foreach (var file in imageFiles)
+                {
+                    var ext = Path.GetExtension(file.FileName);
+                    if (!allowed.Contains(ext))
+                        return Json(new { success = false, message = $"'{file.FileName}' is not allowed. Use JPG, PNG or WEBP." });
+                }
+
+                bool isMulti = mode == "multi";
+
+                if (isMulti && (imageFiles.Count < 2 || imageFiles.Count > 4))
+                    return Json(new { success = false, message = "Multi-image mode requires 2 to 4 images." });
+
+                if (!isMulti && imageFiles.Count != 1)
+                    return Json(new { success = false, message = "Single-image mode requires exactly 1 image." });
+
+                MeshyApiResponse result = isMulti
+                    ? await _meshyService.CreateMultiImageTo3DTask(imageFiles)
+                    : await _meshyService.CreateSingleImageTo3DTask(imageFiles[0]);
+
+                HttpContext.Session.SetString(KEY_TASK_ID, result.Id);
+                HttpContext.Session.SetString(KEY_IS_MULTI, isMulti.ToString());
+
+                return Json(new
+                {
+                    success = true,
+                    taskId = result.Id,
+                    isMulti = isMulti,
+                    message = "3D generation started successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // ─── POLL STATUS ────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> CheckStatus(string taskId, bool isMulti)
+        {
+            try
+            {
+                var status = await _meshyService.GetTaskStatus(taskId, isMulti);
+
+                return Json(new
+                {
+                    success = true,
+                    status = status.Status,
+                    progress = status.Progress,
+                    modelUrl = status.ModelUrl,
+                    thumbnailUrl = status.ThumbnailUrl
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // ─── RESUME ─────────────────────────────────────────────────────
+        [HttpGet]
+        public IActionResult GetActiveTask()
+        {
+            var taskId = HttpContext.Session.GetString(KEY_TASK_ID);
+            var isMulti = HttpContext.Session.GetString(KEY_IS_MULTI);
+
+            if (string.IsNullOrEmpty(taskId))
+                return Json(new { hasActiveTask = false });
+
+            return Json(new
+            {
+                hasActiveTask = true,
+                taskId = taskId,
+                isMulti = bool.Parse(isMulti ?? "false")
+            });
+        }
+
+        // ─── CLEAR SESSION ──────────────────────────────────────────────
+        [HttpPost]
+        public IActionResult ClearActiveTask()
+        {
+            HttpContext.Session.Remove(KEY_TASK_ID);
+            HttpContext.Session.Remove(KEY_IS_MULTI);
+            return Json(new { success = true });
+        }
+        [HttpGet]
+        public async Task<IActionResult> ProxyModel(string url)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(url))
+                    return BadRequest("url parameter is required.");
+
+                var bytes = await _meshyService.DownloadModel(url);
+                return File(bytes, "application/octet-stream");
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Proxy failed: {ex.Message}" });
+            }
+        }
+
+        // ─── SAVE ───────────────────────────────────────────────────────
+        [HttpPost]
+        public async Task<IActionResult> SaveModel(string modelUrl, string fileName, string modelName)
+        {
+            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            try
+            {
+                if (string.IsNullOrEmpty(modelUrl))
+                    return Json(new { success = false, message = "Model URL is required." });
+
+                var modelBytes = await _meshyService.DownloadModel(modelUrl);
+
+                var dir = Path.Combine(_environment.WebRootPath, "3dModel");
+                Directory.CreateDirectory(dir);
+
+                if (string.IsNullOrWhiteSpace(fileName))
+                    fileName = $"model_{DateTime.Now:yyyyMMddHHmmss}";
+
+                if (!fileName.EndsWith(".glb", StringComparison.OrdinalIgnoreCase))
+                    fileName += ".glb";
+
+                await System.IO.File.WriteAllBytesAsync(Path.Combine(dir, fileName), modelBytes);
+
+                HttpContext.Session.Remove(KEY_TASK_ID);
+                HttpContext.Session.Remove(KEY_IS_MULTI);
+
+                var productModel = new ProductModel
+                {
+                    ModelName = modelName,
+                    ImagePath = $"/3dModel/{fileName}",
+                    UsersId = usersId,
+                    isActive = true
+                };
+                _context.ProductModel.Add(productModel);
+                _context.SaveChanges();
+                return Json(new
+                {
+                    success = true,
+                    message = "Model saved successfully",
+                    filePath = $"/3dModel/{fileName}",
+                    fileName = fileName
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // ─── LIST SAVED ─────────────────────────────────────────────────
+        [HttpGet]
+        public IActionResult GetSavedModels()
+        {
+            try
+            {
+                var dir = Path.Combine(_environment.WebRootPath, "3dModel");
+
+                if (!Directory.Exists(dir))
+                    return Json(new { success = true, models = Array.Empty<object>() });
+
+                var files = Directory.GetFiles(dir, "*.glb");
+                var models = Array.ConvertAll(files, f => new
+                {
+                    fileName = Path.GetFileName(f),
+                    filePath = $"/3dModel/{Path.GetFileName(f)}",
+                    createdDate = System.IO.File.GetCreationTime(f)
+                });
+
+                return Json(new { success = true, models });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 }
