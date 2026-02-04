@@ -739,22 +739,31 @@ namespace iskipmakliw.Controllers
         [HttpGet]
         public IActionResult GetSavedModels()
         {
+            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
             try
             {
-                var dir = Path.Combine(_environment.WebRootPath, "3dModel");
+                var data = _context.ProductModel.Where(u => u.UsersId == usersId).ToList(); 
 
-                if (!Directory.Exists(dir))
-                    return Json(new { success = true, models = Array.Empty<object>() });
+                return Json(new { success = true, data });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
 
-                var files = Directory.GetFiles(dir, "*.glb");
-                var models = Array.ConvertAll(files, f => new
-                {
-                    fileName = Path.GetFileName(f),
-                    filePath = $"/3dModel/{Path.GetFileName(f)}",
-                    createdDate = System.IO.File.GetCreationTime(f)
-                });
+        [HttpPost]
+        public IActionResult SubmitChangesEditModels(int editModelId, string editModelName, bool editModelActive)
+        {
+            try
+            {
+                var data = _context.ProductModel.Where(u => u.Id == editModelId).FirstOrDefault();
 
-                return Json(new { success = true, models });
+                data.ModelName = editModelName;
+                data.isActive = editModelActive;
+                _context.ProductModel.Update(data);
+                _context.SaveChanges();
+                return Json(new { success = true });
             }
             catch (Exception ex)
             {

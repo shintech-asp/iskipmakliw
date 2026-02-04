@@ -175,12 +175,52 @@
 
             <!-- SAVED MODELS -->
             <div class="card shadow mt-4">
-                <div class="card-header bg-secondary text-white">
-                    <h4 class="mb-0">Saved Models</h4>
-                </div>
                 <div class="card-body">
-                    <div class="row" id="savedModelsList"></div>
+                    <h5 class="mb-3 card-title">Saved models</h5>
+                    <div class="row" id="savedModelsList">
+                        <table class="table">
+                            <thead>
+                                <tr class="text-center">
+                                    <td>
+                                        Model Name
+                                    </td>
+                                    <td>
+                                        Model
+                                    </td>
+                                    <td>
+                                        Status
+                                    </td>
+                                    <td>
+                                        Action
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl_models">
+
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modelPreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">3D Model Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <model-viewer id="modelViewer"
+                              src=""
+                              camera-controls
+                              auto-rotate
+                              shadow-intensity="1"
+                              style="width:100%; height:500px;">
+                </model-viewer>
             </div>
         </div>
     </div>
@@ -212,8 +252,37 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="editModelModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
 
-<!-- ─── SCRIPTS ─────────────────────────────────────────────────────────── -->
+                <input type="hidden" id="editModelId">
+
+                <div class="mb-3">
+                    <label class="form-label">Model Name</label>
+                    <input type="text" class="form-control" id="editModelName">
+                </div>
+
+                <div class="form-check form-switch mb-5">
+                    <input class="form-check-input" type="checkbox" id="editModelActive">
+                    <label class="form-check-label">Active</label>
+                </div>
+                <div class="mb-3">
+                    <button class="btn btn-primary" id="submitChangesEdit">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module"
+        src="https://unpkg.com/@@google/model-viewer/dist/model-viewer.min.js">
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -231,9 +300,6 @@
 
     const MAX_FILES = { single: 1, multi: 4 };
 
-    // ════════════════════════════════════════════════════════════════════════════
-    // BOOT
-    // ════════════════════════════════════════════════════════════════════════════
     document.addEventListener('DOMContentLoaded', function () {
         loadSavedModels();
         tryResumeActiveTask();
@@ -264,35 +330,84 @@
 
         document.getElementById('saveModelBtn').addEventListener('click', saveModel);
 
-            document.getElementById('dismissResumeBtn').addEventListener('click', function () {
-                Swal.fire({
-                    title: 'Discard progress?',
-                    text: 'Your current 3D generation will be permanently discarded.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, discard',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        clearSessionTask();
+        document.getElementById('dismissResumeBtn').addEventListener('click', function () {
+            Swal.fire({
+                title: 'Discard progress?',
+                text: 'Your current 3D generation will be permanently discarded.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, discard',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    clearSessionTask();
 
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Discarded',
-                            text: 'The active generation has been removed.',
-                            timer: 1500,
-                            showConfirmButton: false
-                        }).then(() => {
-                            location.reload(); // ✅ reload AFTER Swal closes
-                        });
-                    }
-                });
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Discarded',
+                        text: 'The active generation has been removed.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload(); // ✅ reload AFTER Swal closes
+                    });
+                }
             });
+        });
+        document.getElementById('submitChangesEdit').addEventListener('click', function () {
+            Swal.fire({
+                title: 'Submit changes?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, submit',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("SubmitChangesEditModels", "Seller")',
+                        type: "POST",
+                        data: {
+                            editModelId: $("#editModelId").val(),
+                            editModelName: $("#editModelName").val(),
+                            editModelActive: $("#editModelActive").is(":checked")
+                        },
+                        success: function (res) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Submitted',
+                                text: 'Edited successfully',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        },
+                        error: function (err) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Something went wrong while submitting.'
+                            });
+                        }
+                    });
+                }
+            });
+        });
 
     });
+    function openModelPreview(modelUrl) {
+        const viewer = document.getElementById("modelViewer");
+        viewer.src = modelUrl;
 
+        const modal = new bootstrap.Modal(
+            document.getElementById("modelPreviewModal")
+        );
+        modal.show();
+    }
     // ════════════════════════════════════════════════════════════════════════════
     // RESUME
     // ════════════════════════════════════════════════════════════════════════════
@@ -628,41 +743,67 @@
             }
         });
     }
-
-    // ════════════════════════════════════════════════════════════════════════════
-    // SESSION HELPERS
-    // ════════════════════════════════════════════════════════════════════════════
     function clearSessionTask() {
         $.ajax({ url: '@Url.Action("ClearActiveTask", "Seller")', type: 'POST' });
         currentTaskId   = null;
         currentModelUrl = null;
     }
 
-    // ════════════════════════════════════════════════════════════════════════════
-    // SAVED-MODELS LIST
-    // ════════════════════════════════════════════════════════════════════════════
     function loadSavedModels() {
         $.ajax({
-            url: '@Url.Action("GetSavedModels", "Seller")', type: 'GET',
-            success: function (res) { if (res.success) renderSavedModels(res.models); }
+            url: '@Url.Action("GetSavedModels", "Seller")',
+            type: 'GET',
+            success: function (res) {
+                if (!res.success) return;
+
+                console.log(res.data);
+                var models = res.data;
+                $('#tbl_models').empty(); // clear first
+
+                models.forEach(function (data) {
+                    var badge
+                    if(data.isActive){
+                        badge = "badge-light-success"
+                    }else{
+                        badge = "badge-light-danger"
+                    }
+                    $('#tbl_models').append(`
+                        <tr class="text-center">
+                            <td>${data.modelName}</td>
+                                <td style="width:250px; height:200px;">
+        <model-viewer src="${data.imagePath}"
+                      camera-controls
+                      auto-rotate
+                      style="width:100%; height:180px;">
+        </model-viewer>
+    </td>
+                            <td><span class="badge ${badge}">${data.isActive ? "Active" : "Disabled"}</span></td>
+                            <td>
+                                <button
+                                    class="btn btn-sm btn-primary"
+                                    onclick="openEditModal(${data.id}, '${data.modelName}', ${data.isActive})">
+                                    Edit
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
         });
+
+    }
+    function openEditModal(id, name, isActive) {
+        console.log(id, name, isActive);
+
+        $('#editModelId').val(id);
+        $('#editModelName').val(name);
+        $('#editModelActive').prop('checked', isActive);
+
+        const modalEl = document.getElementById('editModelModal');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
     }
 
-    function renderSavedModels(models) {
-        const el = document.getElementById('savedModelsList');
-        if (!models || models.length === 0) { el.innerHTML = '<p class="text-muted">No saved models yet.</p>'; return; }
-        el.innerHTML = models.map(m => `
-            <div class="col-md-4 mb-3">
-              <div class="card">
-                <div class="card-body">
-                  <h6 class="card-title">${m.fileName}</h6>
-                  <p class="card-text small text-muted">Created: ${new Date(m.createdDate).toLocaleString()}</p>
-                  <a href="${m.filePath}" class="btn btn-sm btn-primary" download><i class="bi bi-download"></i> Download</a>
-                </div>
-              </div>
-            </div>
-        `).join('');
-    }
 
     // ════════════════════════════════════════════════════════════════════════════
     // UTIL

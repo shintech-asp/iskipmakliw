@@ -381,12 +381,13 @@ namespace iskipmakliw.Controllers
         public IActionResult Customization(int Id)
         {
             ViewBag.Id = Id;
-            return View();
+            var sellerModels = _context.ProductModel.Where(u => u.UsersId == Id).ToList();
+            return View(sellerModels);
         }
         [HttpPost]
-        public IActionResult Customization(int Id,string Model, string color, string texture, string scale, string width, string height)
+        public IActionResult Customization(int Id, string Model, string color, string texture, string scale, string width, string height)
         {
-            if(Model != null)
+            if (!string.IsNullOrEmpty(Model))
             {
                 var submitCustomization = new CustomizationOrders
                 {
@@ -402,6 +403,7 @@ namespace iskipmakliw.Controllers
                 };
                 _context.CustomizationOrders.Add(submitCustomization);
                 _context.SaveChanges();
+
                 var CustomizationChat = new CustomizationChat
                 {
                     UsersId = int.Parse(User.FindFirst("UsersId").Value),
@@ -412,13 +414,16 @@ namespace iskipmakliw.Controllers
                 };
                 _context.CustomizationChat.Add(CustomizationChat);
                 _context.SaveChanges();
-                TempData["Success"] = "Customization order submitted!";
-            }else
-            {
-                TempData["Error"] = "Please select your base model";
+
+                return Json(new { success = true, message = "Customization saved successfully!" });
             }
-            return View();
+            else
+            {
+                return Json(new { success = false, message = "Please select your base model." });
+            }
         }
+
+
         [HttpPost]
         public IActionResult SendMessage(int Id, string Message)
         {
