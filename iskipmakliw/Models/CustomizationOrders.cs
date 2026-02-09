@@ -18,6 +18,7 @@
         public string? ModeOfPayment { get; set; }
         public string? PaymentStatus { get; set; }
         public string? TransactionStatus { get; set; }
+        public string? CancellationReason { get; set; }
         public ICollection<CustomizationChat> CustomizationChat { get; set; }
         public DateTime DateCreated { get; set; } = DateTime.Now;
     }

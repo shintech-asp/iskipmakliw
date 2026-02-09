@@ -171,12 +171,13 @@ namespace iskipmakliw.Controllers
             ViewBag.IsPaymentMethod = isPaymentMethod;
             return View(data);
         }
-        public IActionResult Cancel3d(int Id)
+        public IActionResult Cancel3d(int Id, string Reason)
         {
             var data = _context.CustomizationOrders.Find(Id);
             data.TransactionStatus = "Cancelled";
             data.SellerStatus = "Cancelled";
             data.PaymentStatus = "Cancelled";
+            data.CancellationReason = Reason;
             _context.CustomizationOrders.Update(data);
             _context.SaveChanges();
 
@@ -458,6 +459,8 @@ namespace iskipmakliw.Controllers
 
         public IActionResult LoadChatPartial(int orderId)
         {
+            var usersId = int.Parse(User.FindFirst("UsersId").Value);
+
             var messages = _context.CustomizationChat
                 .Where(c => c.CustomizationOrdersId == orderId)
                 .Include(c => c.CustomizationOrders)
@@ -469,6 +472,17 @@ namespace iskipmakliw.Controllers
                 .OrderBy(c => c.DateSent)
                 .ToList();
 
+            var data = _context.CustomizationChat
+                .Where(c => c.CustomizationOrdersId == orderId).ToList();
+            foreach(var data2 in data)
+            {
+                if (!data2.IsFromBuyer)
+                {
+                    data2.DateReceived = DateTime.Now;
+                    _context.CustomizationChat.Update(data2);
+                    _context.SaveChanges();
+                }
+            }
             return PartialView("_ChatConversationPartial", messages);
         }
         public IActionResult Chat()
@@ -480,6 +494,7 @@ namespace iskipmakliw.Controllers
                         .Include(u => u.Sellers)
                             .ThenInclude(u => u.UserDetails)
                         .Where(u => u.UsersId == usersId)
+                .OrderByDescending(c => c.DateSent)
                         .ToList();
             return View(data);
         }
