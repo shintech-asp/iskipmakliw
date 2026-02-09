@@ -302,6 +302,9 @@ namespace iskipmakliw.Controllers
         public IActionResult ProductEdit(ProductVariants product, string ButtonType, int Id)
         {
             ModelState.Remove("Product");
+            ModelState.Remove("PurchasedProduct");
+            ModelState.Remove("Ratings");
+            ModelState.Remove("Carts");
             if (ModelState.IsValid)
             {
                 if(ButtonType == "Save")
@@ -316,6 +319,8 @@ namespace iskipmakliw.Controllers
                         existing.Dimension = product.Dimension;
                         existing.Color = product.Color;
                         existing.Price = product.Price;
+                        existing.Unit = product.Unit;
+                        existing.DiscountType = product.DiscountType;
                         existing.Quantity = product.Quantity;
                         existing.Discount = product.Discount;
 
@@ -343,6 +348,7 @@ namespace iskipmakliw.Controllers
             var productVar = _context.ProductVariants
                         .Include(v => v.Product)
                         .FirstOrDefault(v => v.Id == Id);
+            TempData["Error"] = "Please fill out all the required fields";
             return View(productVar);
         }
         public IActionResult ProductList()
@@ -402,6 +408,8 @@ namespace iskipmakliw.Controllers
                         Dimension = model.ProductDetails.Dimension,
                         Color = model.ProductDetails.Color,
                         Price = model.ProductDetails.Price,
+                        Unit = model.ProductDetails.Unit,
+                        DiscountType = model.ProductDetails.DiscountType,
                         Quantity = model.ProductDetails.Quantity,
                         Discount = model.ProductDetails.Discount
                     };
@@ -415,6 +423,8 @@ namespace iskipmakliw.Controllers
                     productVariant.Material = model.ProductDetails.Material;
                     productVariant.Dimension = model.ProductDetails.Dimension;
                     productVariant.Color = model.ProductDetails.Color;
+                    productVariant.Unit = model.ProductDetails.Unit;
+                    productVariant.DiscountType = model.ProductDetails.DiscountType;
                     productVariant.Price = model.ProductDetails.Price;
                     productVariant.Quantity = model.ProductDetails.Quantity;
                     productVariant.Discount = model.ProductDetails.Discount;

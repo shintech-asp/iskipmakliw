@@ -76,7 +76,8 @@ namespace iskipmakliw.Services
         string email,
         string contact,
         List<(string name, double price, int quantity)> productDetails, 
-        string paymentMethod)
+        string paymentMethod,
+                              int shippingFee)
             {
                 // Create separate line items for each product
                 var lineItems = productDetails.Select(product => new
@@ -85,9 +86,15 @@ namespace iskipmakliw.Services
                     amount = (int)(product.price * 100), // Convert to centavos
                     currency = currency,
                     quantity = product.quantity
-                }).ToArray();
-
-                var payload = new
+                }).ToList();
+                lineItems.Add(new
+                {
+                    name = "Shipping Fee",
+                    amount = shippingFee * 100, // convert to centavos
+                    currency = currency,
+                    quantity = 1
+                });
+            var payload = new
                 {
                     data = new
                     {

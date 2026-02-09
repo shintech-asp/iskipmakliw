@@ -8,9 +8,11 @@ namespace iskipmakliw.Models
         public int ProductId { get; set; }
         public Product Product { get; set; }
         public string? Material { get; set; }
-        public string Dimension { get; set; }
+        public string? Dimension { get; set; }
         public string? Color { get; set; }
+        public string? Unit { get; set; }
         public double Price { get; set; }
+        public string? DiscountType { get; set; }
         public int Quantity { get; set; }
         public int? Discount { get; set; }
         public string? ProductImage { get; set; }

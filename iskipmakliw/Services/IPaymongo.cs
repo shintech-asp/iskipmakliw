@@ -9,7 +9,7 @@
         string email,
         string contact,
         List<(string name, double price, int quantity)> productDetails,
-        string paymentMethod);
+        string paymentMethod, int shippingFee);
         public Task<string> CreateCheckoutSessionService(
                               decimal amount,
                               string currency,

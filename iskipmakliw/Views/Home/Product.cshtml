@@ -125,14 +125,13 @@
                                                 @foreach (var colorGroup in Model.Product.ProductVariants.GroupBy(v => v.Color))
                                                 {
                                                     var color = string.IsNullOrEmpty(colorGroup.Key) ? "Default" : colorGroup.Key;
-                                                    var safeId = $"color-{color.Replace(" ", "-").ToLower()}"; // avoid spaces in id
+                                                    var safeId = $"color-{color.Replace(" ", "-").ToLower()}";
 
                                                     <input type="radio"
                                                            class="btn-check color-radio"
                                                            name="color"
                                                            id="@safeId"
-                                                           value="@color"
-                                                           autocomplete="off" />
+                                                           value="@color" />
 
                                                     <label class="btn btn-outline-secondary" for="@safeId">
                                                         @color
@@ -142,28 +141,41 @@
                                         </div>
                                     </div>
 
-
                                     <!-- Size Selector -->
                                     <div class="row size-selector mb-4">
                                         <div class="col-3 align-self-center">Size</div>
                                         <div class="col-9">
-                                            <div class="btn-group" role="group" id="sizeOptions">
-                                                @foreach (var sizeGroup in Model.Product.ProductVariants.GroupBy(v => v.Dimension))
+                                            <div class="btn-group flex-wrap" role="group" id="sizeOptions">
+                                                @foreach (var variant in Model.Product.ProductVariants)
                                                 {
-                                                    var size = sizeGroup.Key;
-                                                    var id = $"size-{size}";
-                                                    var safeId = $"size-{size.Replace(" ", "-")}";
-                                                    <input type="radio" class="btn-check size-radio"
+                                                    var safeId = $"size-{variant.Id}";
+
+                                                    <input type="radio"
+                                                           class="btn-check size-radio"
                                                            name="size"
                                                            id="@safeId"
-                                                           value="@size" />
-                                                    <label class="btn btn-outline-primary" for="@safeId">
-                                                        @size
+                                                           value="@variant.Id"
+                                                           data-dimension="@variant.Dimension"
+                                                           data-unit="@variant.Unit" />
+
+                                                    <label class="btn btn-outline-primary mb-2" for="@safeId">
+                                                        @variant.Dimension
                                                     </label>
                                                 }
                                             </div>
                                         </div>
                                     </div>
+
+                                    <!-- Unit of Measurement -->
+                                    <div class="row size-selector mb-4">
+                                        <div class="col-3 align-self-center">Unit of Measurement</div>
+                                        <div class="col-9">
+                                            <div id="unitDisplay" class="fw-semibold text-primary">
+                                                Select color and size
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <form asp-action="Product" asp-controller="Home" method="post">
                                         <!-- Quantity -->
                                         <div class="row quantity-selector mb-4">
@@ -414,139 +426,118 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
     <script>
-        // --- Product variants from server ---
-            document.addEventListener("click", function (e) {
-            if (e.target.matches(".review-thumb")) {
-                const imgSrc = e.target.getAttribute("data-img");
-                document.getElementById("modalImage").src = imgSrc;
-            }
-        });
         var productVariants = @Html.Raw(ViewBag.ProductVariantsJson);
 
-        // Normalize colors — replace null or empty with "Default"
+        // Normalize color
         productVariants = productVariants.map(v => ({
             ...v,
             Color: v.Color && v.Color.trim() !== "" ? v.Color : "Default"
         }));
 
-        // --- DOM elements ---
+        // DOM elements
         const mainImage = document.getElementById("mainImage");
         const quantityInput = document.getElementById("quantityInput");
         const stockMessage = document.getElementById("stockMessage");
         const discountedPrice = document.getElementById("discountedPrice");
         const regularPrice = document.getElementById("regularPrice");
         const discountBadge = document.getElementById("discountBadge");
-        const productIdInput = document.querySelector("input[name='ProductVariantsId']"); // ✅ hidden input
+        const unitDisplay = document.getElementById("unitDisplay");
+        const productIdInput = document.querySelector("input[name='ProductVariantsId']");
 
-        // --- Update UI details ---
+        // Update UI from variant
         function updateDetails(variant) {
             if (!variant) return;
 
-            // --- Update hidden field with the variant ID ---
-            productIdInput.value = variant.Id; // ✅ store variant ID in hidden input
+            productIdInput.value = variant.Id;
 
-            // --- Price calculation ---
+            // ---- Discount (Peso or Percent)
             if (variant.Discount && variant.Discount > 0) {
-                let discountAmount = variant.Price * (variant.Discount / 100);
-                let finalPrice = variant.Price - discountAmount;
+                let finalPrice = variant.Price;
+                let badgeText = "";
+
+                if (variant.DiscountType === "Peso") {
+                    finalPrice -= variant.Discount;
+                    badgeText = "₱" + variant.Discount + " OFF";
+                } else {
+                    finalPrice -= variant.Price * (variant.Discount / 100);
+                    badgeText = variant.Discount + "% OFF";
+                }
 
                 discountedPrice.textContent = "₱" + finalPrice.toLocaleString();
                 regularPrice.textContent = "₱" + variant.Price.toLocaleString();
-                discountBadge.textContent = variant.Discount + "% Sale off";
+                discountBadge.textContent = badgeText;
                 discountBadge.className = "badge badge-light-danger mb-3";
             } else {
                 discountedPrice.textContent = "₱" + variant.Price.toLocaleString();
                 regularPrice.textContent = "";
-                discountBadge.textContent = "Whole Sale";
+                discountBadge.textContent = "Wholesale";
                 discountBadge.className = "badge badge-light-success mb-3";
             }
 
-            // --- Stock calculation ---
-            let totalStock = variant.Stock || 0;
-            quantityInput.max = totalStock;
+            // ---- Stock
+            quantityInput.max = variant.Stock || 0;
+            stockMessage.textContent =
+                variant.Stock === 0 ? "Out of Stock" :
+                variant.Stock <= 5 ? `Only ${variant.Stock} left!` :
+                `In Stock: ${variant.Stock}`;
 
-            if (totalStock === 0) {
-                stockMessage.textContent = "Out of Stock";
-                stockMessage.className = "text-danger mt-2";
-            } else if (totalStock <= 5) {
-                stockMessage.textContent = `Only ${totalStock} left in stock!`;
-                stockMessage.className = "text-warning mt-2";
-            } else {
-                stockMessage.textContent = `In Stock: ${totalStock}`;
-                stockMessage.className = "text-success mt-2";
+            stockMessage.className =
+                variant.Stock === 0 ? "text-danger mt-2" :
+                variant.Stock <= 5 ? "text-warning mt-2" :
+                "text-success mt-2";
+
+            // ---- Unit
+            unitDisplay.textContent = variant.Unit ?? "Not Applicable";
+
+            // ---- Image
+            if (variant.ProductImage) {
+                mainImage.src = variant.ProductImage;
             }
         }
 
-        // --- Handle color selection ---
+        // Color selection
         document.querySelectorAll(".color-radio").forEach(radio => {
             radio.addEventListener("change", function () {
-                let selectedColor = this.value;
-                let variants = productVariants.filter(v => v.Color === selectedColor);
+                const selectedColor = this.value;
 
-                // Reset size radios
-                document.querySelectorAll(".size-radio").forEach(sizeRadio => {
-                    sizeRadio.checked = false;
-                    let label = document.querySelector(`label[for='${sizeRadio.id}']`);
-                    let variant = variants.find(v => v.Size === sizeRadio.value);
+                document.querySelectorAll(".size-radio").forEach(r => {
+                    const variant = productVariants.find(v =>
+                        v.Id == r.value && v.Color === selectedColor
+                    );
 
-                    if (variant) {
-                        sizeRadio.disabled = false;
-                        label.style.textDecoration = "none";
-                        label.classList.remove("text-muted");
-                    } else {
-                        sizeRadio.disabled = true;
-                        label.style.textDecoration = "line-through";
-                        label.classList.add("text-muted");
-                    }
+                    r.disabled = !variant;
+                    r.checked = false;
+                    r.nextElementSibling.classList.toggle("text-muted", !variant);
                 });
 
-                // Update image
-                if (variants[0]?.ProductImage) {
-                    mainImage.src = variants[0].ProductImage;
-                }
-
-                // Reset info
+                unitDisplay.textContent = "Select size to view unit";
                 discountedPrice.textContent = "";
                 regularPrice.textContent = "";
-                stockMessage.textContent = "Select a size to see stock & price";
-                stockMessage.className = "text-muted mt-2";
+                stockMessage.textContent = "Select a size";
                 discountBadge.textContent = "Select a size";
                 discountBadge.className = "badge badge-light-secondary mb-3";
-                productIdInput.value = ""; // ✅ clear hidden field since size not yet selected
+                productIdInput.value = "";
             });
         });
 
-        // --- Handle size selection ---
+        // Size selection
         document.addEventListener("change", function (e) {
-            if (e.target.classList.contains("size-radio")) {
-                let selectedColor = document.querySelector(".color-radio:checked")?.value;
-                let selectedSize = e.target.value;
+            if (!e.target.classList.contains("size-radio")) return;
 
-                let variant = productVariants.find(v => v.Color === selectedColor && v.Size === selectedSize);
+            const selectedColor = document.querySelector(".color-radio:checked")?.value;
+            if (!selectedColor) return;
 
-                if (variant) {
-                    updateDetails(variant);
-                }
-            }
+            const variant = productVariants.find(v =>
+                v.Id == e.target.value && v.Color === selectedColor
+            );
+
+            updateDetails(variant);
         });
-
-        // --- Optional: fetch all field values easily when submitting ---
-        function getSelectedProductData() {
-            const color = document.querySelector(".color-radio:checked")?.value;
-            const size = document.querySelector(".size-radio:checked")?.value;
-            const quantity = quantityInput.value;
-            const productId = productIdInput.value;
-
-            return { productId, color, size, quantity };
-        }
-
-        // Example usage (for debugging or future button click)
-        // console.log(getSelectedProductData());
     </script>
 }
+
 
 
 

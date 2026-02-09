@@ -5,6 +5,8 @@
         public int Id { get; set; }
         public string Color { get; set; }
         public string Size { get; set; }
+        public string? Unit { get; set; }
+        public string DiscountType { get; set; }
         public double Price { get; set; }
         public int Stock { get; set; }
         public string ProductImage { get; set; }

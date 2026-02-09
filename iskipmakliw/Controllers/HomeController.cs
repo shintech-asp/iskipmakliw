@@ -232,7 +232,6 @@ namespace iskipmakliw.Controllers
 
             var billings = _context.Billings.Where(u => u.UsersId == usersId).ToList();
             var paymentMethods = _context.PaymentMethod.Where(u => u.UsersId == usersId).ToList();
-
             var cartViewModel = new CartViewModel
             {
                 Cart = groupedCart,
@@ -660,7 +659,9 @@ namespace iskipmakliw.Controllers
                 Id = v.Id,
                 Color = v.Color,
                 Size = v.Dimension,
+                Unit = v.Unit,
                 Price = v.Price,
+                DiscountType = v.DiscountType,
                 Stock = v.Quantity,
                 ProductImage = v.ProductImage,
                 Discount = v.Discount
