@@ -9,7 +9,7 @@ namespace iskipmakliw.Services
         private readonly int _smtpPort = 587;
         private readonly string _fromEmail = "yhujiinn@gmail.com";
         private readonly string _fromPassword = "vgxx fish qxgq liut";
-
+        private readonly string _fromName = "OakMart";
         public bool SendVerificationCode(string toEmail, string code)
         {
             try
@@ -19,7 +19,7 @@ namespace iskipmakliw.Services
 
                 using (MailMessage mail = new MailMessage())
                 {
-                    mail.From = new MailAddress(_fromEmail);
+                    mail.From = new MailAddress(_fromEmail, _fromName);
                     mail.To.Add(toEmail);
                     mail.Subject = subject;
                     mail.Body = body;
@@ -52,7 +52,7 @@ namespace iskipmakliw.Services
                     <p>Thank you for registering! Please use the following code to verify your email address:</p>
                     
                     <div style='background-color: #f4f4f4; padding: 20px; text-align: center; margin: 20px 0;'>
-                        <h1 style='color: #4CAF50; font-size: 48px; margin: 0; letter-spacing: 10px;'>{code}</h1>
+                        <h1 style='color: #667eea; font-size: 48px; margin: 0; letter-spacing: 10px;'>{code}</h1>
                     </div>
                     
                     <p><strong>This code will expire in 10 minutes.</strong></p>

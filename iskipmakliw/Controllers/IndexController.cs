@@ -275,45 +275,54 @@ namespace iskipmakliw.Controllers
                 TempData.Keep("Email");
             }
 
+            ViewBag.HideChrome = true;
             return View();
         }
 
         // POST: VerifyEmail
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult VerifyEmail(VerifyEmailViewModel model)
+        public ActionResult VerifyEmail(string Email, string Code)
         {
-            if (!ModelState.IsValid)
+            if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Code))
             {
-                return View(model);
+                ViewBag.HideChrome = true;
+                TempData["Error"] = "Email and Code are required.";
+                ViewBag.Email = Email;
+                return View();
             }
 
-            var user = _context.Users.FirstOrDefault(u => u.Email == model.Email && !u.IsEmailVerified);
+            var user = _context.Users.FirstOrDefault(u => u.Email == Email && !u.IsEmailVerified);
 
             if (user == null)
             {
-                ModelState.AddModelError("", "User not found or already verified.");
-                return View(model);
+                TempData["Error"] = "User not found or already verified.";
+                ViewBag.Email = Email;
+                ViewBag.HideChrome = true;
+                return View();
             }
 
             // Check if code expired
             if (OTPHelper.IsOTPExpired(user.CodeCreatedAt, 10))
             {
-                ModelState.AddModelError("", "Verification code has expired. Please request a new one.");
+                TempData["Error"] = "Verification code has expired. Please request a new one.";
+                ViewBag.Email = Email;
                 ViewBag.ShowResendButton = true;
-                return View(model);
+                ViewBag.HideChrome = true;
+                return View();
             }
 
             // Verify code
-            if (user.VerificationCode != model.Code)
+            if (user.VerificationCode != Code)
             {
-                ModelState.AddModelError("Code", "Invalid verification code.");
-                return View(model);
+                TempData["Error"] = "Invalid verification code.";
+                ViewBag.Email = Email;
+                ViewBag.HideChrome = true;
+                return View();
             }
 
             // Mark as verified
             user.IsEmailVerified = true;
-            user.VerificationCode = null;
             user.CodeCreatedAt = null;
             user.LastCodeSentAt = null;
             _context.SaveChanges();
@@ -323,14 +332,16 @@ namespace iskipmakliw.Controllers
         }
 
         [HttpPost]
-        public JsonResult ResendVerificationCode(string email)
+        public JsonResult ResendVerificationCode(string Email)
         {
             try
             {
-                var user = _context.Users.FirstOrDefault(u => u.Email == email && !u.IsEmailVerified);
+                var user = _context.Users.FirstOrDefault(u => u.Email == Email && !u.IsEmailVerified);
 
                 if (user == null)
                 {
+                    ViewBag.Email = Email;
+                    ViewBag.HideChrome = true;
                     return Json(new { success = false, message = "User not found or already verified." });
                 }
 
@@ -338,6 +349,8 @@ namespace iskipmakliw.Controllers
                 if (!OTPHelper.CanResendOTP(user.LastCodeSentAt, 2))
                 {
                     var remaining = OTPHelper.GetRemainingCooldown(user.LastCodeSentAt, 2);
+                    ViewBag.Email = Email;
+                    ViewBag.HideChrome = true;
                     return Json(new
                     {
                         success = false,
@@ -358,15 +371,21 @@ namespace iskipmakliw.Controllers
 
                 if (emailSent)
                 {
+                    ViewBag.Email = Email;
+                    ViewBag.HideChrome = true;
                     return Json(new { success = true, message = "Verification code sent! Please check your email." });
                 }
                 else
                 {
+                    ViewBag.Email = Email;
+                    ViewBag.HideChrome = true;
                     return Json(new { success = false, message = "Failed to send email. Please try again." });
                 }
             }
             catch (Exception ex)
             {
+                ViewBag.Email = Email;
+                ViewBag.HideChrome = true;
                 return Json(new { success = false, message = "An error occurred. Please try again." });
             }
         }

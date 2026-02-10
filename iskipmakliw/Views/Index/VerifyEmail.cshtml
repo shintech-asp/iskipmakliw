@@ -2,7 +2,7 @@
 @model VerifyEmailViewModel
 @{
     ViewBag.Title = "Verify Email";
-    Layout = null;
+    Layout = "_Layout";
 }
 
 <style>
@@ -287,13 +287,15 @@
         <div id="resendMessage" style="display:none;"></div>
 
         <div class="email-display">
-            <strong id="userEmail">@ViewBag.Email</strong>
+            <strong id="userEmail">@(ViewBag.Email ?? Model?.Email ?? "")</strong>
         </div>
 
         @using (Html.BeginForm("VerifyEmail", "Index", FormMethod.Post, new { id = "verifyForm" }))
         {
             @Html.AntiForgeryToken()
-            @Html.HiddenFor(m => m.Email, new { id = "Email", Value = ViewBag.Email })
+
+            <input type="hidden" name="Email" id="Email" value="@(ViewBag.Email ?? Model?.Email ?? "")" />
+            <input type="hidden" name="Code" id="Code" value="" />
 
             <div class="otp-container">
                 <input type="text" class="otp-input" id="otp1" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" required />
@@ -302,10 +304,9 @@
                 <input type="text" class="otp-input" id="otp4" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" required />
             </div>
 
-            @Html.HiddenFor(m => m.Code, new { id = "Code" })
             <span class="text-danger" id="codeError"></span>
 
-            <button type="submit" class="btn-verify" id="verifyBtn">Verify Email</button>
+            <button type="submit" class="btn-verify" id="verifyBtn" disabled>Verify Email</button>
         }
 
         <div class="resend-section">
@@ -370,6 +371,9 @@
                 const code = Array.from(otpInputs).map(input => input.value).join('');
                 $('#Code').val(code);
 
+                console.log('OTP Code:', code); // Debug log
+                console.log('Email:', $('#Email').val()); // Debug log
+
                 // Enable/disable verify button
                 if (code.length === 4) {
                     $('#verifyBtn').prop('disabled', false);
@@ -378,17 +382,34 @@
                 }
             }
 
-            // Form submission
+            // Form submission - Ensure values are set before submit
             $('#verifyForm').submit(function(e) {
-                const code = $('#Code').val();
+                e.preventDefault();
+
+                // Manually update the code one more time
+                const code = Array.from(otpInputs).map(input => input.value).join('');
+                $('#Code').val(code);
+
+                const email = $('#Email').val();
+
+                console.log('Form Submit - Email:', email); // Debug log
+                console.log('Form Submit - Code:', code); // Debug log
+
                 if (code.length !== 4) {
-                    e.preventDefault();
                     $('#codeError').text('Please enter all 4 digits');
                     return false;
                 }
 
+                if (!email) {
+                    $('#codeError').text('Email is missing');
+                    return false;
+                }
+
                 // Add loading state
-                $('#verifyBtn').addClass('loading').prop('disabled', true);
+                $('#verifyBtn').addClass('loading').prop('disabled', true).text('VERIFYING...');
+
+                // Submit the form
+                this.submit();
             });
 
             // Resend Code Logic
@@ -420,13 +441,16 @@
             }
 
             $('#resendBtn').click(function() {
-                var email = $('#Email').val();
+                const Email = $('#Email').val();
+
+                console.log('Resending to:', Email); // Debug log
 
                 $.ajax({
-                    url: '@Url.Action("ResendVerificationCode", "Index")',
+                    url: '/Index/ResendVerificationCode',
                     type: 'POST',
-                    data: { email: email },
+                    data: { Email: Email },
                     success: function(response) {
+                        console.log(response)
                         var msgDiv = $('#resendMessage');
                         msgDiv.show();
 
@@ -438,6 +462,7 @@
                             otpInputs.forEach(input => input.value = '');
                             otpInputs[0].focus();
                             $('#Code').val('');
+                            $('#verifyBtn').prop('disabled', true);
                         } else {
                             msgDiv.html('<div class="alert alert-danger">' + response.message + '</div>');
                             if (response.remainingSeconds) {
@@ -457,6 +482,9 @@
 
             // Focus first input on load
             otpInputs[0].focus();
+
+            // Initialize email value on load
+            console.log('Page loaded - Email:', $('#Email').val()); // Debug log
         });
     </script>
 }
