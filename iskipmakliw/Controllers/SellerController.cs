@@ -479,9 +479,152 @@ namespace iskipmakliw.Controllers
         {
             return View();
         }
+        public IActionResult GenerateCompletedPurchasedProduct(string source, string status, DateTime dateFrom, DateTime dateTo)
+        {
+            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            if(status == "Completed")
+            {
+                if (source == "PurchasedProduct")
+                {
+                    var data = _context.PurchasedProduct
+                                .Include(u => u.Users)
+                                .Include(u => u.ProductVariants)
+                                    .ThenInclude(pv => pv.Product)
+                                        .ThenInclude(p => p.Users)
+                                .Where(u => u.ProductVariants.Product.UsersId == usersId && u.TransactionStatus == "Completed" && (u.PurchasedDate >= dateFrom && u.PurchasedDate <= dateTo))
+                                .Select(u => new
+                                {
+                                    Product = u.ProductVariants.Product.Name ?? u.CustomizationOrders.Model,
+                                    BuyerUsername = u.Users.Username,
+                                    u.Quantity,
+                                    u.PaymentStatus,
+                                    u.Price
+                                })
+                                .ToList();
+                    var grandTotal = data.Sum(u => u.Price);
+
+                    return Json(new { success = true, data, grandTotal });
+                }
+                else if (source == "Customization")
+                {
+                    var data = _context.PurchasedProduct
+                                .Include(u => u.Users)
+                                .Include(u => u.ProductVariants)
+                                    .ThenInclude(pv => pv.Product)
+                                        .ThenInclude(p => p.Users)
+                                .Where(u => u.CustomizationOrders.SellersId == usersId && u.TransactionStatus == "Completed" && (u.PurchasedDate >= dateFrom && u.PurchasedDate <= dateTo))
+                                .Select(u => new
+                                {
+                                    Product = u.ProductVariants.Product.Name ?? u.CustomizationOrders.Model,
+                                    BuyerUsername = u.Users.Username,
+                                    u.Quantity,
+                                    u.PaymentStatus,
+                                    u.Price
+                                })
+                                .ToList();
+
+                    var grandTotal = data.Sum(u => u.Price);
+
+                    return Json(new { success = true, data, grandTotal });
+                }
+                else
+                {
+                    var data = _context.PurchasedProduct
+                                .Include(u => u.Users)
+                                .Include(u => u.ProductVariants)
+                                    .ThenInclude(pv => pv.Product)
+                                        .ThenInclude(p => p.Users)
+                                .Where(u => (u.ProductVariants.Product.UsersId == usersId || u.CustomizationOrders.SellersId == usersId) && u.TransactionStatus == "Completed" && (u.PurchasedDate >= dateFrom && u.PurchasedDate <= dateTo))
+                                .Select(u => new
+                                {
+                                    Product = u.ProductVariants.Product.Name ?? u.CustomizationOrders.Model,
+                                    BuyerUsername = u.Users.Username,
+                                    u.Quantity,
+                                    u.PaymentStatus,
+                                    u.Price
+                                })
+                                .ToList();
+
+                    var grandTotal = data.Sum(u => u.Price);
+
+                    return Json(new { success = true, data, grandTotal });
+                }
+            }
+            else
+            {
+                if (source == "PurchasedProduct")
+                {
+                    var data = _context.PurchasedProduct
+                                .Include(u => u.Users)
+                                .Include(u => u.ProductVariants)
+                                    .ThenInclude(pv => pv.Product)
+                                        .ThenInclude(p => p.Users)
+                                .Where(u => u.ProductVariants.Product.UsersId == usersId && u.TransactionStatus != "Completed" && (u.PurchasedDate >= dateFrom && u.PurchasedDate <= dateTo))
+                                .Select(u => new
+                                {
+                                    Product = u.ProductVariants.Product.Name ?? u.CustomizationOrders.Model,
+                                    BuyerUsername = u.Users.Username,
+                                    u.Quantity,
+                                    u.PaymentStatus,
+                                    u.Price
+                                })
+                                .ToList();
+
+
+                    var grandTotal = data.Sum(u => u.Price);
+                    return Json(new { success = true, data, grandTotal });
+                }
+                else if (source == "Customization")
+                {
+                    var data = _context.PurchasedProduct
+                                .Include(u => u.Users)
+                                .Include(u => u.ProductVariants)
+                                    .ThenInclude(pv => pv.Product)
+                                        .ThenInclude(p => p.Users)
+                                .Where(u => u.CustomizationOrders.SellersId == usersId && u.TransactionStatus != "Completed" && (u.PurchasedDate >= dateFrom && u.PurchasedDate <= dateTo))
+                                .Select(u => new
+                                {
+                                    Product = u.ProductVariants.Product.Name ?? u.CustomizationOrders.Model,
+                                    BuyerUsername = u.Users.Username,
+                                    u.Quantity,
+                                    u.PaymentStatus,
+                                    u.Price
+                                })
+                                .ToList();
+
+                    var grandTotal = data.Sum(u => u.Price);
+
+                    return Json(new { success = true, data, grandTotal });
+                }
+                else
+                {
+                    var data = _context.PurchasedProduct
+                                .Include(u => u.Users)
+                                .Include(u => u.ProductVariants)
+                                    .ThenInclude(pv => pv.Product)
+                                        .ThenInclude(p => p.Users)
+                                .Where(u => (u.ProductVariants.Product.UsersId == usersId || u.CustomizationOrders.SellersId == usersId) && u.TransactionStatus != "Completed" && (u.PurchasedDate >= dateFrom && u.PurchasedDate <= dateTo))
+                                .Select(u => new
+                                {
+                                    Product = u.ProductVariants.Product.Name ?? u.CustomizationOrders.Model,
+                                    BuyerUsername = u.Users.Username,
+                                    u.Quantity,
+                                    u.PaymentStatus,
+                                    u.Price
+                                })
+                                .ToList();
+
+
+                    var grandTotal = data.Sum(u => u.Price);
+                    return Json(new { success = true, data, grandTotal });
+                }
+            }
+        }
         public IActionResult Reports()
         {
-            return View();
+            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            var data = _context.Users.Include(u => u.UserDetails).Where(u => u.Id == usersId).FirstOrDefault();
+            return View(data);
         }
         public IActionResult StoreSettings()
         {
