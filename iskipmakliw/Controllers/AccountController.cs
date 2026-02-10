@@ -38,12 +38,20 @@ namespace iskipmakliw.Controllers
 
             if (user != null)
             {
+
                 var payments = _context.Payments.Where(p => p.UsersId == user.Id).OrderByDescending(p => p.Id).FirstOrDefault();
                 var hasher = new PasswordHasher<Users>();
                 var result = hasher.VerifyHashedPassword(user, user.Password, users.Password);
 
                 if (result == PasswordVerificationResult.Success)
                 {
+
+                    if (!user.IsEmailVerified)
+                    {
+                        TempData["Email"] = user.Email;
+                        TempData["Error"] = "Please verify your email before logging in.";
+                        return RedirectToAction("VerifyEmail", "Index");
+                    }
                     var claims = new List<Claim>
                 {
                     new Claim("UsersId", user.Id.ToString()),
@@ -77,6 +85,7 @@ namespace iskipmakliw.Controllers
                             return RedirectToAction("Index", "Rider");
                     }
                 }
+
             }
 
             TempData["Error"] = "Invalid username or password";
