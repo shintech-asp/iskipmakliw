@@ -11,7 +11,10 @@
         public DateTime DateCreated { get; set; } = DateTime.Now;
         public DateTime? DateArchived { get; set; }
         public DateTime? DateModified { get; set; }
-
+        public bool IsEmailVerified { get; set; } = false;
+        public string VerificationCode { get; set; }
+        public DateTime? CodeCreatedAt { get; set; }
+        public DateTime? LastCodeSentAt { get; set; }
         public ICollection<Billings>? Billings { get; set; }
         public ICollection<Payments>? Payments { get; set; }
         public ICollection<Product>? Product { get; set; }

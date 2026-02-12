@@ -250,11 +250,15 @@ else
                 </div>
                 <!-- Actions -->
                 <div class="d-grid gap-2">
-                    @if(selectedChat.CustomizationOrders?.SellerStatus != "Approved")
+                @if (selectedChat.CustomizationOrders?.SellerStatus != "Approved")
                     {
-                        <button id="ApproveOrder" data-id="@selectedChat.CustomizationOrdersId" type="button" class="btn btn-outline-primary">
-                            <i class="bi bi-check-circle me-2"></i>Approve order
-                        </button>
+                        @if (selectedChat.CustomizationOrders?.TransactionStatus != "Cancelled")
+                        {
+                            <button id="ApproveOrder" data-id="@selectedChat.CustomizationOrdersId" type="button" class="btn btn-outline-primary">
+                                <i class="bi bi-check-circle me-2"></i>Approve order
+                            </button>
+                        }
+                        
                     }
                     else if (selectedChat.CustomizationOrders?.Price == null)
                     {
@@ -287,6 +291,10 @@ else
                         <button id="CancelOrder" data-id="@selectedChat.CustomizationOrdersId" type="button" class="btn btn-outline-danger">
                             <i class="bi bi-flag me-2"></i>Cancel order
                         </button>
+                    }
+                    @if (selectedChat.CustomizationOrders?.TransactionStatus == "Cancelled")
+                    {
+                        <p class="">Reason:<span class="fst-italic text-danger">@selectedChat.CustomizationOrders?.CancellationReason</span></p>
                     }
                 </div>
             </div>

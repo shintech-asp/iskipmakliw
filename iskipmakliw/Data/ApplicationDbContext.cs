@@ -22,6 +22,7 @@ namespace iskipmakliw.Data
         public DbSet<Ratings> Ratings { get; set; }
         public DbSet<CustomizationChat> CustomizationChat { get; set; }
         public DbSet<CustomizationOrders> CustomizationOrders { get; set; }
+        public DbSet<ProductModel> ProductModel { get; set; }
         public DbSet<VehicleImages>? VehicleImages { get; set; }
 
         public void UpdateExpiredSubscriptionsOnStartup()

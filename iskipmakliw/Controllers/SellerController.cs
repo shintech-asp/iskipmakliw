@@ -1,6 +1,8 @@
 ﻿using iskipmakliw.Data;
 using iskipmakliw.Models;
+using iskipmakliw.Models.DTO;
 using iskipmakliw.Models.ViewModels;
+using iskipmakliw.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,9 +17,15 @@ namespace iskipmakliw.Controllers
     public class SellerController : Controller
     {
         ApplicationDbContext _context;
-        public SellerController(ApplicationDbContext context)
+        private readonly MeshyService _meshyService;
+        private readonly IWebHostEnvironment _environment; 
+        private const string KEY_TASK_ID = "Meshy_TaskId";
+        private const string KEY_IS_MULTI = "Meshy_IsMulti";
+        public SellerController(MeshyService meshyService, ApplicationDbContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
+            _meshyService = meshyService;
         }
         public IActionResult Search(string query)
         {
@@ -182,10 +190,13 @@ namespace iskipmakliw.Controllers
 
             return Json(new { success = true });
         }
-        public IActionResult Cancel3d(int Id)
+        public IActionResult Cancel3d(int Id, string Reason)
         {
             var data = _context.CustomizationOrders.Find(Id);
             data.TransactionStatus = "Cancelled";
+            data.SellerStatus = "Cancelled";
+            data.PaymentStatus = "Cancelled";
+            data.CancellationReason = Reason;
             _context.CustomizationOrders.Update(data);
             _context.SaveChanges();
 
@@ -234,6 +245,17 @@ namespace iskipmakliw.Controllers
                 .OrderBy(c => c.DateSent)
                 .ToList();
 
+            var data = _context.CustomizationChat
+                .Where(c => c.CustomizationOrdersId == orderId).ToList();
+            foreach (var data2 in data)
+            {
+                if (data2.IsFromBuyer)
+                {
+                    data2.DateReceived = DateTime.Now;
+                    _context.CustomizationChat.Update(data2);
+                    _context.SaveChanges();
+                }
+            }
             return PartialView("_ChatConversationPartial", messages);
         }
         public IActionResult Chat()
@@ -245,6 +267,7 @@ namespace iskipmakliw.Controllers
                         .Include(u => u.Sellers)
                             .ThenInclude(u => u.UserDetails)
                         .Where(u => u.SellersId == usersId)
+                .OrderByDescending(c => c.DateSent)
                         .ToList();
             return View(data);
         }
@@ -294,6 +317,9 @@ namespace iskipmakliw.Controllers
         public IActionResult ProductEdit(ProductVariants product, string ButtonType, int Id)
         {
             ModelState.Remove("Product");
+            ModelState.Remove("PurchasedProduct");
+            ModelState.Remove("Ratings");
+            ModelState.Remove("Carts");
             if (ModelState.IsValid)
             {
                 if(ButtonType == "Save")
@@ -308,6 +334,8 @@ namespace iskipmakliw.Controllers
                         existing.Dimension = product.Dimension;
                         existing.Color = product.Color;
                         existing.Price = product.Price;
+                        existing.Unit = product.Unit;
+                        existing.DiscountType = product.DiscountType;
                         existing.Quantity = product.Quantity;
                         existing.Discount = product.Discount;
 
@@ -335,6 +363,7 @@ namespace iskipmakliw.Controllers
             var productVar = _context.ProductVariants
                         .Include(v => v.Product)
                         .FirstOrDefault(v => v.Id == Id);
+            TempData["Error"] = "Please fill out all the required fields";
             return View(productVar);
         }
         public IActionResult ProductList()
@@ -394,6 +423,8 @@ namespace iskipmakliw.Controllers
                         Dimension = model.ProductDetails.Dimension,
                         Color = model.ProductDetails.Color,
                         Price = model.ProductDetails.Price,
+                        Unit = model.ProductDetails.Unit,
+                        DiscountType = model.ProductDetails.DiscountType,
                         Quantity = model.ProductDetails.Quantity,
                         Discount = model.ProductDetails.Discount
                     };
@@ -407,6 +438,8 @@ namespace iskipmakliw.Controllers
                     productVariant.Material = model.ProductDetails.Material;
                     productVariant.Dimension = model.ProductDetails.Dimension;
                     productVariant.Color = model.ProductDetails.Color;
+                    productVariant.Unit = model.ProductDetails.Unit;
+                    productVariant.DiscountType = model.ProductDetails.DiscountType;
                     productVariant.Price = model.ProductDetails.Price;
                     productVariant.Quantity = model.ProductDetails.Quantity;
                     productVariant.Discount = model.ProductDetails.Discount;
@@ -446,9 +479,152 @@ namespace iskipmakliw.Controllers
         {
             return View();
         }
+        public IActionResult GenerateCompletedPurchasedProduct(string source, string status, DateTime dateFrom, DateTime dateTo)
+        {
+            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            if(status == "Completed")
+            {
+                if (source == "PurchasedProduct")
+                {
+                    var data = _context.PurchasedProduct
+                                .Include(u => u.Users)
+                                .Include(u => u.ProductVariants)
+                                    .ThenInclude(pv => pv.Product)
+                                        .ThenInclude(p => p.Users)
+                                .Where(u => u.ProductVariants.Product.UsersId == usersId && u.TransactionStatus == "Completed" && (u.PurchasedDate >= dateFrom && u.PurchasedDate <= dateTo))
+                                .Select(u => new
+                                {
+                                    Product = u.ProductVariants.Product.Name ?? u.CustomizationOrders.Model,
+                                    BuyerUsername = u.Users.Username,
+                                    u.Quantity,
+                                    u.PaymentStatus,
+                                    u.Price
+                                })
+                                .ToList();
+                    var grandTotal = data.Sum(u => u.Price);
+
+                    return Json(new { success = true, data, grandTotal });
+                }
+                else if (source == "Customization")
+                {
+                    var data = _context.PurchasedProduct
+                                .Include(u => u.Users)
+                                .Include(u => u.ProductVariants)
+                                    .ThenInclude(pv => pv.Product)
+                                        .ThenInclude(p => p.Users)
+                                .Where(u => u.CustomizationOrders.SellersId == usersId && u.TransactionStatus == "Completed" && (u.PurchasedDate >= dateFrom && u.PurchasedDate <= dateTo))
+                                .Select(u => new
+                                {
+                                    Product = u.ProductVariants.Product.Name ?? u.CustomizationOrders.Model,
+                                    BuyerUsername = u.Users.Username,
+                                    u.Quantity,
+                                    u.PaymentStatus,
+                                    u.Price
+                                })
+                                .ToList();
+
+                    var grandTotal = data.Sum(u => u.Price);
+
+                    return Json(new { success = true, data, grandTotal });
+                }
+                else
+                {
+                    var data = _context.PurchasedProduct
+                                .Include(u => u.Users)
+                                .Include(u => u.ProductVariants)
+                                    .ThenInclude(pv => pv.Product)
+                                        .ThenInclude(p => p.Users)
+                                .Where(u => (u.ProductVariants.Product.UsersId == usersId || u.CustomizationOrders.SellersId == usersId) && u.TransactionStatus == "Completed" && (u.PurchasedDate >= dateFrom && u.PurchasedDate <= dateTo))
+                                .Select(u => new
+                                {
+                                    Product = u.ProductVariants.Product.Name ?? u.CustomizationOrders.Model,
+                                    BuyerUsername = u.Users.Username,
+                                    u.Quantity,
+                                    u.PaymentStatus,
+                                    u.Price
+                                })
+                                .ToList();
+
+                    var grandTotal = data.Sum(u => u.Price);
+
+                    return Json(new { success = true, data, grandTotal });
+                }
+            }
+            else
+            {
+                if (source == "PurchasedProduct")
+                {
+                    var data = _context.PurchasedProduct
+                                .Include(u => u.Users)
+                                .Include(u => u.ProductVariants)
+                                    .ThenInclude(pv => pv.Product)
+                                        .ThenInclude(p => p.Users)
+                                .Where(u => u.ProductVariants.Product.UsersId == usersId && u.TransactionStatus != "Completed" && (u.PurchasedDate >= dateFrom && u.PurchasedDate <= dateTo))
+                                .Select(u => new
+                                {
+                                    Product = u.ProductVariants.Product.Name ?? u.CustomizationOrders.Model,
+                                    BuyerUsername = u.Users.Username,
+                                    u.Quantity,
+                                    u.PaymentStatus,
+                                    u.Price
+                                })
+                                .ToList();
+
+
+                    var grandTotal = data.Sum(u => u.Price);
+                    return Json(new { success = true, data, grandTotal });
+                }
+                else if (source == "Customization")
+                {
+                    var data = _context.PurchasedProduct
+                                .Include(u => u.Users)
+                                .Include(u => u.ProductVariants)
+                                    .ThenInclude(pv => pv.Product)
+                                        .ThenInclude(p => p.Users)
+                                .Where(u => u.CustomizationOrders.SellersId == usersId && u.TransactionStatus != "Completed" && (u.PurchasedDate >= dateFrom && u.PurchasedDate <= dateTo))
+                                .Select(u => new
+                                {
+                                    Product = u.ProductVariants.Product.Name ?? u.CustomizationOrders.Model,
+                                    BuyerUsername = u.Users.Username,
+                                    u.Quantity,
+                                    u.PaymentStatus,
+                                    u.Price
+                                })
+                                .ToList();
+
+                    var grandTotal = data.Sum(u => u.Price);
+
+                    return Json(new { success = true, data, grandTotal });
+                }
+                else
+                {
+                    var data = _context.PurchasedProduct
+                                .Include(u => u.Users)
+                                .Include(u => u.ProductVariants)
+                                    .ThenInclude(pv => pv.Product)
+                                        .ThenInclude(p => p.Users)
+                                .Where(u => (u.ProductVariants.Product.UsersId == usersId || u.CustomizationOrders.SellersId == usersId) && u.TransactionStatus != "Completed" && (u.PurchasedDate >= dateFrom && u.PurchasedDate <= dateTo))
+                                .Select(u => new
+                                {
+                                    Product = u.ProductVariants.Product.Name ?? u.CustomizationOrders.Model,
+                                    BuyerUsername = u.Users.Username,
+                                    u.Quantity,
+                                    u.PaymentStatus,
+                                    u.Price
+                                })
+                                .ToList();
+
+
+                    var grandTotal = data.Sum(u => u.Price);
+                    return Json(new { success = true, data, grandTotal });
+                }
+            }
+        }
         public IActionResult Reports()
         {
-            return View();
+            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            var data = _context.Users.Include(u => u.UserDetails).Where(u => u.Id == usersId).FirstOrDefault();
+            return View(data);
         }
         public IActionResult StoreSettings()
         {
@@ -564,6 +740,203 @@ namespace iskipmakliw.Controllers
                 DeliverProduct = toDeliver
             };
             return View(order);
+        }
+        [HttpPost]
+        public async Task<IActionResult> UploadImage(List<IFormFile> imageFiles, string mode)
+        {
+            try
+            {
+                if (imageFiles == null || imageFiles.Count == 0)
+                    return Json(new { success = false, message = "Please select at least one image." });
+
+                var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                    { ".jpg", ".jpeg", ".png", ".webp" };
+
+                foreach (var file in imageFiles)
+                {
+                    var ext = Path.GetExtension(file.FileName);
+                    if (!allowed.Contains(ext))
+                        return Json(new { success = false, message = $"'{file.FileName}' is not allowed. Use JPG, PNG or WEBP." });
+                }
+
+                bool isMulti = mode == "multi";
+
+                if (isMulti && (imageFiles.Count < 2 || imageFiles.Count > 4))
+                    return Json(new { success = false, message = "Multi-image mode requires 2 to 4 images." });
+
+                if (!isMulti && imageFiles.Count != 1)
+                    return Json(new { success = false, message = "Single-image mode requires exactly 1 image." });
+
+                MeshyApiResponse result = isMulti
+                    ? await _meshyService.CreateMultiImageTo3DTask(imageFiles)
+                    : await _meshyService.CreateSingleImageTo3DTask(imageFiles[0]);
+
+                HttpContext.Session.SetString(KEY_TASK_ID, result.Id);
+                HttpContext.Session.SetString(KEY_IS_MULTI, isMulti.ToString());
+
+                return Json(new
+                {
+                    success = true,
+                    taskId = result.Id,
+                    isMulti = isMulti,
+                    message = "3D generation started successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // ─── POLL STATUS ────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> CheckStatus(string taskId, bool isMulti)
+        {
+            try
+            {
+                var status = await _meshyService.GetTaskStatus(taskId, isMulti);
+
+                return Json(new
+                {
+                    success = true,
+                    status = status.Status,
+                    progress = status.Progress,
+                    modelUrl = status.ModelUrl,
+                    thumbnailUrl = status.ThumbnailUrl
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // ─── RESUME ─────────────────────────────────────────────────────
+        [HttpGet]
+        public IActionResult GetActiveTask()
+        {
+            var taskId = HttpContext.Session.GetString(KEY_TASK_ID);
+            var isMulti = HttpContext.Session.GetString(KEY_IS_MULTI);
+
+            if (string.IsNullOrEmpty(taskId))
+                return Json(new { hasActiveTask = false });
+
+            return Json(new
+            {
+                hasActiveTask = true,
+                taskId = taskId,
+                isMulti = bool.Parse(isMulti ?? "false")
+            });
+        }
+
+        // ─── CLEAR SESSION ──────────────────────────────────────────────
+        [HttpPost]
+        public IActionResult ClearActiveTask()
+        {
+            HttpContext.Session.Remove(KEY_TASK_ID);
+            HttpContext.Session.Remove(KEY_IS_MULTI);
+            return Json(new { success = true });
+        }
+        [HttpGet]
+        public async Task<IActionResult> ProxyModel(string url)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(url))
+                    return BadRequest("url parameter is required.");
+
+                var bytes = await _meshyService.DownloadModel(url);
+                return File(bytes, "application/octet-stream");
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Proxy failed: {ex.Message}" });
+            }
+        }
+
+        // ─── SAVE ───────────────────────────────────────────────────────
+        [HttpPost]
+        public async Task<IActionResult> SaveModel(string modelUrl, string fileName, string modelName)
+        {
+            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            try
+            {
+                if (string.IsNullOrEmpty(modelUrl))
+                    return Json(new { success = false, message = "Model URL is required." });
+
+                var modelBytes = await _meshyService.DownloadModel(modelUrl);
+
+                var dir = Path.Combine(_environment.WebRootPath, "3dModel");
+                Directory.CreateDirectory(dir);
+
+                if (string.IsNullOrWhiteSpace(fileName))
+                    fileName = $"model_{DateTime.Now:yyyyMMddHHmmss}";
+
+                if (!fileName.EndsWith(".glb", StringComparison.OrdinalIgnoreCase))
+                    fileName += ".glb";
+
+                await System.IO.File.WriteAllBytesAsync(Path.Combine(dir, fileName), modelBytes);
+
+                HttpContext.Session.Remove(KEY_TASK_ID);
+                HttpContext.Session.Remove(KEY_IS_MULTI);
+
+                var productModel = new ProductModel
+                {
+                    ModelName = modelName,
+                    ImagePath = $"/3dModel/{fileName}",
+                    UsersId = usersId,
+                    isActive = true
+                };
+                _context.ProductModel.Add(productModel);
+                _context.SaveChanges();
+                return Json(new
+                {
+                    success = true,
+                    message = "Model saved successfully",
+                    filePath = $"/3dModel/{fileName}",
+                    fileName = fileName
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // ─── LIST SAVED ─────────────────────────────────────────────────
+        [HttpGet]
+        public IActionResult GetSavedModels()
+        {
+            int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
+            try
+            {
+                var data = _context.ProductModel.Where(u => u.UsersId == usersId).ToList(); 
+
+                return Json(new { success = true, data });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult SubmitChangesEditModels(int editModelId, string editModelName, bool editModelActive)
+        {
+            try
+            {
+                var data = _context.ProductModel.Where(u => u.Id == editModelId).FirstOrDefault();
+
+                data.ModelName = editModelName;
+                data.isActive = editModelActive;
+                _context.ProductModel.Update(data);
+                _context.SaveChanges();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 }

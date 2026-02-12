@@ -262,6 +262,10 @@ else
                             <i class="bi bi-flag me-2"></i>Cancel order
                         </button>
                     }
+                    @if (selectedChat.CustomizationOrders?.TransactionStatus == "Cancelled")
+                    {
+                        <p class="">Reason:<span class="fst-italic text-danger">@selectedChat.CustomizationOrders?.CancellationReason</span></p>
+                    }
                 </div>
             </div>
         </div>

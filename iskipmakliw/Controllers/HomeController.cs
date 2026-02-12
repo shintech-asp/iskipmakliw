@@ -171,12 +171,13 @@ namespace iskipmakliw.Controllers
             ViewBag.IsPaymentMethod = isPaymentMethod;
             return View(data);
         }
-        public IActionResult Cancel3d(int Id)
+        public IActionResult Cancel3d(int Id, string Reason)
         {
             var data = _context.CustomizationOrders.Find(Id);
             data.TransactionStatus = "Cancelled";
             data.SellerStatus = "Cancelled";
             data.PaymentStatus = "Cancelled";
+            data.CancellationReason = Reason;
             _context.CustomizationOrders.Update(data);
             _context.SaveChanges();
 
@@ -232,7 +233,6 @@ namespace iskipmakliw.Controllers
 
             var billings = _context.Billings.Where(u => u.UsersId == usersId).ToList();
             var paymentMethods = _context.PaymentMethod.Where(u => u.UsersId == usersId).ToList();
-
             var cartViewModel = new CartViewModel
             {
                 Cart = groupedCart,
@@ -381,12 +381,13 @@ namespace iskipmakliw.Controllers
         public IActionResult Customization(int Id)
         {
             ViewBag.Id = Id;
-            return View();
+            var sellerModels = _context.ProductModel.Where(u => u.UsersId == Id).ToList();
+            return View(sellerModels);
         }
         [HttpPost]
-        public IActionResult Customization(int Id,string Model, string color, string texture, string scale, string width, string height)
+        public IActionResult Customization(int Id, string Model, string color, string texture, string scale, string width, string height)
         {
-            if(Model != null)
+            if (!string.IsNullOrEmpty(Model))
             {
                 var submitCustomization = new CustomizationOrders
                 {
@@ -402,6 +403,7 @@ namespace iskipmakliw.Controllers
                 };
                 _context.CustomizationOrders.Add(submitCustomization);
                 _context.SaveChanges();
+
                 var CustomizationChat = new CustomizationChat
                 {
                     UsersId = int.Parse(User.FindFirst("UsersId").Value),
@@ -412,13 +414,16 @@ namespace iskipmakliw.Controllers
                 };
                 _context.CustomizationChat.Add(CustomizationChat);
                 _context.SaveChanges();
-                TempData["Success"] = "Customization order submitted!";
-            }else
-            {
-                TempData["Error"] = "Please select your base model";
+
+                return Json(new { success = true, message = "Customization saved successfully!" });
             }
-            return View();
+            else
+            {
+                return Json(new { success = false, message = "Please select your base model." });
+            }
         }
+
+
         [HttpPost]
         public IActionResult SendMessage(int Id, string Message)
         {
@@ -454,6 +459,8 @@ namespace iskipmakliw.Controllers
 
         public IActionResult LoadChatPartial(int orderId)
         {
+            var usersId = int.Parse(User.FindFirst("UsersId").Value);
+
             var messages = _context.CustomizationChat
                 .Where(c => c.CustomizationOrdersId == orderId)
                 .Include(c => c.CustomizationOrders)
@@ -465,6 +472,17 @@ namespace iskipmakliw.Controllers
                 .OrderBy(c => c.DateSent)
                 .ToList();
 
+            var data = _context.CustomizationChat
+                .Where(c => c.CustomizationOrdersId == orderId).ToList();
+            foreach(var data2 in data)
+            {
+                if (!data2.IsFromBuyer)
+                {
+                    data2.DateReceived = DateTime.Now;
+                    _context.CustomizationChat.Update(data2);
+                    _context.SaveChanges();
+                }
+            }
             return PartialView("_ChatConversationPartial", messages);
         }
         public IActionResult Chat()
@@ -476,6 +494,7 @@ namespace iskipmakliw.Controllers
                         .Include(u => u.Sellers)
                             .ThenInclude(u => u.UserDetails)
                         .Where(u => u.UsersId == usersId)
+                .OrderByDescending(c => c.DateSent)
                         .ToList();
             return View(data);
         }
@@ -655,7 +674,9 @@ namespace iskipmakliw.Controllers
                 Id = v.Id,
                 Color = v.Color,
                 Size = v.Dimension,
+                Unit = v.Unit,
                 Price = v.Price,
+                DiscountType = v.DiscountType,
                 Stock = v.Quantity,
                 ProductImage = v.ProductImage,
                 Discount = v.Discount

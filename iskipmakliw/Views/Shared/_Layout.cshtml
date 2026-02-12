@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@{
+    bool hideChrome = ViewBag.HideChrome ?? false;
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -93,105 +96,113 @@
             </div>
         </div>
     </div>
-    <!--  END LOADER -->
-    <!--  BEGIN NAVBAR  -->
-    <div class="header-container container-xxl">
-        <header class="header navbar navbar-expand-sm expand-header">
+    @if (!hideChrome)
+    {
 
-            <a href="javascript:void(0);" class="sidebarCollapse">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            </a>
+        <!--  END LOADER -->
+        <!--  BEGIN NAVBAR  -->
+        <div class="header-container container-xxl">
+            <header class="header navbar navbar-expand-sm expand-header">
 
-
-            <ul class="navbar-item flex-row ms-lg-auto ms-0">
-
-
-                
-
-                @if (User.IsInRole("Admin"))
-                {
-                    @await Html.PartialAsync("_OptionsAdmin")
-                }
-                else
-                {
-                    @await Html.PartialAsync("_OptionsClient")
-                }
-            </ul>
-        </header>
-    </div>
-    <!--  END NAVBAR  -->
-    <!--  BEGIN MAIN CONTAINER  -->
-    <div class="main-container " id="container">
-
-        <div class="overlay"></div>
-        <div class="search-overlay"></div>
-
-        <!--  BEGIN SIDEBAR  -->
-        <div class="sidebar-wrapper sidebar-theme">
-
-            <nav id="sidebar">
-                <div class="navbar-nav theme-brand flex-row text-center">
-                    <div class="nav-logo">
-                        <div class="nav-item theme-logo">
-                            <a href="#">
-                                <img src="@Url.Content("~/src/assets/img/OakMartPNG.png")" alt="OakMart Logo">
-                            </a>
-                        </div>
-                        <div class="nav-item theme-text">
-                            <a href="#" class="nav-link"> OakMart </a>
-                        </div>
-                    </div>
-                    <div class="nav-item sidebar-toggle">
-                        <div class="btn-toggle sidebarCollapse">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-left">
-                                <polyline points="11 17 6 12 11 7"></polyline>
-                                <polyline points="18 17 13 12 18 7"></polyline>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="shadow-bottom"></div>
-                @if (User.IsInRole("Admin"))
-                {
-                    @await Html.PartialAsync("_AdminNav")
-                }
-                else
-                {
-                    @await Html.PartialAsync("_ClientNav")
-                }
-            </nav>
+                <a href="javascript:void(0);" class="sidebarCollapse">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </a>
 
 
+                <ul class="navbar-item flex-row ms-lg-auto ms-0">
+
+
+
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        @await Html.PartialAsync("_OptionsAdmin")
+                    }
+                    else
+                    {
+                        @await Html.PartialAsync("_OptionsClient")
+                    }
+                </ul>
+            </header>
         </div>
-        <!--  END SIDEBAR  -->
-        <!--  BEGIN CONTENT AREA  -->
-        <div id="content" class="main-content">
-            <div class="layout-px-spacing">
+        <!--  END NAVBAR  -->
+        <!--  BEGIN MAIN CONTAINER  -->
+        <div class="main-container " id="container">
 
-                <div class="middle-content container-xxl p-0">
+            <div class="overlay"></div>
+            <div class="search-overlay"></div>
 
-                    @RenderBody()
+            <!--  BEGIN SIDEBAR  -->
+            <div class="sidebar-wrapper sidebar-theme">
 
-                </div>
+                <nav id="sidebar">
+                    <div class="navbar-nav theme-brand flex-row text-center">
+                        <div class="nav-logo">
+                            <div class="nav-item theme-logo">
+                                <a href="#">
+                                    <img src="@Url.Content("~/src/assets/img/OakMartPNG.png")" alt="OakMart Logo">
+                                </a>
+                            </div>
+                            <div class="nav-item theme-text">
+                                <a href="#" class="nav-link"> OakMart </a>
+                            </div>
+                        </div>
+                        <div class="nav-item sidebar-toggle">
+                            <div class="btn-toggle sidebarCollapse">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-left">
+                                    <polyline points="11 17 6 12 11 7"></polyline>
+                                    <polyline points="18 17 13 12 18 7"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="shadow-bottom"></div>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        @await Html.PartialAsync("_AdminNav")
+                    }
+                    else
+                    {
+                        @await Html.PartialAsync("_ClientNav")
+                    }
+                </nav>
+
 
             </div>
-            <!--  BEGIN FOOTER  -->
-            <div class="footer-wrapper">
-                <div class="footer-section f-section-1">
-                    <p class="">Copyright © <span class="dynamic-year">2025</span> OakMart, All rights reserved.</p>
+            <!--  END SIDEBAR  -->
+            <!--  BEGIN CONTENT AREA  -->
+            <div id="content" class="main-content">
+                <div class="layout-px-spacing">
+
+                    <div class="middle-content container-xxl p-0">
+
+                        @RenderBody()
+
+                    </div>
+
                 </div>
-                <div class="footer-section f-section-2">
-                    <p class="">Coded with <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></p>
+                <!--  BEGIN FOOTER  -->
+                <div class="footer-wrapper">
+                    <div class="footer-section f-section-1">
+                        <p class="">Copyright © <span class="dynamic-year">2025</span> OakMart, All rights reserved.</p>
+                    </div>
+                    <div class="footer-section f-section-2">
+                        <p class="">Coded with <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></p>
+                    </div>
                 </div>
+                <!--  END CONTENT AREA  -->
             </div>
             <!--  END CONTENT AREA  -->
-        </div>
-        <!--  END CONTENT AREA  -->
 
-    </div>
-    <!-- END MAIN CONTAINER -->
-    <!-- GLOBAL MANDATORY SCRIPTS -->
+        </div>
+        <!-- END MAIN CONTAINER -->
+        <!-- GLOBAL MANDATORY SCRIPTS -->
+    }
+    else
+    {
+        @RenderBody()
+    }
     <script src="~/src/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/src/plugins/src/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script src="~/src/plugins/src/mousetrap/mousetrap.min.js"></script>

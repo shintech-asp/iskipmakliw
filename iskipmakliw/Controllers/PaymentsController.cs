@@ -77,7 +77,7 @@ namespace iskipmakliw.Controllers
             return Redirect(checkoutUrl);
         }
         [HttpPost]
-        public async Task<IActionResult> PayProduct(List<int> cartSelect, string paymentMethod, int? paymentMethodOnline, int billings)
+        public async Task<IActionResult> PayProduct(List<int> cartSelect, string paymentMethod, int? paymentMethodOnline, int billings, int shippingFee)
         {
             if (paymentMethodOnline != null && billings != null)
             {
@@ -123,11 +123,11 @@ namespace iskipmakliw.Controllers
                     if (discount != null)
                     {
                         discountedPrice = price - (price * discount / 100);
-                        total = discountedPrice + 50;
+                        total = discountedPrice;
                     }
                     else
                     {
-                        total = price + 50;
+                        total = price;
                     }
 
                     totalAmount += total;
@@ -147,7 +147,8 @@ namespace iskipmakliw.Controllers
                     User.FindFirst(ClaimTypes.Email)?.Value ?? "guest@example.com",
                     paymentMethodData.Number,
                     productDetails,
-                    paymentMethodData.Type
+                    paymentMethodData.Type,
+                    shippingFee
                 );
 
                 dynamic session = JsonConvert.DeserializeObject(sessionJson);
@@ -162,6 +163,7 @@ namespace iskipmakliw.Controllers
 
                 // ✅ Save for later validation
                 TempData["CartIds"] = string.Join(",", cartSelect);
+                TempData["ShippingFee"] = shippingFee;
                 TempData["BillingsId"] = billings;
                 TempData["SessionId"] = sessionId;
                 TempData["PaymentMethod"] = "Online";

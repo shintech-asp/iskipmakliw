@@ -29,6 +29,8 @@
                                 <tbody id="cartBody">
                                     @if (Model.Cart.Any())
                                     {
+
+                                        <input type="hidden" name="shippingFee" id="shippingPayment" />
                                         @foreach (var shopGroup in Model.Cart)
                                         {
                                             <tr class="table-secondary">
@@ -44,8 +46,16 @@
                                                 double? total;
                                                 if (discount != null)
                                                 {
-                                                    discountedPrice = price - (price * discount / 100);
-                                                    total = discountedPrice * quantity;
+                                                    if(item.ProductVariants.DiscountType == "Peso")
+                                                    {
+                                                        discountedPrice = price - discount;
+                                                        total = discountedPrice * quantity;
+                                                    }
+                                                    else
+                                                    {
+                                                        discountedPrice = price - (price * discount / 100);
+                                                        total = discountedPrice * quantity;
+                                                    }
                                                 }
                                                 else
                                                 {
@@ -55,7 +65,9 @@
 
                                                 <tr class="cart-item"
                                                     data-price="@discountedPrice"
-                                                    data-id="@item.ProductVariants.Id">
+                                                    data-id="@item.ProductVariants.Id"
+                                                    data-seller-lat="@item.ProductVariants?.Product?.Users?.UserDetails?.Latitude"
+                                                    data-seller-lng="@item.ProductVariants?.Product?.Users?.UserDetails?.Longitude">
                                                     <td class="text-center">
                                                         <input type="checkbox" class="cart-select" name="cartSelect" value="@item.Id"/>
                                                     </td>
@@ -182,14 +194,23 @@
                             @foreach (var data in Model.Billings)
                             {
                                 <div class="form-check mb-3">
-                                    <input class="form-check-input" type="radio" value="@data.Id" name="billings" id="@data.Id" checked>
-                                    <label class="form-check-label w-100" for="@data.Id">
+                                    <input class="form-check-input billing-radio"
+                                           type="radio"
+                                           name="billings"
+                                           id="billing-@data.Id"
+                                           value="@data.Id"
+                                           data-lat="@data.Latitude"
+                                           data-lng="@data.Longitude"
+                                           @(data == Model.Billings.First() ? "checked" : "") />
+
+                                    <label class="form-check-label w-100" for="billing-@data.Id">
                                         <strong>@data.Address</strong><br>
                                         <small>Contact Person: @data.Name</small><br>
                                         <small>Contact Number: @data.ContactNumber</small>
                                     </label>
                                 </div>
                             }
+
                         }
                         else
                         {
@@ -208,6 +229,57 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
+        $("#Quantity").on("change", function(){
+            var id = $(this).data("id");
+            var quantity = $(this).val();
+            $.ajax({
+                url: "/Home/ModifyQuantity",
+                method: "POST",
+                data: {
+                    id: id,
+                    quantity: quantity
+                },
+                success: function(response){
+                    console.log(response)
+                },
+                error: function(xhr){
+                    console.log(xhr.responseText)
+                }
+
+            })
+        })
+        $("#removeBtn").on("click", function(){
+            var id = $(this).data("id");
+            $.ajax({
+                url: "/Home/RemoveCart",
+                method: "POST",
+                data: {
+                    id: id,
+                },
+                success: function(response){
+                    console.log(response)
+                },
+                error: function(xhr){
+                    console.log(xhr.responseText)
+                }
+
+            })
+        })
+                document.addEventListener("keydown", function (e) {
+            // Prevent ENTER from submitting the form
+            if (e.key === "Enter") {
+                e.preventDefault();
+                return false;
+            }
+        });
+                document.querySelectorAll(".quantity").forEach(input => {
+            input.addEventListener("keydown", function (e) {
+                // Block ALL keys except Arrow Up and Arrow Down
+                if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
+                    e.preventDefault();
+                }
+            });
+        });
             const cartCheckboxes = document.querySelectorAll(".cart-select");
             const billingRadios = document.querySelectorAll(".billing-radio");
             const paymentRadios = document.querySelectorAll("input[name='paymentMethod']");
@@ -220,8 +292,6 @@
             const billingInput = document.getElementById("BillingsId");
             const paymentInput = document.getElementById("PaymentMethod");
             const checkoutBtn = document.getElementById("checkoutBtn");
-
-        const shippingFee = 50;
 
         function updateSummary() {
             let subtotal = 0;
@@ -326,57 +396,107 @@
                 });
             });
         });
-        $("#Quantity").on("change", function(){
-            var id = $(this).data("id");
-            var quantity = $(this).val();
-            $.ajax({
-                url: "/Home/ModifyQuantity",
-                method: "POST",
-                data: {
-                    id: id,
-                    quantity: quantity
-                },
-                success: function(response){
-                    console.log(response)
-                },
-                error: function(xhr){
-                    console.log(xhr.responseText)
-                }
+            const RATE_PER_KM = 5;
+        const BASE_FEE = 60;      // first 5 km flat
+        const BASE_DISTANCE = 5;   // km
+        const shippingEl = document.getElementById("shipping");
+        const subtotalEl = document.getElementById("subtotal");
+        const grandTotalEl = document.getElementById("grandTotal");
+        var shippingForm = document.getElementById("shippingPayment");
 
-            })
-        })
-        $("#removeBtn").on("click", function(){
-            var id = $(this).data("id");
-            $.ajax({
-                url: "/Home/RemoveCart",
-                method: "POST",
-                data: {
-                    id: id,
-                },
-                success: function(response){
-                    console.log(response)
-                },
-                error: function(xhr){
-                    console.log(xhr.responseText)
-                }
+        // --- Haversine Distance ---
+        function getDistanceKm(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
 
-            })
-        })
-                document.addEventListener("keydown", function (e) {
-            // Prevent ENTER from submitting the form
-            if (e.key === "Enter") {
-                e.preventDefault();
-                return false;
-            }
-        });
-                document.querySelectorAll(".quantity").forEach(input => {
-            input.addEventListener("keydown", function (e) {
-                // Block ALL keys except Arrow Up and Arrow Down
-                if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
-                    e.preventDefault();
+            const a =
+                Math.sin(dLat / 2) ** 2 +
+                Math.cos(lat1 * Math.PI / 180) *
+                Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) ** 2;
+
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+        }
+
+        // --- Calculate shipping per seller ---
+        function calculateShipping() {
+            const selectedBilling = document.querySelector(".billing-radio:checked");
+            if (!selectedBilling) return 0;
+
+            const buyerLat = parseFloat(selectedBilling.dataset.lat);
+            const buyerLng = parseFloat(selectedBilling.dataset.lng);
+
+            const checkedItems = document.querySelectorAll(".cart-select:checked");
+            const sellerMap = new Map(); // unique sellers only
+
+            checkedItems.forEach(cb => {
+                const row = cb.closest(".cart-item");
+                const lat = row.dataset.sellerLat;
+                const lng = row.dataset.sellerLng;
+
+                if (lat && lng) {
+                    sellerMap.set(`${lat},${lng}`, { lat, lng });
                 }
             });
+
+            let totalShipping = 0;
+
+            sellerMap.forEach(seller => {
+                const distance = getDistanceKm(
+                    buyerLat,
+                    buyerLng,
+                    parseFloat(seller.lat),
+                    parseFloat(seller.lng)
+                );
+
+                // Apply base fee for first 5 km
+                if (distance <= BASE_DISTANCE) {
+                    totalShipping += BASE_FEE;
+                } else {
+                    const extraKm = Math.ceil(distance - BASE_DISTANCE);
+                    totalShipping += BASE_FEE + (extraKm * RATE_PER_KM);
+                }
+            });
+
+            return totalShipping;
+        }
+
+        // --- Update summary ---
+        function updateSummary() {
+            let subtotal = 0;
+
+            document.querySelectorAll(".cart-item").forEach(row => {
+                const checkbox = row.querySelector(".cart-select");
+                const qty = parseInt(row.querySelector(".quantity").value) || 1;
+                const price = parseFloat(row.dataset.price);
+                const total = qty * price;
+
+                row.querySelector(".item-total").textContent = `₱${total.toFixed(2)}`;
+
+                if (checkbox.checked) {
+                    subtotal += total;
+                }
+            });
+
+            const shipping = subtotal > 0 ? calculateShipping() : 0;
+            const grandTotal = subtotal + shipping;
+
+            subtotalEl.textContent = `₱${subtotal.toFixed(2)}`;
+            shippingEl.textContent = `₱${shipping.toFixed(2)}`;
+            grandTotalEl.textContent = `₱${grandTotal.toFixed(2)}`;
+            shippingForm.value = shipping;
+        }
+
+        // --- Events ---
+        document.querySelectorAll(".cart-select, .quantity").forEach(el => {
+            el.addEventListener("change", updateSummary);
         });
 
+        document.querySelectorAll(".billing-radio").forEach(radio => {
+            radio.addEventListener("change", updateSummary);
+        });
+
+        updateSummary(); // initial
     </script>
 }

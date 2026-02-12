@@ -101,34 +101,37 @@
                         <ul class="list-group list-group-flush">
                             @foreach (var chat in Model.GroupBy(c => c.CustomizationOrdersId).Select(g => g.OrderByDescending(x => x.DateSent).First()))
                             {
-                                <li class="list-group-item chat-item px-3 py-3"
-                                    style="cursor: pointer;"
-                                    onclick="loadChat(@chat.CustomizationOrdersId)"
-                                    data-order-id="@chat.CustomizationOrdersId">
-                                    <div class="d-flex align-items-start gap-2">
-                                        <div class="position-relative">
-                                            <img src="~/src/assets/img/user-profile.jpeg"
-                                                 class="rounded-circle"
-                                                 style="width:48px; height:48px; object-fit:cover; border: 3px solid #667eea;" />
-                                            <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-success"
-                                                  style="width: 12px; height: 12px; padding: 0; border: 2px solid white;"></span>
-                                        </div>
-                                        <div class="flex-grow-1 overflow-hidden">
-                                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                                <h6 class="mb-0 fw-semibold text-black">@chat.Sellers?.Username</h6>
-                                                <small class="text-muted">@chat.DateSent.ToString("MMM dd")</small>
+                                {
+                                    var color = chat.DateReceived == null ? "bg-light-primary" : "";
+                                    <li class="list-group-item chat-item px-3 py-3 @color"
+                                        style="cursor: pointer;"
+                                        onclick="loadChat(@chat.CustomizationOrdersId)"
+                                        data-order-id="@chat.CustomizationOrdersId">
+                                        <div class="d-flex align-items-start gap-2">
+                                            <div class="position-relative">
+                                                <img src="~/src/assets/img/user-profile.jpeg"
+                                                     class="rounded-circle"
+                                                     style="width:48px; height:48px; object-fit:cover; border: 3px solid #667eea;" />
+                                                <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-success"
+                                                      style="width: 12px; height: 12px; padding: 0; border: 2px solid white;"></span>
                                             </div>
-                                            <p class="mb-0 small text-muted text-truncate">
-                                                @(chat.Message.Length > 40 ? chat.Message.Substring(0, 40) + "..." : chat.Message)
-                                            </p>
-                                            <div class="mt-1 text-end">
-                                                <span class="badge bg-light text-dark small">
-                                                    @chat.DateSent.ToString("hh: mm tt")
-                                                </span>
+                                            <div class="flex-grow-1 overflow-hidden">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <h6 class="mb-0 fw-semibold text-black">@chat.Sellers?.Username</h6>
+                                                    <small class="text-muted">@chat.DateSent.ToString("MMM dd")</small>
+                                                </div>
+                                                <p class="mb-0 small text-muted text-truncate">
+                                                    @(chat.Message.Length > 40 ? chat.Message.Substring(0, 40) + "..." : chat.Message)
+                                                </p>
+                                                <div class="mt-1 text-end">
+                                                    <span class="badge bg-light text-dark small">
+                                                        @chat.DateSent.ToString("hh: mm tt")
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </li>
+                                    </li>
+                                }
                             }
                         </ul>
                     }
@@ -168,46 +171,109 @@
             });
         });
 
-        $("#chatArea").on("click", "#CancelOrder", function(){
-            const orderId = $(this).data("id")
-            console.log("Cancel clicked");
+                $("#chatArea").on("click", "#CancelOrder", function () {
+            const orderId = $(this).data("id");
+
             Swal.fire({
-                title: "Cancel Order?",
-                text: "Are you sure you want to cancel this order?",
-                icon: "question",
+                title: "Cancel Order",
+                html: `
+                    <h5 class="text-start">Cancellation Reason:</h5>
+                    <div style="text-align:left;">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Out of stock">
+                            <label class="form-check-label">Out of stock</label>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Cancelled by buyer request">
+                            <label class="form-check-label">Cancelled by buyer request</label>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Pricing error">
+                            <label class="form-check-label">Pricing error</label>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Delivery issue">
+                            <label class="form-check-label">Delivery issue</label>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Other">
+                            <label class="form-check-label">Other (please specify)</label>
+                        </div>
+
+                        <textarea id="otherReason"
+                            class="form-control mt-2"
+                            placeholder="Please specify..."
+                            style="display:none;"></textarea>
+                    </div>
+                `,
                 showCancelButton: true,
-                confirmButtonText: "Yes, cancel it",
-                cancelButtonText: "Cancel"
-            }).then(result => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: "/Home/Cancel3d",
-                        method: "POST",
-                        data: { Id: orderId },
-                        success: function(response) {
-                            console.log("Order cancelled:", response);
-                            Swal.fire({
-                                title: "Success",
-                                text: "Order has been cancelled!",
-                                icon: "success",
-                                confirmButtonText: "OK"
-                            });
-                            location.reload();
-                            loadChat(currentOrderId);
-                        },
-                        error: function(xhr) {
-                            console.error("Error approving order:", xhr.responseText);
-                            Swal.fire({
-                                title: "Error",
-                                text: "Failed to cancel order. Please try again.",
-                                icon: "error",
-                                confirmButtonText: "OK"
-                            });
-                            location.reload();
+                confirmButtonText: "Confirm Cancellation",
+                cancelButtonText: "Cancel",
+                preConfirm: () => {
+                    const selected = document.querySelector(".cancel-reason:checked");
+                    if (!selected) {
+                        Swal.showValidationMessage("Please select a reason");
+                        return false;
+                    }
+
+                    if (selected.value === "Other") {
+                        const otherText = document.getElementById("otherReason").value.trim();
+                        if (otherText.length < 5) {
+                            Swal.showValidationMessage("Please specify at least 5 characters");
+                            return false;
                         }
-                    });
+                        submitCancellation(orderId, otherText);
+                    }
+
+                    submitCancellation(orderId, selected.value);
                 }
             });
+
+            // Toggle textarea when "Other" is selected
+            $(document).on("change", ".cancel-reason", function () {
+                if (this.value === "Other") {
+                    $("#otherReason").slideDown();
+                } else {
+                    $("#otherReason").slideUp().val("");
+                }
+            });
+        });
+
+        // --- Submit function ---
+         function submitCancellation(orderId, reason) {
+            // Save current scroll position
+            sessionStorage.setItem("scrollPos", window.scrollY);
+
+            $.ajax({
+                url: "/Home/Cancel3d",
+                method: "POST",
+                data: {
+                    Id: orderId,
+                    Reason: reason
+                },
+                success: function () {
+                    Swal.fire("Cancelled", "Order has been cancelled successfully.", "success")
+                        .then(() => {
+                            location.reload();
+                        });
+                },
+                error: function () {
+                    Swal.fire("Error", "Failed to cancel order.", "error");
+                }
+            });
+        }
+
+        // Restore scroll position after reload
+        window.addEventListener("load", function () {
+            const scrollPos = sessionStorage.getItem("scrollPos");
+            if (scrollPos) {
+                window.scrollTo(0, parseInt(scrollPos));
+                sessionStorage.removeItem("scrollPos");
+            }
         });
 
         $("#chatArea").on("click", "#PayOrderTrigger", function(){

@@ -555,20 +555,20 @@
                         Products Offered
                     </div>
                     <div class="card-body">
-                        @if (Model.Users.Product.Any())
+                        @if (Model.Users.Product != null)
                         {
                             <div class="row">
                                 @foreach (var product in Model.Users.Product)
                                 {
                                     <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
                                         <div class="card h-100 border-0 shadow-sm">
-                                            <img src="@(product.ProductVariants.FirstOrDefault().ProductImage != null ? product.ProductVariants.FirstOrDefault().ProductImage : "/src/assets/img/OakMartLogo.png")" class="card-img-top" style="height:180px; object-fit:cover;" alt="Product image" />
+                                            <img src="@(product.ProductVariants?.FirstOrDefault()?.ProductImage != null ? product.ProductVariants?.FirstOrDefault()?.ProductImage : "/src/assets/img/OakMartLogo.png")" class="card-img-top" style="height:180px; object-fit:cover;" alt="Product image" />
                                             <div class="card-body">
                                                 <h6 class="fw-bold">@product.Name</h6>
                                                 <p class="text-muted mb-1">
                                                     ₱@(
-                                                    product.ProductVariants.FirstOrDefault() != null
-                                                    ? Convert.ToDecimal(product.ProductVariants.FirstOrDefault().Price).ToString("N0")
+                                                    product.ProductVariants?.FirstOrDefault() != null
+                                                    ? Convert.ToDecimal(product.ProductVariants?.FirstOrDefault()?.Price).ToString("N0")
                                                     : "0"
                                                                                 )
                                     </p>
@@ -643,7 +643,7 @@
                         Order History
                     </div>
                     <div class="card-body">
-                        @if (Model.Users.PurchasedProduct.Any())
+                        @if (Model.Users.PurchasedProduct != null)
                         {
                             <table class="table table-hover align-middle">
                                 <thead>

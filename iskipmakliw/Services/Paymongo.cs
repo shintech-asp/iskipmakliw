@@ -42,8 +42,8 @@ namespace iskipmakliw.Services
                 }
             },
                         payment_method_types = new[] { paymentMethod },
-                        success_url = "https://oakmart-001-site1.qtempurl.com/Payments/Success",
-                        cancel_url = "https://oakmart-001-site1.qtempurl.com/Payments/Cancel",
+                        success_url = "https://localhost:7280/Payments/Success",
+                        cancel_url = "https://localhost:7280/Payments/Cancel",
                         billing = new
                         {
                             name = name,
@@ -76,7 +76,8 @@ namespace iskipmakliw.Services
         string email,
         string contact,
         List<(string name, double price, int quantity)> productDetails, 
-        string paymentMethod)
+        string paymentMethod,
+                              int shippingFee)
             {
                 // Create separate line items for each product
                 var lineItems = productDetails.Select(product => new
@@ -85,9 +86,15 @@ namespace iskipmakliw.Services
                     amount = (int)(product.price * 100), // Convert to centavos
                     currency = currency,
                     quantity = product.quantity
-                }).ToArray();
-
-                var payload = new
+                }).ToList();
+                lineItems.Add(new
+                {
+                    name = "Shipping Fee",
+                    amount = shippingFee * 100, // convert to centavos
+                    currency = currency,
+                    quantity = 1
+                });
+            var payload = new
                 {
                     data = new
                     {
@@ -95,8 +102,8 @@ namespace iskipmakliw.Services
                         {
                             line_items = lineItems,
                             payment_method_types = new[] { paymentMethod },
-                            success_url = "https://oakmart-001-site1.qtempurl.com/Payments/SuccessPurchaseProduct",
-                            cancel_url = "https://oakmart-001-site1.qtempurl.com/Payments/Cancel",
+                            success_url = "https://localhost:7280/Payments/SuccessPurchaseProduct",
+                            cancel_url = "https://localhost:7280/Payments/Cancel",
                             billing = new
                             {
                                 name = name,
@@ -151,8 +158,8 @@ namespace iskipmakliw.Services
                     {
                         line_items = lineItems,
                         payment_method_types = new[] { paymentMethod },
-                        success_url = "https://oakmart-001-site1.qtempurl.com/Payments/Success3dPurchaseProduct",
-                        cancel_url = "https://oakmart-001-site1.qtempurl.com/Payments/Cancel",
+                        success_url = "https://localhost:7280/Payments/Success3dPurchaseProduct",
+                        cancel_url = "https://localhost:7280/Payments/Cancel",
                         billing = new
                         {
                             name = name,

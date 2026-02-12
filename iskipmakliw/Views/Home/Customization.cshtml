@@ -2,7 +2,7 @@
     ViewData["Title"] = "3D Customization";
     Layout = "_LayoutCustomer";
 }
-
+@model List<ProductModel>
 <div class="container py-5">
     <div class="row g-4">
         <!-- 3D Viewer -->
@@ -26,22 +26,17 @@
                             Select Furniture
                         </button>
                         <ul class="dropdown-menu w-100" aria-labelledby="modelDropdown">
-                            <li><h6 class="dropdown-header">Chairs</h6></li>
-                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/chairs/Modern_Chair.glb')">Modern Chair</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/chairs/Designed_Chair.glb')">Designed Chair</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/chairs/Designed_Chair2.glb')">Designed Chair 2</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/chairs/Classic_Single_Chair.glb')">Classic Single Chair</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/chairs/Rustic_Chair.glb')">Modern Chair 2</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Tables</h6></li>
-                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/tables/Classic_Table.glb')">Classic Tables</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/tables/Family_Table.glb')">Family Tables</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/tables/Office_Table.glb')">Office Tables</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/tables/Wooden_Round_Table.glb')">Wooden Round Tables</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Drawer</h6></li>
-                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/drawers/Classic_Drawer.glb')">Classic Drawer</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="loadModel('/models/drawers/Classic_Drawer2.glb')">Classic Drawer 2</a></li>
+                            @if(Model.Count >0)
+                            {
+                                @foreach(var data in Model)
+                                {
+                                    <li><a class="dropdown-item" href="#" onclick="loadModel('@data.ImagePath')">@data.ModelName</a></li>
+                                }
+                            }
+                            else
+                            {
+                                <li class="fst-italic">Sorry, there's no model available for crafting from this seller.</li>
+                            }
                         </ul>
                     </div>
 
@@ -135,7 +130,7 @@
         // 🧩 Global Variables
         // ---------------------
         let scene, camera, renderer, controls, model;
-        let selectedModelPath = "/models/chair.glb";
+        let selectedModelPath = "";
         let selectedColor = "#ffffff";
         let selectedTexture = "";
         let originalModelSize = null;
@@ -190,13 +185,6 @@
         // 🧱 Model Loading
         // ---------------------
         window.loadModel = (path) => {
-            // Validate path
-            if (typeof path !== "string" || !path) {
-                console.error("Invalid model path:", path);
-                alert("Error: Invalid model path. Please check the model file URL.");
-                return;
-            }
-
             selectedModelPath = path;
             const loader = new GLTFLoader();
 
@@ -305,7 +293,6 @@
                 (xhr) => console.log(`Loading: ${(xhr.loaded / xhr.total * 100).toFixed(1)}%`),
                 (error) => {
                     console.error("❌ Error loading model:", error);
-                    alert("Failed to load model. Please check the console for details.");
                 }
             );
         };
@@ -467,30 +454,63 @@
         // 🚀 Submit Customization
         // ---------------------
         window.submitCustomization = () => {
-            const data = {
-                Model: selectedModelPath,
-                color: selectedColor,
-                texture: texturePath,
-                scale: dimensions.scale,
-                width: dimensions.width,
-                height: dimensions.height,
-                Id: @ViewBag.Id
-            };
 
-            $.ajax({
-                url: '/Home/Customization',
-                type: 'POST',
-                data: data,
-                success: function () {
-                    alert("✅ Customization saved successfully!");
-                    console.log("Submitted:", data);
-                },
-                error: function (xhr) {
-                    console.error("❌ Error:", xhr.responseText);
-                    alert("Failed to save customization. Please check the console for details.");
+            // Show confirmation before sending
+            Swal.fire({
+                title: 'Submit customization?',
+                text: "Are you sure you want to submit this customization?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, submit',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const data = {
+                        Model: selectedModelPath,
+                        color: selectedColor,
+                        texture: texturePath,
+                        scale: dimensions.scale,
+                        width: dimensions.width,
+                        height: dimensions.height,
+                        Id: @ViewBag.Id
+                    };
+                    $.ajax({
+                        url: '/Home/Customization',
+                        type: 'POST',
+                        data: data,
+                        success: function (res) {
+                            if (res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Saved!',
+                                    text: res.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Oops!',
+                                    text: res.message
+                                });
+                            }
+                        },
+                        error: function (xhr) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Something went wrong. Check console for details.'
+                            });
+                            console.error(xhr.responseText);
+                        }
+                    });
+
                 }
             });
         };
+
 
         // ---------------------
         // 🔄 Handle Resizing

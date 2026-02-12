@@ -1,9 +1,11 @@
 ﻿using iskipmakliw.Data;
 using iskipmakliw.Filters;
+using iskipmakliw.Helper;
 using iskipmakliw.Migrations;
 using iskipmakliw.Models;
 using iskipmakliw.Models.DTO;
 using iskipmakliw.Models.ViewModels;
+using iskipmakliw.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +19,7 @@ namespace iskipmakliw.Controllers
     public class IndexController : Controller
     {
         ApplicationDbContext _context;
+        private EmailService emailService = new EmailService();
         public IndexController(ApplicationDbContext context)
         {
             _context = context;
@@ -218,6 +221,10 @@ namespace iskipmakliw.Controllers
             users.Role = "Customer";
             ModelState.Remove("Role");
             ModelState.Remove("Carts");
+            ModelState.Remove("IsEmailVerified");
+            ModelState.Remove("VerificationCode");
+            ModelState.Remove("CodeCreatedAt");
+            ModelState.Remove("LastCodeSentAt");
             if (ModelState.IsValid &&(Confirm == users.Password))
             {
                 var existingUser = _context.Users.FirstOrDefault(u => u.Email == users.Email);
@@ -226,12 +233,29 @@ namespace iskipmakliw.Controllers
                     TempData["Error"] = "Email already in use";
                     return View(users);
                 }
+                string otpCode = OTPHelper.GenerateOTP();
                 var hasher = new PasswordHasher<Users>();
                 users.Password = hasher.HashPassword(users, users.Password);
+                users.IsEmailVerified = false;
+                users.VerificationCode = otpCode;
+                users.CodeCreatedAt = DateTime.UtcNow;
+                users.LastCodeSentAt = DateTime.UtcNow;
+
                 _context.Users.Add(users);
                 _context.SaveChanges();
-                TempData["Success"] = "Account successfully created!";
-                return RedirectToAction("Login", "Account");
+                bool emailSent = emailService.SendVerificationCode(users.Email, otpCode);
+                if (emailSent)
+                {
+                    TempData["Email"] = users.Email;
+                    TempData["Success"] = "Registration successful! We've sent a 4-digit verification code to your email.";
+                    return RedirectToAction("VerifyEmail");
+                }
+                else
+                {
+                    TempData["Error"] = "Registration successful but failed to send verification code. Please try resending.";
+                    TempData["Email"] = users.Email;
+                    return RedirectToAction("VerifyEmail");
+                }
             }else if(Confirm != users.Password)
             {
                 TempData["Error"] = "Password and Confirm Password do not match";
@@ -242,7 +266,129 @@ namespace iskipmakliw.Controllers
             }
                 return View(users);
         }
-        
+        // GET: VerifyEmail
+        public ActionResult VerifyEmail()
+        {
+            if (TempData["Email"] != null)
+            {
+                ViewBag.Email = TempData["Email"].ToString();
+                TempData.Keep("Email");
+            }
+
+            ViewBag.HideChrome = true;
+            return View();
+        }
+
+        // POST: VerifyEmail
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult VerifyEmail(string Email, string Code)
+        {
+            if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Code))
+            {
+                ViewBag.HideChrome = true;
+                TempData["Error"] = "Email and Code are required.";
+                ViewBag.Email = Email;
+                return View();
+            }
+
+            var user = _context.Users.FirstOrDefault(u => u.Email == Email && !u.IsEmailVerified);
+
+            if (user == null)
+            {
+                TempData["Error"] = "User not found or already verified.";
+                ViewBag.Email = Email;
+                ViewBag.HideChrome = true;
+                return View();
+            }
+
+            // Check if code expired
+            if (OTPHelper.IsOTPExpired(user.CodeCreatedAt, 10))
+            {
+                TempData["Error"] = "Verification code has expired. Please request a new one.";
+                ViewBag.Email = Email;
+                ViewBag.ShowResendButton = true;
+                ViewBag.HideChrome = true;
+                return View();
+            }
+
+            // Verify code
+            if (user.VerificationCode != Code)
+            {
+                TempData["Error"] = "Invalid verification code.";
+                ViewBag.Email = Email;
+                ViewBag.HideChrome = true;
+                return View();
+            }
+
+            // Mark as verified
+            user.IsEmailVerified = true;
+            user.CodeCreatedAt = null;
+            user.LastCodeSentAt = null;
+            _context.SaveChanges();
+
+            TempData["Success"] = "Email verified successfully! You can now login.";
+            return RedirectToAction("Login", "Account");
+        }
+
+        [HttpPost]
+        public JsonResult ResendVerificationCode(string Email)
+        {
+            try
+            {
+                var user = _context.Users.FirstOrDefault(u => u.Email == Email && !u.IsEmailVerified);
+
+                if (user == null)
+                {
+                    ViewBag.Email = Email;
+                    ViewBag.HideChrome = true;
+                    return Json(new { success = false, message = "User not found or already verified." });
+                }
+
+                // Check cooldown period (2 minutes)
+                if (!OTPHelper.CanResendOTP(user.LastCodeSentAt, 2))
+                {
+                    var remaining = OTPHelper.GetRemainingCooldown(user.LastCodeSentAt, 2);
+                    ViewBag.Email = Email;
+                    ViewBag.HideChrome = true;
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Please wait {remaining.Minutes}:{remaining.Seconds:D2} before requesting a new code.",
+                        remainingSeconds = (int)remaining.TotalSeconds
+                    });
+                }
+
+                // Generate new OTP
+                string newCode = OTPHelper.GenerateOTP();
+                user.VerificationCode = newCode;
+                user.CodeCreatedAt = DateTime.UtcNow;
+                user.LastCodeSentAt = DateTime.UtcNow;
+                _context.SaveChanges();
+
+                // Send email
+                bool emailSent = emailService.SendVerificationCode(user.Email, newCode);
+
+                if (emailSent)
+                {
+                    ViewBag.Email = Email;
+                    ViewBag.HideChrome = true;
+                    return Json(new { success = true, message = "Verification code sent! Please check your email." });
+                }
+                else
+                {
+                    ViewBag.Email = Email;
+                    ViewBag.HideChrome = true;
+                    return Json(new { success = false, message = "Failed to send email. Please try again." });
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Email = Email;
+                ViewBag.HideChrome = true;
+                return Json(new { success = false, message = "An error occurred. Please try again." });
+            }
+        }
         public IActionResult Account()
         {
             return View();
