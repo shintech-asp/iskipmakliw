@@ -45,13 +45,16 @@ namespace iskipmakliw.Controllers
 
                 if (result == PasswordVerificationResult.Success)
                 {
-
-                    if (!user.IsEmailVerified)
+                    if(user.Role != "Admin")
                     {
-                        TempData["Email"] = user.Email;
-                        TempData["Error"] = "Please verify your email before logging in.";
-                        return RedirectToAction("VerifyEmail", "Index");
+                        if (!user.IsEmailVerified)
+                        {
+                            TempData["Email"] = user.Email;
+                            TempData["Error"] = "Please verify your email before logging in.";
+                            return RedirectToAction("VerifyEmail", "Index");
+                        }
                     }
+                    
                     var claims = new List<Claim>
                 {
                     new Claim("UsersId", user.Id.ToString()),
