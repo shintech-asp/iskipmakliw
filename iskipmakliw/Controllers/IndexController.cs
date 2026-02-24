@@ -96,6 +96,7 @@ namespace iskipmakliw.Controllers
             ModelState.Remove("Carts");
             ModelState.Remove("Users");
             ModelState.Remove("CapturedIdPath");
+            ModelState.Remove("VerificationCode");
             ModelState.Remove("GovernmentIdPath");
             ModelState.Remove("DeedOfSaleFile");
             if (ModelState.IsValid)
@@ -171,16 +172,20 @@ namespace iskipmakliw.Controllers
                         userDetails.CR = $"/uploads/{CRFileName}";
                     }
 
+                    string otpCode = OTPHelper.GenerateOTP();
                     var hasher = new PasswordHasher<Users>();
                     users.Password = hasher.HashPassword(users, users.Password);
                     users.Role = "Rider";
+                    users.IsEmailVerified = false;
+                    users.VerificationCode = otpCode;
+                    users.CodeCreatedAt = DateTime.UtcNow;
+                    users.LastCodeSentAt = DateTime.UtcNow;
                     _context.Users.Add(users);
                     _context.SaveChanges();
                     userDetails.Status = "Pending";
                     userDetails.UsersId = users.Id;
                     _context.UserDetails.Add(userDetails);
                     _context.SaveChanges();
-
                     if (VehicleImagesFile != null && VehicleImagesFile.Any())
                     {
                         foreach (var file in VehicleImagesFile)
@@ -201,8 +206,19 @@ namespace iskipmakliw.Controllers
                             _context.SaveChanges();
                         }
                     }
-                    TempData["Success"] = "Account created!";
-                    return View();
+                    bool emailSent = emailService.SendVerificationCode(users.Email, otpCode);
+                    if (emailSent)
+                    {
+                        TempData["Email"] = users.Email;
+                        TempData["Success"] = "Registration successful! We've sent a 4-digit verification code to your email.";
+                        return RedirectToAction("VerifyEmail");
+                    }
+                    else
+                    {
+                        TempData["Error"] = "Registration successful but failed to send verification code. Please try resending.";
+                        TempData["Email"] = users.Email;
+                        return RedirectToAction("VerifyEmail");
+                    }
                 }
             }
             TempData["Error"] = "Please enter a value for each field";

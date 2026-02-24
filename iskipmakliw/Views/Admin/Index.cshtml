@@ -1,6 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Dashboard";
 }
+@model List<Users>
 <div class="row layout-top-spacing">
     <div class="col-xl-8 col-lg-12 col-md-12 col-sm-12 col-12 layout-spacing">
         <div class="widget widget-chart-one">
@@ -252,28 +253,28 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td><div class="td-content customer-name"><img src="~/src/assets/img/profile-13.jpeg" alt="avatar"><span>Luke Ivory</span></div></td>
-                                <td><div class="td-content product-brand text-primary">Monthly</div></td>
-                                <td><div class="td-content product-invoice">#46894</div></td>
-                                <td><div class="td-content pricing"><span class="">1999.00</span></div></td>
-                                <td><div class="td-content"><span class="badge badge-success">Paid</span></div></td>
-                            </tr>
-                                                
-                            <tr>
-                                <td><div class="td-content customer-name"><img src="~/src/assets/img/profile-7.jpeg" alt="avatar"><span>Andy King</span></div></td>
-                                <td><div class="td-content product-brand text-warning">Annual</div></td>
-                                <td><div class="td-content product-invoice">#76894</div></td>
-                                <td><div class="td-content pricing"><span class="">19990.00</span></div></td>
-                                <td><div class="td-content"><span class="badge badge-warning">Pending</span></div></td>
-                            </tr>
-                            <tr>
-                                <td><div class="td-content customer-name"><img src="~/src/assets/img/profile-10.jpeg" alt="avatar"><span>Laurie Fox</span></div></td>
-                                <td><div class="td-content product-brand text-danger">Annual</div></td>
-                                <td><div class="td-content product-invoice">#66894</div></td>
-                                <td><div class="td-content pricing"><span class="">19990.00</span></div></td>
-                                <td><div class="td-content"><span class="badge badge-primary">For Review</span></div></td>
-                            </tr>   
+                            @if(Model.Count > 0)
+                            {
+                                @foreach (var data in Model)
+                                {
+
+                                    <tr>
+                                        <td><div class="td-content customer-name"><span>@data.Username</span></div></td>
+                                        <td><div class="td-content product-brand text-primary">@data.Subscription.LastOrDefault().Plans.PlanName</div></td>
+                                        <td><div class="td-content product-invoice">#202600@(@data.Subscription.LastOrDefault().Plans.Id)</div></td>
+                                        <td><div class="td-content pricing"><span class="">@data.Subscription.LastOrDefault().Plans.Price</span></div></td>
+                                        <td><div class="td-content"><span class="badge @(data.Subscription.LastOrDefault().Status == "Pending" ? "badge-warning" : "badge-success")">@data.Subscription.LastOrDefault().Status</span></div></td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center fst-italic">
+                                        No new subscriber yet
+                                    </td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
