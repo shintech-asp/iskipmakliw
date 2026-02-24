@@ -53,7 +53,16 @@ namespace iskipmakliw.Controllers
         }
         public IActionResult Index()
         {
-            return View();
+            var oneWeekAgo = DateTime.Now.AddDays(-7);
+
+            var data = _context.Users
+                .Include(u => u.UserDetails)
+                .Include(u => u.Subscription)
+                    .ThenInclude(u => u.Plans)
+                .Where(u => u.DateCreated >= oneWeekAgo)
+                .ToList();
+
+            return View(data);
         }
         public IActionResult Users()
         {
