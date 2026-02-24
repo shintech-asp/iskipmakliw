@@ -59,7 +59,7 @@ namespace iskipmakliw.Controllers
                 .Include(u => u.UserDetails)
                 .Include(u => u.Subscription)
                     .ThenInclude(u => u.Plans)
-                .Where(u => u.DateCreated >= oneWeekAgo)
+                .Where(u => u.DateCreated >= oneWeekAgo && u.Role == "Seller")
                 .ToList();
 
             return View(data);
