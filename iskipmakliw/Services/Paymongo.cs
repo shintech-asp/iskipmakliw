@@ -114,12 +114,13 @@ namespace iskipmakliw.Services
                             {
                                 customer_name = name,
                                 customer_email = email,
-                                customer_contact = contact
+                                customer_contact = contact,
+                                shipping_fee = shippingFee
                             }
                         }
                     }
                 };
-
+            
                 var content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync("https://api.paymongo.com/v1/checkout_sessions", content);
                 var responseString = await response.Content.ReadAsStringAsync();

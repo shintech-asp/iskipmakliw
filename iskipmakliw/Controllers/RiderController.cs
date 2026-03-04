@@ -60,7 +60,7 @@ namespace iskipmakliw.Controllers
                          .Include(dp => dp.PurchasedProduct)
                              .ThenInclude(pp => pp.Billings)
                          .Include(dp => dp.PurchasedProduct)
-                             .ThenInclude(pp => pp.ProductVariants)
+                             .ThenInclude(pp => pp.ProductVariants) 
                                  .ThenInclude(pv => pv.Product)
                                      .ThenInclude(p => p.Users)
                                          .ThenInclude(u => u.UserDetails)

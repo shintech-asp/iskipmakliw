@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iskipmakliw.Data;
 
@@ -11,9 +12,11 @@ using iskipmakliw.Data;
 namespace iskipmakliw.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260304112210_AddTermsAdnCOndition")]
+    partial class AddTermsAdnCOndition
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -259,8 +262,7 @@ namespace iskipmakliw.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PurchasedProductId")
-                        .IsUnique();
+                    b.HasIndex("PurchasedProductId");
 
                     b.HasIndex("RiderId");
 
@@ -375,9 +377,6 @@ namespace iskipmakliw.Migrations
 
                     b.Property<string>("Details")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -503,9 +502,6 @@ namespace iskipmakliw.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
-
-                    b.Property<double?>("ShippingFee")
-                        .HasColumnType("float");
 
                     b.Property<string>("Source")
                         .IsRequired()
@@ -867,8 +863,8 @@ namespace iskipmakliw.Migrations
             modelBuilder.Entity("iskipmakliw.Models.DeliverProduct", b =>
                 {
                     b.HasOne("iskipmakliw.Models.PurchasedProduct", "PurchasedProduct")
-                        .WithOne("DeliverProduct")
-                        .HasForeignKey("iskipmakliw.Models.DeliverProduct", "PurchasedProductId")
+                        .WithMany("DeliverProduct")
+                        .HasForeignKey("PurchasedProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1063,8 +1059,7 @@ namespace iskipmakliw.Migrations
 
             modelBuilder.Entity("iskipmakliw.Models.PurchasedProduct", b =>
                 {
-                    b.Navigation("DeliverProduct")
-                        .IsRequired();
+                    b.Navigation("DeliverProduct");
                 });
 
             modelBuilder.Entity("iskipmakliw.Models.UserDetails", b =>

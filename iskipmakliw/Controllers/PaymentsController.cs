@@ -197,6 +197,7 @@ namespace iskipmakliw.Controllers
                         ProductVariantsId = payment.ProductVariantsId,
                         Quantity = payment.Quantity,
                         Price = total,
+                        ShippingFee = shippingFee,
                         Source = "ProductVariants",
                         PaymentStatus = "Pending",
                         PaymentMethod = "Cash on Delivery",
@@ -298,7 +299,8 @@ namespace iskipmakliw.Controllers
             // Update DB
             var cartIds = TempData["CartIds"]?.ToString()?.Split(',').Select(int.Parse).ToList();
             var billingId = TempData["BillingsId"]?.ToString();
-
+            var shippingFee = TempData["ShippingFee"]?.ToString();
+            
             if (cartIds != null && cartIds.Any())
             {
                 // Update payment records
@@ -326,6 +328,7 @@ namespace iskipmakliw.Controllers
                         ProductVariantsId = payment.ProductVariantsId,
                         Quantity = payment.Quantity,
                         Price = total,
+                        ShippingFee = double.Parse(shippingFee),
                         Source = "ProductVariants",
                         PaymentStatus = status switch
                         {

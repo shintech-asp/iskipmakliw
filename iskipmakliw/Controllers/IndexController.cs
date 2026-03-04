@@ -229,7 +229,8 @@ namespace iskipmakliw.Controllers
         [HttpGet]
         public IActionResult Signup()
         {
-            return View();
+            var data = _context.Terms.FirstOrDefault();
+            return View(data);
         }
         [HttpPost]
         public IActionResult Signup(Users users, string Confirm)

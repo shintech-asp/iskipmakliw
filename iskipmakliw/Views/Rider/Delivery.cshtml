@@ -3,9 +3,9 @@
 }
 
 @model DeliverProduct
-@if(Model != null)
+@if (Model != null)
 {
-    @if(Model.PurchasedProduct.ProductVariantsId != null)
+    @if (Model.PurchasedProduct.ProductVariantsId != null)
     {
         <div class="row mt-4">
             <!-- Order Info -->
@@ -28,7 +28,16 @@
                         <h5 class="fw-bold mb-3">Location Details</h5>
                         <p class="mb-2"><strong>Pickup Address:</strong><br>@Model.PurchasedProduct.ProductVariants.Product.Users.UserDetails.Address</p>
                         <p class="mb-2"><strong>Drop-off Address:</strong><br>@Model.PurchasedProduct.Billings.Address</p>
-                        <p><strong>Distance:</strong> <span id="distance">Calculating...</span></p>
+                        <p class="mb-2"><strong>Distance:</strong> <span id="distance">Calculating...</span></p>
+
+                        <!-- ETA Display -->
+                        <div id="etaContainer" style="display:none;">
+                            <hr>
+                            <p class="mb-2" id="etaText" style="color: #0066cc; font-weight: bold;">
+                                ETA: <span id="estimatedTime">--</span>
+                            </p>
+                            <small id="etaStatus" class="text-muted"></small>
+                        </div>
                     </div>
                 </div>
                 @{
@@ -115,7 +124,7 @@
                 </div>
             </div>
         </div>
-        
+
         @section Scripts {
             <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
             <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
@@ -188,8 +197,10 @@
 
                     let driverMarker = null;
                     let routingControl = null;
+                    let routeDistance = 0; // Store route distance in meters
+                    let routeDuration = 0; // Store route duration in seconds
 
-                    // ✅ Route drawer
+                    // ✅ Route drawer with ETA calculation
                     function drawRoute(fromLat, fromLng, toLat, toLng) {
                         if (routingControl) map.removeControl(routingControl);
 
@@ -211,9 +222,87 @@
 
                         routingControl.on('routesfound', e => {
                             const route = e.routes[0];
-                            const distKm = (route.summary.totalDistance / 1000).toFixed(2);
+                            routeDistance = route.summary.totalDistance; // in meters
+                            routeDuration = route.summary.totalTime; // in seconds
+                            const distKm = (routeDistance / 1000).toFixed(2);
                             document.getElementById("distance").textContent = `${distKm} km (by road)`;
+
+                            console.log('Route found - Distance:', distKm, 'km, Duration:', routeDuration, 'seconds');
                         });
+                    }
+
+                    // ✅ Calculate ETA based on current position and route
+                    function calculateETA(riderLat, riderLng, destination) {
+                        if (routeDistance === 0 || routeDuration === 0) return null;
+
+                        // Calculate remaining distance using haversine formula
+                        const toRad = (deg) => (deg * Math.PI) / 180;
+                        const R = 6371000; // Earth's radius in meters
+
+                        const dLat = toRad(destination.lat - riderLat);
+                        const dLng = toRad(destination.lng - riderLng);
+                        const a =
+                            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                            Math.cos(toRad(riderLat)) * Math.cos(toRad(destination.lat)) *
+                            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+                        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                        const remainingDistance = R * c; // in meters
+
+                        // Estimate ETA: remaining distance / average speed
+                        // Average speed from route: distance / duration
+                        const avgSpeed = routeDistance / routeDuration; // meters per second
+                        const etaSeconds = remainingDistance / avgSpeed;
+
+                        return {
+                            etaSeconds: Math.max(0, etaSeconds),
+                            remainingDistance: remainingDistance
+                        };
+                    }
+
+                    // ✅ Format ETA display
+                    function formatETATime(seconds) {
+                        const minutes = Math.floor(seconds / 60);
+                        const secs = Math.floor(seconds % 60);
+
+                        if (minutes === 0) {
+                            return `${secs}s`;
+                        } else if (minutes < 60) {
+                            return `${minutes}m ${secs}s`;
+                        } else {
+                            const hours = Math.floor(minutes / 60);
+                            const mins = minutes % 60;
+                            return `${hours}h ${mins}m`;
+                        }
+                    }
+
+                    // ✅ Update ETA display
+                    function updateETADisplay(riderLat, riderLng) {
+                        const etaContainer = document.getElementById('etaContainer');
+                        const estimatedTimeEl = document.getElementById('estimatedTime');
+                        const etaStatusEl = document.getElementById('etaStatus');
+
+                        if (!hasPickup) {
+                            // Going to pickup
+                            const eta = calculateETA(riderLat, riderLng, { lat: pickupLat, lng: pickupLng });
+                            if (eta) {
+                                etaContainer.style.display = 'block';
+                                estimatedTimeEl.textContent = formatETATime(eta.etaSeconds);
+                                estimatedTimeEl.style.color = eta.etaSeconds < 300 ? '#28a745' : '#0066cc'; // Green if < 5 min
+                                etaStatusEl.textContent = '📍 ETA to pickup location';
+                            }
+                        } else if (hasPickup && !hasDropoff) {
+                            // Going to dropoff
+                            const eta = calculateETA(riderLat, riderLng, { lat: dropoffLat, lng: dropoffLng });
+                            if (eta) {
+                                etaContainer.style.display = 'block';
+                                estimatedTimeEl.textContent = formatETATime(eta.etaSeconds);
+                                estimatedTimeEl.style.color = eta.etaSeconds < 300 ? '#28a745' : '#0066cc'; // Green if < 5 min
+                                etaStatusEl.textContent = '🎯 ETA to drop-off location';
+                            }
+                        } else {
+                            // Delivery complete
+                            etaContainer.style.display = 'none';
+                        }
                     }
 
                     // ✅ Geolocation tracking
@@ -253,6 +342,9 @@
                                 } else {
                                     drawRoute(pickupLat, pickupLng, dropoffLat, dropoffLng); // completed
                                 }
+
+                                // ✅ Update ETA based on current position
+                                updateETADisplay(lat, lng);
                             },
                             err => console.error("Geolocation error:", err),
                             { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
@@ -308,7 +400,16 @@
                         <h5 class="fw-bold mb-3">Location Details</h5>
                         <p class="mb-2"><strong>Pickup Address:</strong><br>@Model.PurchasedProduct.CustomizationOrders.Sellers.UserDetails.Address</p>
                         <p class="mb-2"><strong>Drop-off Address:</strong><br>@Model.PurchasedProduct.Billings.Address</p>
-                        <p><strong>Distance:</strong> <span id="distance">Calculating...</span></p>
+                        <p class="mb-2"><strong>Distance:</strong> <span id="distance">Calculating...</span></p>
+
+                        <!-- ETA Display -->
+                        <div id="etaContainer" style="display:none;">
+                            <hr>
+                            <p class="mb-2" id="etaText" style="color: #0066cc; font-weight: bold;">
+                                ETA: <span id="estimatedTime">--</span>
+                            </p>
+                            <small id="etaStatus" class="text-muted"></small>
+                        </div>
                     </div>
                 </div>
                 @{
@@ -467,8 +568,10 @@
 
                     let driverMarker = null;
                     let routingControl = null;
+                    let routeDistance = 0; // Store route distance in meters
+                    let routeDuration = 0; // Store route duration in seconds
 
-                    // ✅ Route drawer
+                    // ✅ Route drawer with ETA calculation
                     function drawRoute(fromLat, fromLng, toLat, toLng) {
                         if (routingControl) map.removeControl(routingControl);
 
@@ -490,9 +593,87 @@
 
                         routingControl.on('routesfound', e => {
                             const route = e.routes[0];
-                            const distKm = (route.summary.totalDistance / 1000).toFixed(2);
+                            routeDistance = route.summary.totalDistance; // in meters
+                            routeDuration = route.summary.totalTime; // in seconds
+                            const distKm = (routeDistance / 1000).toFixed(2);
                             document.getElementById("distance").textContent = `${distKm} km (by road)`;
+
+                            console.log('Route found - Distance:', distKm, 'km, Duration:', routeDuration, 'seconds');
                         });
+                    }
+
+                    // ✅ Calculate ETA based on current position and route
+                    function calculateETA(riderLat, riderLng, destination) {
+                        if (routeDistance === 0 || routeDuration === 0) return null;
+
+                        // Calculate remaining distance using haversine formula
+                        const toRad = (deg) => (deg * Math.PI) / 180;
+                        const R = 6371000; // Earth's radius in meters
+
+                        const dLat = toRad(destination.lat - riderLat);
+                        const dLng = toRad(destination.lng - riderLng);
+                        const a =
+                            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                            Math.cos(toRad(riderLat)) * Math.cos(toRad(destination.lat)) *
+                            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+                        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                        const remainingDistance = R * c; // in meters
+
+                        // Estimate ETA: remaining distance / average speed
+                        // Average speed from route: distance / duration
+                        const avgSpeed = routeDistance / routeDuration; // meters per second
+                        const etaSeconds = remainingDistance / avgSpeed;
+
+                        return {
+                            etaSeconds: Math.max(0, etaSeconds),
+                            remainingDistance: remainingDistance
+                        };
+                    }
+
+                    // ✅ Format ETA display
+                    function formatETATime(seconds) {
+                        const minutes = Math.floor(seconds / 60);
+                        const secs = Math.floor(seconds % 60);
+
+                        if (minutes === 0) {
+                            return `${secs}s`;
+                        } else if (minutes < 60) {
+                            return `${minutes}m ${secs}s`;
+                        } else {
+                            const hours = Math.floor(minutes / 60);
+                            const mins = minutes % 60;
+                            return `${hours}h ${mins}m`;
+                        }
+                    }
+
+                    // ✅ Update ETA display
+                    function updateETADisplay(riderLat, riderLng) {
+                        const etaContainer = document.getElementById('etaContainer');
+                        const estimatedTimeEl = document.getElementById('estimatedTime');
+                        const etaStatusEl = document.getElementById('etaStatus');
+
+                        if (!hasPickup) {
+                            // Going to pickup
+                            const eta = calculateETA(riderLat, riderLng, { lat: pickupLat, lng: pickupLng });
+                            if (eta) {
+                                etaContainer.style.display = 'block';
+                                estimatedTimeEl.textContent = formatETATime(eta.etaSeconds);
+                                estimatedTimeEl.style.color = eta.etaSeconds < 300 ? '#28a745' : '#0066cc'; // Green if < 5 min
+                                etaStatusEl.textContent = '📍 ETA to pickup location';
+                            }
+                        } else if (hasPickup && !hasDropoff) {
+                            // Going to dropoff
+                            const eta = calculateETA(riderLat, riderLng, { lat: dropoffLat, lng: dropoffLng });
+                            if (eta) {
+                                etaContainer.style.display = 'block';
+                                estimatedTimeEl.textContent = formatETATime(eta.etaSeconds);
+                                estimatedTimeEl.style.color = eta.etaSeconds < 300 ? '#28a745' : '#0066cc'; // Green if < 5 min
+                                etaStatusEl.textContent = '🎯 ETA to drop-off location';
+                            }
+                        } else {
+                            // Delivery complete
+                            etaContainer.style.display = 'none';
+                        }
                     }
 
                     // ✅ Geolocation tracking
@@ -532,6 +713,9 @@
                                 } else {
                                     drawRoute(pickupLat, pickupLng, dropoffLat, dropoffLng); // completed
                                 }
+
+                                // ✅ Update ETA based on current position
+                                updateETADisplay(lat, lng);
                             },
                             err => console.error("Geolocation error:", err),
                             { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
@@ -574,4 +758,3 @@ else
         <p class="text-muted">Check back soon for new delivery requests.</p>
     </div>
 }
-

@@ -276,34 +276,70 @@ namespace iskipmakliw.Controllers
             return View();
         }
         [HttpPost]
-        public IActionResult ProductAdd(Product product)
+        public IActionResult ProductAdd(Product product, IFormFile Image)
         {
             var usersId = int.Parse(User.FindFirst("UsersId")?.Value);
-            var filter = _context.Product.Where(u => u.Name == product.Name && u.UsersId == usersId).FirstOrDefault();
+            var filter = _context.Product
+                .Where(u => u.Name == product.Name && u.UsersId == usersId)
+                .FirstOrDefault();
+
             ModelState.Remove("Users");
+
             if (ModelState.IsValid)
             {
                 if (filter == null)
                 {
                     product.UsersId = usersId;
-                    var newProduct = _context.Product.Add(product);
-                   
-                    _context.SaveChanges();
+
+                    // ✅ HANDLE IMAGE UPLOAD
+                    if (Image != null && Image.Length > 0)
+                    {
+                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                        var extension = Path.GetExtension(Image.FileName).ToLower();
+
+                        if (!allowedExtensions.Contains(extension))
+                        {
+                            TempData["Error"] = "Only image files are allowed.";
+                            return View(product);
+                        }
+
+                        // Create unique file name
+                        var fileName = Guid.NewGuid().ToString() + extension;
+
+                        // Set path
+                        var path = Path.Combine(
+                            Directory.GetCurrentDirectory(),
+                            "wwwroot/uploads",
+                            fileName
+                        );
+
+                        // Make sure folder exists
+                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                        using (var stream = new FileStream(path, FileMode.Create))
+                        {
+                             Image.CopyTo(stream);
+                        }
+
+                        // Save file name to database
+                        product.Image = fileName;
+                    }
+
+                    _context.Product.Add(product);
+                     _context.SaveChangesAsync();
+
                     TempData["Success"] = "Product added successfully.";
-                    return View(product);
+                    return RedirectToAction("ProductList");
                 }
                 else
                 {
                     TempData["Error"] = "Product already exists.";
-                    return View();
+                    return View(product);
                 }
             }
-            else
-            {
-                TempData["Error"] = "Fill up all the fields";
-                return RedirectToAction("ProductList");
-            }
-                
+
+            TempData["Error"] = "Fill up all the fields";
+            return View(product);
         }
         public IActionResult ProductEdit(int Id)
         {

@@ -200,6 +200,7 @@ namespace iskipmakliw.Controllers
         {
             int usersId = int.Parse(User.FindFirst("UsersId")?.Value);
             var data = _context.PurchasedProduct
+                        .Include(u => u.DeliverProduct)
                         .Include(u => u.ProductVariants)
                             .ThenInclude(u => u.Product)
                                 .ThenInclude(u => u.Users)

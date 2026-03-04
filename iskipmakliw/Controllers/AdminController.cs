@@ -51,6 +51,30 @@ namespace iskipmakliw.Controllers
                 Sellers = sellers
             });
         }
+        [HttpGet]
+        public IActionResult Terms()
+        {
+            var data = _context.Terms.FirstOrDefault();
+            return View(data);
+        }
+        [HttpPost]
+        public IActionResult Terms(string Content)
+        {
+            var data = _context.Terms.FirstOrDefault();
+            if (data == null)
+            {
+                data = new Terms { Content = Content };
+                _context.Terms.Add(data);
+            }
+            else
+            {
+                data.Content = Content;
+                _context.Terms.Update(data);
+            }
+            _context.SaveChanges();
+            TempData["Success"] = "Terms and Conditions successfully updated!";
+            return View(data);
+        }
         public IActionResult Index()
         {
             var oneWeekAgo = DateTime.Now.AddDays(-7);
@@ -117,7 +141,7 @@ namespace iskipmakliw.Controllers
             var data = _context.UserDetails.Where(u => u.UsersId == Id).FirstOrDefault();
             data.Status = Status;
             _context.SaveChanges();
-            TempData["success"] = "Status successfully changed!";
+            TempData["Success"] = "Status successfully changed!";
             return RedirectToAction("Index");
         }
     }

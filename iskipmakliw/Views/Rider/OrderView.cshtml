@@ -17,6 +17,7 @@
                         <li><strong>Product:</strong> @Model.PurchasedProduct?.ProductVariants?.Material - @Model.PurchasedProduct?.ProductVariants?.Product?.Name</li>
                         <li><strong>Price:</strong> ₱@Model.PurchasedProduct?.Price</li>
                         <li><strong>Status:</strong> <span class="badge bg-primary">@Model.Status</span></li>
+                        <li><strong>Shipping Fee:</strong> <span class="badge bg-warning">₱@(Model.PurchasedProduct?.ShippingFee > 0 ? Model.PurchasedProduct?.ShippingFee : 50)</span></li>
                     </ul>
                 </div>
             </div>
@@ -143,6 +144,7 @@ else
                         <li><strong>Product:</strong> Customization OrderId #1000@(Model.PurchasedProduct.CustomizationOrdersId)</li>
                         <li><strong>Price:</strong> ₱@Model.PurchasedProduct?.Price</li>
                         <li><strong>Status:</strong> <span class="badge bg-primary">@Model.Status</span></li>
+                        <li><strong>Shipping Fee:</strong> <span class="badge bg-warning">₱200</span></li>
                     </ul>
                 </div>
             </div>
