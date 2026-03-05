@@ -10,7 +10,9 @@ namespace iskipmakliw.Models
         public string? Material { get; set; }
         public string? Dimension { get; set; }
         public string? Color { get; set; }
-        public string? Unit { get; set; }
+        public string? Width { get; set; }
+        public string? Height { get; set; }
+        public string? Weight { get; set; }
         public double Price { get; set; }
         public string? DiscountType { get; set; }
         public int Quantity { get; set; }

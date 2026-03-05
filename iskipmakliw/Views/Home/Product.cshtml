@@ -156,7 +156,9 @@
                                                            id="@safeId"
                                                            value="@variant.Id"
                                                            data-dimension="@variant.Dimension"
-                                                           data-unit="@variant.Unit" />
+                                                           data-weight="@variant.Weight"
+                                                           data-Height="@variant.Height"
+                                                           data-Width="@variant.Width" />
 
                                                     <label class="btn btn-outline-primary mb-2" for="@safeId">
                                                         @variant.Dimension
@@ -168,14 +170,30 @@
 
                                     <!-- Unit of Measurement -->
                                     <div class="row size-selector mb-4">
-                                        <div class="col-3 align-self-center">Unit of Measurement</div>
+                                        <div class="col-3 align-self-center">Weight (kg)</div>
                                         <div class="col-9">
-                                            <div id="unitDisplay" class="fw-semibold text-primary">
-                                                Select color and size
+                                            <div id="weightDisplay" class="fw-semibold text-primary">
+                                                @(Model.Product.ProductVariants.FirstOrDefault()?.Weight ?? "No weight indicated")
                                             </div>
                                         </div>
                                     </div>
 
+                                    <div class="row size-selector mb-4">
+                                        <div class="col-3 align-self-center">Height (cm)</div>
+                                        <div class="col-9">
+                                            <div id="heightDisplay" class="fw-semibold text-primary">
+                                                @(Model.Product.ProductVariants.FirstOrDefault()?.Height ?? "No height indicated")
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row size-selector mb-4">
+                                        <div class="col-3 align-self-center">Width (cm)</div>
+                                        <div class="col-9">
+                                            <div id="widthDisplay" class="fw-semibold text-primary">
+                                                @(Model.Product.ProductVariants.FirstOrDefault()?.Width ?? "No width indicated")
+                                            </div>
+                                        </div>
+                                    </div>
                                     <form asp-action="Product" asp-controller="Home" method="post">
                                         <!-- Quantity -->
                                         <div class="row quantity-selector mb-4">
@@ -443,7 +461,9 @@
         const discountedPrice = document.getElementById("discountedPrice");
         const regularPrice = document.getElementById("regularPrice");
         const discountBadge = document.getElementById("discountBadge");
-        const unitDisplay = document.getElementById("unitDisplay");
+        const heightDisplay = document.getElementById("heightDisplay");
+        const weightDisplay = document.getElementById("weightDisplay");
+        const widthDisplay = document.getElementById("widthDisplay");
         const productIdInput = document.querySelector("input[name='ProductVariantsId']");
 
         // Update UI from variant
@@ -489,7 +509,9 @@
                 "text-success mt-2";
 
             // ---- Unit
-            unitDisplay.textContent = variant.Unit ?? "Not Applicable";
+            heightDisplay.textContent = `${variant.Height ?? "No height indicated"}`;
+            weightDisplay.textContent = `${variant.Weight ?? "No weight indicated"}`;
+            widthDisplay.textContent = `${variant.Width ?? "No width indicated"}`;
 
             // ---- Image
             if (variant.ProductImage) {

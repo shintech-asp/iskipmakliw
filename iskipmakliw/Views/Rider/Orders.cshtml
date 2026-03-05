@@ -42,7 +42,11 @@
                                     <strong>Customer:</strong> @item.PurchasedProduct.Billings.Name <br />
                                     <strong>Contact:</strong> @item.PurchasedProduct.Billings.ContactNumber
                                 </p>
-
+                                <p class="text-muted mb-3">
+                                    <strong>Weight (kg): </strong> @(item.PurchasedProduct.ProductVariants?.Weight ?? "45") <br />
+                                    <strong>Height (cm): </strong> @(item.PurchasedProduct.ProductVariants?.Weight ?? "150")  <br />
+                                    <strong>Width (cm): </strong> @(item.PurchasedProduct.ProductVariants?.Weight ?? "67")  <br />
+                                </p>
                                 <div class="alert alert-warning py-2 px-3 mb-3 text-center">
                                     🚚 <strong>Shipping Fee:</strong>
                                     ₱@(item.PurchasedProduct.ShippingFee > 0 ? item.PurchasedProduct.ShippingFee: 50)
@@ -84,6 +88,11 @@
                                     <strong>Contact:</strong> @item.PurchasedProduct.Billings.ContactNumber
                                 </p>
 
+                                <p class="text-muted mb-3">
+                                    <strong>Weight (kg): </strong> @(item.PurchasedProduct.ProductVariants?.Weight ?? "45") <br />
+                                    <strong>Height (cm): </strong> @(item.PurchasedProduct.ProductVariants?.Weight ?? "150")  <br />
+                                    <strong>Width (cm): </strong> @(item.PurchasedProduct.ProductVariants?.Weight ?? "67")  <br />
+                                </p>
                                 <div class="alert alert-warning py-2 px-3 mb-3 text-center">
                                     🚚 <strong>Shipping Fee:</strong>
                                     ₱200

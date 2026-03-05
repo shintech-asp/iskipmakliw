@@ -40,7 +40,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IPaymongo, Paymongo>();
 
 builder.Services.AddScoped<MeshyService>();
-
+builder.Services.AddScoped<EmailService>();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();

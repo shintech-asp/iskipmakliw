@@ -370,7 +370,9 @@ namespace iskipmakliw.Controllers
                         existing.Dimension = product.Dimension;
                         existing.Color = product.Color;
                         existing.Price = product.Price;
-                        existing.Unit = product.Unit;
+                        existing.Height = product.Height;
+                        existing.Weight = product.Weight;
+                        existing.Width = product.Width;
                         existing.DiscountType = product.DiscountType;
                         existing.Quantity = product.Quantity;
                         existing.Discount = product.Discount;
@@ -459,7 +461,9 @@ namespace iskipmakliw.Controllers
                         Dimension = model.ProductDetails.Dimension,
                         Color = model.ProductDetails.Color,
                         Price = model.ProductDetails.Price,
-                        Unit = model.ProductDetails.Unit,
+                        Weight = model.ProductDetails.Weight,
+                        Height = model.ProductDetails.Height,
+                        Width = model.ProductDetails.Width,
                         DiscountType = model.ProductDetails.DiscountType,
                         Quantity = model.ProductDetails.Quantity,
                         Discount = model.ProductDetails.Discount
@@ -474,7 +478,9 @@ namespace iskipmakliw.Controllers
                     productVariant.Material = model.ProductDetails.Material;
                     productVariant.Dimension = model.ProductDetails.Dimension;
                     productVariant.Color = model.ProductDetails.Color;
-                    productVariant.Unit = model.ProductDetails.Unit;
+                    productVariant.Weight = model.ProductDetails.Weight;
+                    productVariant.Height = model.ProductDetails.Height;
+                    productVariant.Width = model.ProductDetails.Width;
                     productVariant.DiscountType = model.ProductDetails.DiscountType;
                     productVariant.Price = model.ProductDetails.Price;
                     productVariant.Quantity = model.ProductDetails.Quantity;
