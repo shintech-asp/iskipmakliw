@@ -2,7 +2,7 @@
     ViewData["Title"] = "Signup"; 
     Layout = null;
 }
-@model Users;
+@model Terms;
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -55,13 +55,13 @@
                                     <div class="col-md-12">
                                         <div class="mb-3">
                                             <label class="form-label">Username</label>
-                                            <input asp-for="Username" type="text" class="form-control add-billing-address-input">
+                                            <input name="Username" type="text" class="form-control add-billing-address-input">
                                         </div>
                                     </div>
                                     <div class="col-md-12">
                                         <div class="mb-3">
                                             <label class="form-label">Contact Number</label>
-                                            <input asp-for="ContactNumber" type="text"
+                                            <input name="ContactNumber" type="text"
                                                    class="form-control"
                                                    maxlength="11"
                                                    pattern="\d{11}"
@@ -73,13 +73,13 @@
                                     <div class="col-md-12">
                                         <div class="mb-3">
                                             <label class="form-label">Email</label>
-                                            <input asp-for="Email" type="email" class="form-control">
+                                            <input name="Email" type="email" class="form-control">
                                         </div>
                                     </div>
                                     <div class="col-12">
                                         <div class="mb-3">
                                             <label class="form-label">Password</label>
-                                            <input asp-for="Password" type="password" class="form-control">
+                                            <input name="Password" type="password" class="form-control">
                                         </div>
                                     </div>
                                     <div class="col-12">
@@ -93,7 +93,7 @@
                                             <div class="form-check form-check-primary form-check-inline">
                                                 <input class="form-check-input me-3" type="checkbox" id="form-check-default" required>
                                                 <label class="form-check-label" for="form-check-default">
-                                                    I agree the <a href="javascript:void(0);" class="text-primary">Terms and Conditions</a>
+                                                    I agree the <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" class="text-primary">Terms and Conditions</a>
                                                 </label>
                                             </div>
                                         </div>
@@ -123,7 +123,22 @@
         </div>
 
     </div>
-
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @Model.Content
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- BEGIN GLOBAL MANDATORY SCRIPTS -->
     <script src="~/src/bootstrap/js/bootstrap.bundle.min.js"></script>
     <!-- END GLOBAL MANDATORY SCRIPTS -->

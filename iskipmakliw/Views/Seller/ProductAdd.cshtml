@@ -16,13 +16,19 @@
                 </div>
 
                 <div class="row mb-4">
-                    <div class="col-sm-12">
+                    <div class="col-sm-12 mb-3">
                         <label>Description</label>
 
                         <textarea class="form-control" asp-for="Details" rows="10"></textarea>
                     </div>
+                    <div class="col-sm-12 ">
+                        <label>Image</label>
+                    </div>
+                    <div class="col-sm-12 mb-3">
+                        <input type="file" class="form-control" name="Image" accept="image/*" />
+                    </div>
                 </div>
-
+                
                 <div class="row mb-4">
                     <div class="col-sm-12 text-end">
                         <button class="btn btn-secondary" type="submit">Submit</button>

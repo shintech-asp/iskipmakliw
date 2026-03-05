@@ -276,34 +276,70 @@ namespace iskipmakliw.Controllers
             return View();
         }
         [HttpPost]
-        public IActionResult ProductAdd(Product product)
+        public IActionResult ProductAdd(Product product, IFormFile Image)
         {
             var usersId = int.Parse(User.FindFirst("UsersId")?.Value);
-            var filter = _context.Product.Where(u => u.Name == product.Name && u.UsersId == usersId).FirstOrDefault();
+            var filter = _context.Product
+                .Where(u => u.Name == product.Name && u.UsersId == usersId)
+                .FirstOrDefault();
+
             ModelState.Remove("Users");
+
             if (ModelState.IsValid)
             {
                 if (filter == null)
                 {
                     product.UsersId = usersId;
-                    var newProduct = _context.Product.Add(product);
-                   
-                    _context.SaveChanges();
+
+                    // ✅ HANDLE IMAGE UPLOAD
+                    if (Image != null && Image.Length > 0)
+                    {
+                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                        var extension = Path.GetExtension(Image.FileName).ToLower();
+
+                        if (!allowedExtensions.Contains(extension))
+                        {
+                            TempData["Error"] = "Only image files are allowed.";
+                            return View(product);
+                        }
+
+                        // Create unique file name
+                        var fileName = Guid.NewGuid().ToString() + extension;
+
+                        // Set path
+                        var path = Path.Combine(
+                            Directory.GetCurrentDirectory(),
+                            "wwwroot/uploads",
+                            fileName
+                        );
+
+                        // Make sure folder exists
+                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                        using (var stream = new FileStream(path, FileMode.Create))
+                        {
+                             Image.CopyTo(stream);
+                        }
+
+                        // Save file name to database
+                        product.Image = fileName;
+                    }
+
+                    _context.Product.Add(product);
+                     _context.SaveChangesAsync();
+
                     TempData["Success"] = "Product added successfully.";
-                    return View(product);
+                    return RedirectToAction("ProductList");
                 }
                 else
                 {
                     TempData["Error"] = "Product already exists.";
-                    return View();
+                    return View(product);
                 }
             }
-            else
-            {
-                TempData["Error"] = "Fill up all the fields";
-                return RedirectToAction("ProductList");
-            }
-                
+
+            TempData["Error"] = "Fill up all the fields";
+            return View(product);
         }
         public IActionResult ProductEdit(int Id)
         {
@@ -334,7 +370,9 @@ namespace iskipmakliw.Controllers
                         existing.Dimension = product.Dimension;
                         existing.Color = product.Color;
                         existing.Price = product.Price;
-                        existing.Unit = product.Unit;
+                        existing.Height = product.Height;
+                        existing.Weight = product.Weight;
+                        existing.Width = product.Width;
                         existing.DiscountType = product.DiscountType;
                         existing.Quantity = product.Quantity;
                         existing.Discount = product.Discount;
@@ -423,7 +461,9 @@ namespace iskipmakliw.Controllers
                         Dimension = model.ProductDetails.Dimension,
                         Color = model.ProductDetails.Color,
                         Price = model.ProductDetails.Price,
-                        Unit = model.ProductDetails.Unit,
+                        Weight = model.ProductDetails.Weight,
+                        Height = model.ProductDetails.Height,
+                        Width = model.ProductDetails.Width,
                         DiscountType = model.ProductDetails.DiscountType,
                         Quantity = model.ProductDetails.Quantity,
                         Discount = model.ProductDetails.Discount
@@ -438,7 +478,9 @@ namespace iskipmakliw.Controllers
                     productVariant.Material = model.ProductDetails.Material;
                     productVariant.Dimension = model.ProductDetails.Dimension;
                     productVariant.Color = model.ProductDetails.Color;
-                    productVariant.Unit = model.ProductDetails.Unit;
+                    productVariant.Weight = model.ProductDetails.Weight;
+                    productVariant.Height = model.ProductDetails.Height;
+                    productVariant.Width = model.ProductDetails.Width;
                     productVariant.DiscountType = model.ProductDetails.DiscountType;
                     productVariant.Price = model.ProductDetails.Price;
                     productVariant.Quantity = model.ProductDetails.Quantity;

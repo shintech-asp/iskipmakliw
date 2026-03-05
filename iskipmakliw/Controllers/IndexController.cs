@@ -19,7 +19,7 @@ namespace iskipmakliw.Controllers
     public class IndexController : Controller
     {
         ApplicationDbContext _context;
-        private EmailService emailService = new EmailService();
+        private EmailService emailService;
         public IndexController(ApplicationDbContext context)
         {
             _context = context;
@@ -229,7 +229,8 @@ namespace iskipmakliw.Controllers
         [HttpGet]
         public IActionResult Signup()
         {
-            return View();
+            var data = _context.Terms.FirstOrDefault();
+            return View(data);
         }
         [HttpPost]
         public IActionResult Signup(Users users, string Confirm)

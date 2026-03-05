@@ -14,11 +14,12 @@ namespace iskipmakliw.Controllers
     {
         private readonly IPaymongo _paymongo;
         ApplicationDbContext _context;
-
-        public PaymentsController(IPaymongo paymongo, ApplicationDbContext context)
+        EmailService _emailService;
+        public PaymentsController(IPaymongo paymongo, ApplicationDbContext context, EmailService emailService)
         {
             _paymongo = paymongo;
             _context = context;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -79,6 +80,8 @@ namespace iskipmakliw.Controllers
         [HttpPost]
         public async Task<IActionResult> PayProduct(List<int> cartSelect, string paymentMethod, int? paymentMethodOnline, int billings, int shippingFee)
         {
+            var usersId = int.Parse(User.FindFirst("UsersId")?.Value ?? "0");
+            var user = _context.Users.Find(usersId);
             if (paymentMethodOnline != null && billings != null)
             {
                 if (cartSelect == null || !cartSelect.Any())
@@ -87,8 +90,6 @@ namespace iskipmakliw.Controllers
                     return RedirectToAction("Cart");
                 }
 
-                var usersId = int.Parse(User.FindFirst("UsersId")?.Value ?? "0");
-                var user = _context.Users.Find(usersId);
 
                 if (user == null)
                 {
@@ -197,6 +198,7 @@ namespace iskipmakliw.Controllers
                         ProductVariantsId = payment.ProductVariantsId,
                         Quantity = payment.Quantity,
                         Price = total,
+                        ShippingFee = shippingFee,
                         Source = "ProductVariants",
                         PaymentStatus = "Pending",
                         PaymentMethod = "Cash on Delivery",
@@ -209,6 +211,8 @@ namespace iskipmakliw.Controllers
                     _context.ProductVariants.Update(updateProduct);
                     var cartRemove = _context.Cart.FirstOrDefault(u => u.Id == payment.Id);
                     _context.Cart.Remove(cartRemove);
+                    await _context.SaveChangesAsync();
+                    _emailService.SendSuccessEmail(user.Email, purchasedProduct.Id, "Cash on Delivery");
                 }
                 TempData["Success"] = "Purchase successfuly!";
                 await _context.SaveChangesAsync();
@@ -298,7 +302,8 @@ namespace iskipmakliw.Controllers
             // Update DB
             var cartIds = TempData["CartIds"]?.ToString()?.Split(',').Select(int.Parse).ToList();
             var billingId = TempData["BillingsId"]?.ToString();
-
+            var shippingFee = TempData["ShippingFee"]?.ToString();
+            
             if (cartIds != null && cartIds.Any())
             {
                 // Update payment records
@@ -326,6 +331,7 @@ namespace iskipmakliw.Controllers
                         ProductVariantsId = payment.ProductVariantsId,
                         Quantity = payment.Quantity,
                         Price = total,
+                        ShippingFee = double.Parse(shippingFee),
                         Source = "ProductVariants",
                         PaymentStatus = status switch
                         {
@@ -344,6 +350,13 @@ namespace iskipmakliw.Controllers
                     _context.ProductVariants.Update(updateProduct);
                     var cartRemove = _context.Cart.FirstOrDefault(u => u.Id == payment.Id);
                     _context.Cart.Remove(cartRemove);
+
+                    if (status == "paid" || status == "succeeded")
+                    {
+                        var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+
+                        _emailService.SendSuccessEmail(user.Email, purchasedProduct.Id, "Online payment");
+                    }
                 }
                 await _context.SaveChangesAsync();
             }
@@ -405,6 +418,8 @@ namespace iskipmakliw.Controllers
             customizationProduct.PaymentStatus = "Paid";
             _context.CustomizationOrders.Update(customizationProduct);
             await _context.SaveChangesAsync();
+            var userData = _context.Users.Find(userId);
+            _emailService.SendSuccessEmail(userData.Email, purchasedProduct.Id, "Online payment");
             TempData["Success"] = "Payment successful!";
             return RedirectToAction("Chat", "Home");
         }

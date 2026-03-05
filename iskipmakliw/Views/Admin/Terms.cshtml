@@ -1,0 +1,23 @@
+﻿@{
+    ViewData["title"] = "Terms and Condition";
+}
+@model Terms;
+<div class="row layout-top-spacing">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="text-black mb-3">
+                    Terms and Condition
+                </h4>
+                <p class="mb-3">
+                    This is the Terms and Condition page. You can edit the content of this page by modifying the corresponding view file in the project.
+                </p>
+                <form asp-action="Terms">
+                    <textarea class="form-control" rows="10" placeholder="Enter terms and conditions here..." name="Content">@Model?.Content</textarea>
+                    <button type="submit" class="btn btn-primary mt-3">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+              

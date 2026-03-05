@@ -12,13 +12,14 @@
         public string Source { get; set; }
         public int Quantity { get; set; }
         public double? Price { get; set; }
+        public double? ShippingFee { get; set; }
         public string PaymentStatus { get; set; }
         public string PaymentMethod { get; set; }
         public DateTime PurchasedDate { get; set; } = DateTime.Now;
         public string TransactionStatus { get; set; } = "Pending";
         public int BillingsId { get; set; }
         public Billings Billings { get; set; }
-        public List<DeliverProduct> DeliverProduct { get; set; }
+        public DeliverProduct DeliverProduct { get; set; }
 
     }
 }

@@ -1,6 +1,7 @@
 ﻿using iskipmakliw.Data;
 using iskipmakliw.Models;
 using iskipmakliw.Models.DTO;
+using iskipmakliw.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,9 +11,11 @@ namespace iskipmakliw.Controllers
     {
 
         ApplicationDbContext _context;
-        public RiderController(ApplicationDbContext context)
+        EmailService _emailService;
+        public RiderController(ApplicationDbContext context, EmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
         public IActionResult Index()
         {
@@ -60,7 +63,7 @@ namespace iskipmakliw.Controllers
                          .Include(dp => dp.PurchasedProduct)
                              .ThenInclude(pp => pp.Billings)
                          .Include(dp => dp.PurchasedProduct)
-                             .ThenInclude(pp => pp.ProductVariants)
+                             .ThenInclude(pp => pp.ProductVariants) 
                                  .ThenInclude(pv => pv.Product)
                                      .ThenInclude(p => p.Users)
                                          .ThenInclude(u => u.UserDetails)
@@ -167,6 +170,9 @@ namespace iskipmakliw.Controllers
                     data.PickUpOn = DateTime.Now;
                     _context.DeliverProduct.Update(data);
                     _context.SaveChanges();
+                    var transaction = _context.PurchasedProduct.Include(u => u.Users).Where(u => u.Id == data.PurchasedProductId).FirstOrDefault();
+                    _emailService.SendSuccessDropOffEmail(transaction.Users.Email, transaction.Id);
+
                     TempData["Success"] = "Pick up success!";
                 }
                 else if (Type == 2)
@@ -174,10 +180,11 @@ namespace iskipmakliw.Controllers
                     var data = _context.DeliverProduct.Where(u => u.Id == Id).FirstOrDefault();
                     data.DropOffOn = DateTime.Now;
                     _context.DeliverProduct.Update(data);
-                    var transaction = _context.PurchasedProduct.Where(u => u.Id == data.PurchasedProductId).FirstOrDefault();
+                    var transaction = _context.PurchasedProduct.Include(u => u.Users).Where(u => u.Id == data.PurchasedProductId).FirstOrDefault();
                     transaction.TransactionStatus = "In transit";
                     _context.PurchasedProduct.Update(transaction);
                     _context.SaveChanges();
+                    
                     TempData["Success"] = "Drop off success!";
 
                 }
@@ -220,8 +227,15 @@ namespace iskipmakliw.Controllers
                         {
                             customization.TransactionStatus = "Completed";
                             _context.CustomizationOrders.Update(customization);
+                            _emailService.SendSuccessDeliveryEmail(transaction.Users.Email, customization.Id, "custom");
                         }
-                        _context.SaveChanges();
+                        else
+                        {
+                            _emailService.SendSuccessDeliveryEmail(transaction.Users.Email, transaction.Id, "normal");
+                        }
+                            _context.SaveChanges();
+
+                        
                         TempData["Success"] = "Yay! Delivery Complete!";
                     }
                     else
