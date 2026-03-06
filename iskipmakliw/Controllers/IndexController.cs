@@ -19,10 +19,11 @@ namespace iskipmakliw.Controllers
     public class IndexController : Controller
     {
         ApplicationDbContext _context;
-        private EmailService emailService;
-        public IndexController(ApplicationDbContext context)
+        private EmailService _emailService;
+        public IndexController(ApplicationDbContext context, EmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
         public IActionResult Index()
         {
@@ -206,7 +207,7 @@ namespace iskipmakliw.Controllers
                             _context.SaveChanges();
                         }
                     }
-                    bool emailSent = emailService.SendVerificationCode(users.Email, otpCode);
+                    bool emailSent = _emailService.SendVerificationCode(users.Email, otpCode);
                     if (emailSent)
                     {
                         TempData["Email"] = users.Email;
@@ -242,13 +243,31 @@ namespace iskipmakliw.Controllers
             ModelState.Remove("VerificationCode");
             ModelState.Remove("CodeCreatedAt");
             ModelState.Remove("LastCodeSentAt");
+            var data = _context.Terms.FirstOrDefault();
+            if (users.Password.Length < 8)
+            {
+                TempData["Error"] = "Password must be at least 8 characters long";
+                return View(data);
+            }
             if (ModelState.IsValid &&(Confirm == users.Password))
             {
                 var existingUser = _context.Users.FirstOrDefault(u => u.Email == users.Email);
                 if (existingUser != null)
                 {
                     TempData["Error"] = "Email already in use";
-                    return View(users);
+                    return View(data);
+                }
+                var existingNumber = _context.Users.FirstOrDefault(u => u.ContactNumber == users.ContactNumber);
+                if(existingNumber != null)
+                {
+                    TempData["Error"] = "Contact number already in use";
+                    return View(data);
+                }
+                var existingUsername = _context.Users.FirstOrDefault(u => u.Username == users.Username);
+                if (existingUsername != null)
+                {
+                    TempData["Error"] = "Username already in use";
+                    return View(data);
                 }
                 string otpCode = OTPHelper.GenerateOTP();
                 var hasher = new PasswordHasher<Users>();
@@ -260,7 +279,7 @@ namespace iskipmakliw.Controllers
 
                 _context.Users.Add(users);
                 _context.SaveChanges();
-                bool emailSent = emailService.SendVerificationCode(users.Email, otpCode);
+                bool emailSent = _emailService.SendVerificationCode(users.Email, otpCode);
                 if (emailSent)
                 {
                     TempData["Email"] = users.Email;
@@ -281,7 +300,7 @@ namespace iskipmakliw.Controllers
             {
                 TempData["Error"] = "Fill up all required details";
             }
-                return View(users);
+                return View(data);
         }
         // GET: VerifyEmail
         public ActionResult VerifyEmail()
@@ -384,7 +403,7 @@ namespace iskipmakliw.Controllers
                 _context.SaveChanges();
 
                 // Send email
-                bool emailSent = emailService.SendVerificationCode(user.Email, newCode);
+                bool emailSent = _emailService.SendVerificationCode(user.Email, newCode);
 
                 if (emailSent)
                 {

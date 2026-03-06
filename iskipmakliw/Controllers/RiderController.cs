@@ -218,7 +218,7 @@ namespace iskipmakliw.Controllers
                         data.Status = "Delivered";
                         data.ProofImage = path;
                         _context.DeliverProduct.Update(data);
-                        var transaction = _context.PurchasedProduct.Where(u => u.Id == data.PurchasedProductId).FirstOrDefault();
+                        var transaction = _context.PurchasedProduct.Include(u =>u.Users).Where(u => u.Id == data.PurchasedProductId).FirstOrDefault();
                         transaction.TransactionStatus = "To rate";
                         transaction.PaymentStatus = "Paid";
                         _context.PurchasedProduct.Update(transaction);
