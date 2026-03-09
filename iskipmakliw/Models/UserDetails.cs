@@ -48,6 +48,7 @@ namespace iskipmakliw.Models
         public string? PlateNumber { get; set; }
         public string? DeedOfSale { get; set; }
         public List<VehicleImages>? VehicleImages { get; set; }
+        public string? DeclinedReason { get; set; }
     }
 
 }

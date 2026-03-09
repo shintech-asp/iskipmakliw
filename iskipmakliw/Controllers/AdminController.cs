@@ -75,18 +75,87 @@ namespace iskipmakliw.Controllers
             TempData["Success"] = "Terms and Conditions successfully updated!";
             return View(data);
         }
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var oneWeekAgo = DateTime.Now.AddDays(-7);
+            var viewModel = new AdminDashboardViewModel
+            {
+                // Recent Subscribers (last 7 days)
+                RecentSubscribers = await _context.Users
+                    .Include(s => s.Subscription.Where(u => u.Expiration >= DateTime.Now))
+                            .ThenInclude(s => s.Plans)
+                    .Include(s => s.UserDetails)
+                    .Where(s => s.DateCreated >= DateTime.UtcNow.AddDays(-7) && s.Role == "Seller")
+                    .OrderByDescending(s => s.DateCreated)
+                    .Take(10)
+                    .ToListAsync(),
 
-            var data = _context.Users
-                .Include(u => u.UserDetails)
-                .Include(u => u.Subscription)
-                    .ThenInclude(u => u.Plans)
-                .Where(u => u.DateCreated >= oneWeekAgo && u.Role == "Seller")
-                .ToList();
+                // Purchased Plans
+                PurchasedPlans = await _context.Users
+                    .Include(s => s.Subscription)
+                            .ThenInclude(s => s.Plans)
+                    .Include(s => s.UserDetails)
+                    .Where(s => s.Role == "Seller")
+                    .OrderByDescending(s => s.DateCreated)
+                    .Take(10)
+                    .ToListAsync(),
 
-            return View(data);
+                // Rider Applications
+                RiderApplications = await _context.Users
+                    .Include(r => r.UserDetails)
+                    .Where(s => s.Role == "Rider")
+                    .OrderByDescending(r => r.DateCreated)
+                    .Take(10)
+                    .ToListAsync(),
+
+                // Recently Registered Customers
+                RecentCustomers = await _context.Users
+                    .Where(u => u.DateCreated >= DateTime.UtcNow.AddDays(-7) && u.Role == "Customer")
+                    .OrderByDescending(u => u.DateCreated)
+                    .Take(10)
+                    .ToListAsync(),
+
+                // Statistics
+                TotalSubscribers = await _context.Users.Where(s => s.Role == "Seller").CountAsync(),
+                ActiveSubscriptions = await _context.Users.Include(r => r.Subscription)
+                    .Where(s => s.Subscription.Any(u => u.Expiration >= DateTime.UtcNow))
+                    .CountAsync(),
+                PendingRiders = await _context.Users.Include(r => r.UserDetails)
+                    .Where(r => r.UserDetails.Status == "Pending")
+                    .CountAsync(),
+                TotalCustomers = await _context.Users
+                    .Where(u => u.Role == "Customer")
+                    .CountAsync(),
+
+                // Monthly Subscriber Data (for graph)
+                MonthlySubscriberData = await GetMonthlySubscriberData()
+            };
+
+            return View(viewModel);
+        }
+
+        private async Task<List<MonthlySubscriberData>> GetMonthlySubscriberData()
+        {
+            var data = new List<MonthlySubscriberData>();
+            var today = DateTime.UtcNow;
+
+            for (int i = 11; i >= 0; i--)
+            {
+                var monthStart = today.AddMonths(-i);
+                monthStart = new DateTime(monthStart.Year, monthStart.Month, 1);
+                var monthEnd = monthStart.AddMonths(1).AddSeconds(-1);
+
+                var count = await _context.Users.Include(r => r.UserDetails)
+                    .Where(s => s.DateCreated >= monthStart && s.DateCreated <= monthEnd)
+                    .CountAsync();
+
+                data.Add(new MonthlySubscriberData
+                {
+                    Month = monthStart.ToString("MMM"),
+                    Count = count
+                });
+            }
+
+            return data;
         }
         public IActionResult Users()
         {
@@ -117,6 +186,7 @@ namespace iskipmakliw.Controllers
         }
         public IActionResult RiderReview(int Id)
         {
+            ViewBag.Id = Id;
             var data = _context.Users
                             .Include(u => u.UserDetails)
                                     .ThenInclude(u => u.VehicleImages)
@@ -126,6 +196,7 @@ namespace iskipmakliw.Controllers
         }
         public IActionResult SellerReview(int Id)
         {
+            ViewBag.Id = Id;
             var data = _context.Payments
                             .Include(p => p.Users)
                             .ThenInclude(u => u.UserDetails)
@@ -136,10 +207,11 @@ namespace iskipmakliw.Controllers
         }
 
         [HttpPost]
-        public IActionResult SellerReview(string Status, int Id)
+        public IActionResult SellerReview(string Status, int Ids, string? DeclinedReason)
         {
-            var data = _context.UserDetails.Where(u => u.UsersId == Id).FirstOrDefault();
-            data.Status = Status;
+            var user = _context.Users.Include(u=> u.UserDetails).Where(u => u.Id == Ids).FirstOrDefault();
+            user.UserDetails.Status = Status;
+            user.UserDetails.DeclinedReason = DeclinedReason;
             _context.SaveChanges();
             TempData["Success"] = "Status successfully changed!";
             return RedirectToAction("Index");

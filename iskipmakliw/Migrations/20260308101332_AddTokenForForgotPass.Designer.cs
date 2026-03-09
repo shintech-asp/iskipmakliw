@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iskipmakliw.Data;
 
@@ -11,9 +12,11 @@ using iskipmakliw.Data;
 namespace iskipmakliw.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260308101332_AddTokenForForgotPass")]
+    partial class AddTokenForForgotPass
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -659,9 +662,6 @@ namespace iskipmakliw.Migrations
 
                     b.Property<int?>("Cvv")
                         .HasColumnType("int");
-
-                    b.Property<string>("DeclinedReason")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DeedOfSale")
                         .HasColumnType("nvarchar(max)");

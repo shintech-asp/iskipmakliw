@@ -372,8 +372,8 @@
                 <!-- Preparing Product -->
                 @if (Model.DeliverProduct.PickUpOn != null)
                 {
-                    <div class="timeline-item timeline-warning">
-                        <div class="timeline-dot dot-warning">📦</div>
+                    <div class="timeline-item timeline-success">
+                        <div class="timeline-dot dot-success">📦</div>
                         <div class="timeline-content">
                             <span class="timeline-time">@Model.DeliverProduct.PickUpOn?.ToString("hh:mm tt")</span>
                             <div class="timeline-title">Preparing Product</div>
@@ -382,11 +382,37 @@
                     </div>
                 }
 
+                @if (Model.DeliverProduct.RiderId != null)
+                {
+                    <div class="timeline-item timeline-success">
+                        <div class="timeline-dot dot-success">👤</div>
+                        <div class="timeline-content">
+                            <span class="timeline-time">@Model.DeliverProduct.PickUpOn?.ToString("hh:mm tt")</span>
+                            <div class="timeline-title">
+                                Rider: <strong>@Model.DeliverProduct.Rider?.Username</strong>
+                            </div>
+                            <div class="timeline-subtitle">Preparing Product</div>
+                            <div class="timeline-date">@Model.DeliverProduct.PickUpOn?.ToString("MMM dd, yyyy")</div>
+                            @if (!string.IsNullOrEmpty(Model.DeliverProduct.Rider?.ContactNumber))
+                            {
+                                <div class="timeline-contact">
+                                    <span>📞 @Model.DeliverProduct.Rider.ContactNumber</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.DeliverProduct.Rider?.Email))
+                            {
+                                <div class="timeline-contact">
+                                    <span> @Model.DeliverProduct.Rider.Email</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
                 <!-- Drop Off -->
                 @if (Model.DeliverProduct.DropOffOn != null)
                 {
-                    <div class="timeline-item timeline-info">
-                        <div class="timeline-dot dot-info">🚚</div>
+                    <div class="timeline-item timeline-success">
+                        <div class="timeline-dot dot-success">🚚</div>
                         <div class="timeline-content">
                             <span class="timeline-time">@Model.DeliverProduct.DropOffOn?.ToString("hh:mm tt")</span>
                             <div class="timeline-title">Out for Delivery</div>
@@ -399,8 +425,8 @@
                 <!-- Delivered -->
                 @if (Model.DeliverProduct.DeliveredOn != null)
                 {
-                    <div class="timeline-item timeline-primary">
-                        <div class="timeline-dot dot-primary">✓</div>
+                    <div class="timeline-item timeline-success">
+                        <div class="timeline-dot dot-success">✓</div>
                         <div class="timeline-content">
                             <span class="timeline-time">@Model.DeliverProduct.DeliveredOn?.ToString("hh:mm tt")</span>
                             <div class="timeline-title">Delivered Successfully</div>
@@ -431,8 +457,8 @@
 
                     @if (Model.Ratings.ProductVariants != null)
                     {
-                    <div class="timeline-item timeline-danger">
-                        <div class="timeline-dot dot-danger">⭐</div>
+                    <div class="timeline-item timeline-success">
+                        <div class="timeline-dot dot-success">⭐</div>
                         <div class="timeline-content">
                             <span class="timeline-time">@Model.Ratings.CreatedAt.ToString("hh:mm tt")</span>
                             <div class="timeline-title">Customer Review</div>
@@ -454,8 +480,8 @@
                     }
                     else
                     {
-                        <div class="timeline-item timeline-danger">
-                            <div class="timeline-dot dot-danger">⭐</div>
+                        <div class="timeline-item timeline-success">
+                            <div class="timeline-dot dot-success">⭐</div>
                             <div class="timeline-content">
                                 <span class="timeline-time">@Model.Ratings.CreatedAt.ToString("hh:mm tt")</span>
                                 <div class="timeline-title">Customer Review</div>
@@ -521,8 +547,8 @@ else
                 <!-- Preparing Product -->
                 @if (Model.DeliverProduct.PickUpOn != null)
                 {
-                    <div class="timeline-item timeline-warning">
-                        <div class="timeline-dot dot-warning">📦</div>
+                    <div class="timeline-item timeline-success">
+                        <div class="timeline-dot dot-success">📦</div>
                         <div class="timeline-content">
                             <span class="timeline-time">@Model.DeliverProduct.PickUpOn?.ToString("hh:mm tt")</span>
                             <div class="timeline-title">Preparing Product</div>
@@ -530,12 +556,39 @@ else
                         </div>
                     </div>
                 }
+                
 
+                @if (Model.DeliverProduct.RiderId != null)
+                {
+                    <div class="timeline-item timeline-success">
+                        <div class="timeline-dot dot-success">👤</div>
+                        <div class="timeline-content">
+                            <span class="timeline-time">@Model.DeliverProduct.PickUpOn?.ToString("hh:mm tt")</span>
+                            <div class="timeline-title">
+                                Rider: <strong>@Model.DeliverProduct.Rider?.Username</strong>
+                            </div>
+                            <div class="timeline-subtitle">Preparing Product</div>
+                            <div class="timeline-date">@Model.DeliverProduct.PickUpOn?.ToString("MMM dd, yyyy")</div>
+                            @if (!string.IsNullOrEmpty(Model.DeliverProduct.Rider?.ContactNumber))
+                            {
+                                <div class="timeline-contact">
+                                    <span>📞 @Model.DeliverProduct.Rider.ContactNumber</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.DeliverProduct.Rider?.Email))
+                            {
+                                <div class="timeline-contact">
+                                    <span> @Model.DeliverProduct.Rider.Email</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
                 <!-- Drop Off -->
                 @if (Model.DeliverProduct.DropOffOn != null)
                 {
-                    <div class="timeline-item timeline-info">
-                        <div class="timeline-dot dot-info">🚚</div>
+                    <div class="timeline-item timeline-success">
+                        <div class="timeline-dot dot-success">🚚</div>
                         <div class="timeline-content">
                             <span class="timeline-time">@Model.DeliverProduct.DropOffOn?.ToString("hh:mm tt")</span>
                             <div class="timeline-title">Out for Delivery</div>
@@ -548,8 +601,8 @@ else
                 <!-- Delivered -->
                 @if (Model.DeliverProduct.DeliveredOn != null)
                 {
-                    <div class="timeline-item timeline-primary">
-                        <div class="timeline-dot dot-primary">✓</div>
+                    <div class="timeline-item timeline-success">
+                        <div class="timeline-dot dot-success">✓</div>
                         <div class="timeline-content">
                             <span class="timeline-time">@Model.DeliverProduct.DeliveredOn?.ToString("hh:mm tt")</span>
                             <div class="timeline-title">Delivered Successfully</div>
@@ -578,8 +631,9 @@ else
                 <!-- Rating -->
                 @if (Model.Ratings != null)
                 {
-                    <div class="timeline-item timeline-danger">
-                        <div class="timeline-dot dot-danger">⭐</div>
+                    <div class="timeline-item timeline-success">
+                        <div class="timeline-dot dot-success">⭐</div>
+                        <div class="timeline-dot dot-success">⭐</div>
                         <div class="timeline-content">
                             <span class="timeline-time">@Model.Ratings.CreatedAt.ToString("hh:mm tt")</span>
                             <div class="timeline-title">Customer Review</div>

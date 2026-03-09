@@ -117,6 +117,8 @@ namespace iskipmakliw.Controllers
                                         .ThenInclude(pp => pp.CustomizationOrders)
                                             .ThenInclude(pp => pp.Users)
                                                 .ThenInclude(pp => pp.UserDetails)
+                                    .Include(u => u.Rider)
+                                        .ThenInclude(u => u.UserDetails)
                                     .Where(u => u.PurchasedProduct.Id == Id)
                                     .FirstOrDefault();
             var Rated = _context.Ratings

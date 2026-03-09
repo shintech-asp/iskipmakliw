@@ -1,0 +1,512 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OakMart</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cork-violet: #7c5caf;
+            --cork-dark-violet: #5a3f8a;
+            --cork-light-violet: #9d7ec8;
+            --cork-cream: #f5f3f0;
+            --cork-warm-tan: #e5dcd3;
+            --cork-accent: #c4a5d4;
+            --cork-text: #3d3540;
+            --cork-text-light: #6b5f6f;
+            --cork-border: #dcc9e0;
+        }
+
+        body {
+            font-family: 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f3f0 0%, #e8e4e1 50%, #ede5e8 100%);
+            color: var(--cork-text);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Header & Navigation */
+        header {
+            background: rgba(245, 243, 240, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--cork-border);
+            box-shadow: 0 4px 30px rgba(124, 92, 175, 0.06);
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--cork-dark-violet);
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #7c5caf 0%, #9d7ec8 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        nav {
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.75rem 1.6rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            letter-spacing: 0.4px;
+            font-family: 'Inter', '-apple-system', sans-serif;
+        }
+
+        .btn-signin {
+            background: transparent;
+            color: var(--cork-dark-violet);
+            border: 1.5px solid var(--cork-dark-violet);
+        }
+
+            .btn-signin:hover {
+                background: var(--cork-dark-violet);
+                color: white;
+                transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(90, 63, 138, 0.25);
+            }
+
+        .btn-signup {
+            background: linear-gradient(135deg, #7c5caf 0%, #5a3f8a 100%);
+            color: white;
+            border: none;
+        }
+
+            .btn-signup:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 32px rgba(124, 92, 175, 0.3);
+            }
+
+        .btn-browse {
+            background: linear-gradient(135deg, #7c5caf 0%, #9d7ec8 100%);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+            .btn-browse:hover {
+                background: linear-gradient(135deg, #5a3f8a 0%, #7c5caf 100%);
+                transform: translateY(-3px);
+                box-shadow: 0 15px 40px rgba(124, 92, 175, 0.35);
+            }
+
+        /* Hero Section */
+        .hero {
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .hero::before {
+                content: '';
+                position: absolute;
+                top: -40%;
+                right: -10%;
+                width: 700px;
+                height: 700px;
+                background: radial-gradient(circle, rgba(157, 126, 200, 0.12) 0%, transparent 70%);
+                border-radius: 50%;
+                animation: float 8s ease-in-out infinite;
+            }
+
+            .hero::after {
+                content: '';
+                position: absolute;
+                bottom: -30%;
+                left: -15%;
+                width: 500px;
+                height: 500px;
+                background: radial-gradient(circle, rgba(196, 165, 212, 0.1) 0%, transparent 70%);
+                border-radius: 50%;
+                animation: float 10s ease-in-out infinite reverse;
+            }
+
+       @@keyframes float {
+            0%, 100%
+
+        {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(30px);
+        }
+
+        }
+
+        .hero-content {
+            flex: 1;
+            max-width: 600px;
+            z-index: 2;
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        @@keyframes slideInLeft {
+            from
+
+        {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            color: var(--cork-text);
+            letter-spacing: -0.5px;
+        }
+
+            .hero h1 .highlight {
+                background: linear-gradient(135deg, #7c5caf 0%, #9d7ec8 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--cork-text-light);
+            margin-bottom: 3rem;
+            line-height: 1.7;
+            letter-spacing: 0.2px;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Hero Visual */
+        .hero-visual {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        @@keyframes slideInRight {
+            from
+
+        {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        }
+
+        .furniture-showcase {
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #7c5caf 0%, #9d7ec8 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 4rem;
+            position: relative;
+            box-shadow: 0 30px 60px rgba(124, 92, 175, 0.2);
+            overflow: hidden;
+        }
+
+            .furniture-showcase::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: repeating-linear-gradient( 45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.05) 10px, rgba(255, 255, 255, 0.05) 20px );
+                animation: woodGrain 20s linear infinite;
+            }
+
+        @@keyframes woodGrain {
+            0%
+
+        {
+            transform: translate(0, 0);
+        }
+
+        100% {
+            transform: translate(100px, 100px);
+        }
+
+        }
+
+        .furniture-showcase::after {
+            content: '🪑';
+            position: relative;
+            z-index: 2;
+            animation: bounce 3s ease-in-out infinite;
+        }
+
+        @@keyframes bounce {
+            0%, 100%
+
+        {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-20px);
+        }
+
+        }
+
+        /* Features Section */
+        .features {
+            padding: 6rem 4rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            background: rgba(157, 126, 200, 0.05);
+            margin: 4rem 0;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 2.5rem;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid var(--cork-border);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+            .feature-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 20px 50px rgba(124, 92, 175, 0.12);
+                border-color: var(--cork-accent);
+                background: rgba(255, 255, 255, 0.9);
+            }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.8rem;
+            color: var(--cork-dark-violet);
+            font-weight: 700;
+        }
+
+        .feature-card p {
+            color: var(--cork-text-light);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(135deg, #5a3f8a 0%, #7c5caf 100%);
+            color: var(--cork-cream);
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+            footer p {
+                font-size: 0.9rem;
+                letter-spacing: 0.5px;
+                opacity: 0.95;
+            }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            header
+
+        {
+            padding: 1.5rem 2rem;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .hero {
+            flex-direction: column;
+            padding: 3rem 2rem;
+            min-height: auto;
+        }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+        .cta-group {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        .hero::before {
+            width: 300px;
+            height: 300px;
+            right: -100px;
+        }
+
+        .furniture-showcase {
+            max-width: 300px;
+            margin-top: 3rem;
+        }
+
+        }
+
+        /* Accessibility */
+        @@media (prefers-reduced-motion: reduce) {
+            *
+
+        {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <header>
+        <div class="logo">
+            <div class="logo-icon">🌳</div>
+            OakMart
+        </div>
+        <nav>
+            <a class="btn btn-signin" asp-action="Login" asp-controller="Account">Sign In</a>
+            <a class="btn btn-signup" asp-action="Signup">Sign Up</a>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>
+                Discover Premium
+                <span class="highlight">Wooden Furniture</span>
+                For Your Home
+            </h1>
+            <p>
+                Handcrafted elegance meets modern design. Explore our collection of sustainable,
+                beautifully crafted wooden furniture that brings warmth and sophistication to every space.
+            </p>
+            <div class="cta-group">
+                <a class="btn btn-browse" asp-action="Index">Browse Collection</a>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="furniture-showcase"></div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="feature-card">
+            <div class="feature-icon">♻️</div>
+            <h3>Sustainable Materials</h3>
+            <p>Crafted from responsibly sourced wood, ensuring environmental excellence without compromise.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🎨</div>
+            <h3>Timeless Design</h3>
+            <p>Each piece combines classic aesthetics with contemporary craftsmanship for lasting appeal.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">✨</div>
+            <h3>Premium Quality</h3>
+            <p>Meticulously inspected and finished to perfection, built to last generations.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 OakMart. Crafting Elegance in Wood. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Button interactions
+        // Smooth scroll for any future navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>

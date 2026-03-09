@@ -29,7 +29,7 @@ builder.Services
     {
         options.Cookie.Name = "MyAuthCookie";
         options.LoginPath = "/Account/Login";
-        options.AccessDeniedPath = "/Index/Index";
+        options.AccessDeniedPath = "/Index/Landing";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
     });
 
@@ -83,6 +83,6 @@ app.UseAuthorization();
 // ============================================
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Index}/{action=Index}/{id?}");
+    pattern: "{controller=Index}/{action=Landing}/{id?}");
 
 app.Run();

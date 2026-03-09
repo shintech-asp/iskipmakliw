@@ -9,6 +9,12 @@
         <p>Please wait for the admins approval. Thank you!</p>
     </div>
 }
+else if(user.UserDetails.Status == "Declined")
+{
+    <div class="alert alert-danger mt-5">
+        <p>Sorry, your application has been declined. Reason: @user.UserDetails.DeclinedReason.</p>
+    </div>
+}
 else
 {
     <div class="row layout-top-spacing">

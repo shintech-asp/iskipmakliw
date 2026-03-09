@@ -25,6 +25,10 @@ namespace iskipmakliw.Controllers
             _context = context;
             _emailService = emailService;
         }
+        public IActionResult Landing()
+        {
+            return View();
+        }
         public IActionResult Index()
         {
             var data = _context.Product
@@ -45,6 +49,140 @@ namespace iskipmakliw.Controllers
                 .ToList();
 
             return View(data);
+        }
+        [HttpPost]
+        public async Task<IActionResult> SendResetLink(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                TempData["Error"] = "Please enter your email address.";
+                return RedirectToAction("Index");
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+            {
+                // For security, don't reveal if email exists or not
+                TempData["Success"] = "If an account exists with that email, you will receive a password reset link.";
+                return RedirectToAction("Index");
+            }
+
+            // Generate reset token (valid for 15 minutes)
+            string resetToken = Guid.NewGuid().ToString();
+            var expiryTime = DateTime.UtcNow.AddMinutes(15);
+
+            // Save token to User model
+            user.PasswordResetToken = resetToken;
+            user.PasswordResetTokenExpiry = expiryTime;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            // Create reset link
+            string resetLink = Url.Action("ResetPassword", "Index",
+                new { token = resetToken },
+                protocol: Request.Scheme,
+                host: Request.Host.ToString());
+
+            // Send email with reset link
+            bool emailSent = _emailService.SendPasswordResetEmail(email, resetLink, user.Username ?? "User");
+
+            if (emailSent)
+            {
+                TempData["Success"] = "Password reset link has been sent to your email. Please check your inbox.";
+            }
+            else
+            {
+                TempData["Error"] = "Failed to send reset email. Please try again later.";
+            }
+
+            return RedirectToAction("Login", "Account");
+        }
+
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+        // GET: Reset password page
+        [HttpGet]
+        public async Task<IActionResult> ResetPassword(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                TempData["Error"] = "Invalid reset link.";
+                return RedirectToAction("Index");
+            }
+
+            // Find user by token
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.PasswordResetToken == token);
+
+            if (user == null)
+            {
+                TempData["Error"] = "This reset link is invalid.";
+                return RedirectToAction("Index");
+            }
+
+            // Check if token is expired
+            if (user.PasswordResetTokenExpiry == null || user.PasswordResetTokenExpiry < DateTime.UtcNow)
+            {
+                TempData["Error"] = "This reset link has expired. Please request a new one.";
+                return RedirectToAction("Index");
+            }
+
+            // Pass token to view for form submission
+            ViewBag.Token = token;
+            return View();
+        }
+
+        // POST: Update password
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string token, string newPassword, string confirmPassword)
+        {
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(newPassword))
+            {
+                TempData["Error"] = "Invalid request.";
+                return RedirectToAction("Index");
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                TempData["Error"] = "Passwords do not match.";
+                return RedirectToAction("ResetPassword", new { token });
+            }
+
+            if (newPassword.Length < 8)
+            {
+                TempData["Error"] = "Password must be at least 8 characters long.";
+                return RedirectToAction("ResetPassword", new { token });
+            }
+
+            // Find user by token
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.PasswordResetToken == token);
+
+            if (user == null)
+            {
+                TempData["Error"] = "This reset link is invalid.";
+                return RedirectToAction("Index");
+            }
+
+            // Check if token is expired
+            if (user.PasswordResetTokenExpiry == null || user.PasswordResetTokenExpiry < DateTime.UtcNow)
+            {
+                TempData["Error"] = "This reset link has expired. Please request a new one.";
+                return RedirectToAction("Index");
+            }
+
+            // Hash and update password using PasswordHasher
+            var hasher = new PasswordHasher<Users>();
+            user.Password = hasher.HashPassword(user, newPassword);
+            user.PasswordResetToken = null;
+            user.PasswordResetTokenExpiry = null;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Your password has been successfully reset. Please log in with your new password.";
+            return RedirectToAction("Login", "Account"); // Redirect to login page
         }
         public IActionResult Product(int Id, int SellerId)
         {

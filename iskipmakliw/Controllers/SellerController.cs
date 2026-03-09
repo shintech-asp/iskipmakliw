@@ -326,7 +326,7 @@ namespace iskipmakliw.Controllers
                     }
 
                     _context.Product.Add(product);
-                     _context.SaveChangesAsync();
+                     _context.SaveChanges();
 
                     TempData["Success"] = "Product added successfully.";
                     return RedirectToAction("ProductList");

@@ -72,7 +72,7 @@
     </div>
 
     <div class="col-xl-12 col-lg-12 col-md-12 layout-spacing">
-        <form asp-controller="Admin" asp-action="SellerReview" asp-route-Id="@Model.Users.Id" class="section social">
+        <form id="reviewForm" asp-controller="Admin" asp-action="SellerReview" class="section social">
             <div class="info">
                 <h5 class="">Status</h5>
                 <div class="row">
@@ -80,13 +80,15 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="input-group social-tweet mb-3">
-                                    <select class="form-select" name="Status">
+                                    <select class="form-select" name="Status" id="statusSelect">
                                         <option hidden selected>@Model.Users.UserDetails.Status</option>
                                         <option value="Pending">Pending</option>
                                         <option value="Approved">Approved</option>
                                         <option value="Declined">Declined</option>
                                         <option value="For approval">For approval</option>
                                     </select>
+                                    <input type="hidden" name="DeclinedReason" id="DeclinedReason" />
+                                    <input type="hidden" name="Ids" value="@ViewBag.Id" />
                                 </div>
                             </div>
                         </div>
@@ -153,3 +155,61 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.getElementById("reviewForm").addEventListener("submit", function(e) {
+
+            let status = document.getElementById("statusSelect").value;
+
+            if (status === "Declined") {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: "Decline Reason",
+                    input: "textarea",
+                    inputLabel: "Please provide a reason for declining this seller.",
+                    inputPlaceholder: "Enter reason here...",
+                    inputAttributes: {
+                        "aria-label": "Decline reason"
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: "Submit",
+                    confirmButtonColor: "#d33",
+                    preConfirm: (reason) => {
+                        if (!reason) {
+                            Swal.showValidationMessage("Reason is required!");
+                        }
+                        return reason;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById("DeclinedReason").value = result.value;
+                        document.getElementById("reviewForm").submit();
+                    }
+                });
+            }
+            else {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: "Confirm Status Change",
+                    text: "Are you sure you want to set this seller status to '" + status + "'?",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes, save it",
+                    cancelButtonText: "Cancel",
+                    confirmButtonColor: "#3085d6"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById("DeclinedReason").value = "";
+                        document.getElementById("reviewForm").submit();
+                    }
+                });
+
+            }
+        });
+    </script>
+}

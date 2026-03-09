@@ -518,5 +518,65 @@ namespace iskipmakliw.Services
             </html>
         ";
         }
+        public bool SendPasswordResetEmail(string toEmail, string resetLink, string userName)
+        {
+            try
+            {
+                string subject = "Password Reset Request";
+                string body = GetPasswordResetEmailBody(resetLink, userName);
+                using (MailMessage mail = new MailMessage())
+                {
+                    mail.From = new MailAddress(_fromEmail, _fromName);
+                    mail.To.Add(toEmail);
+                    mail.Subject = subject;
+                    mail.Body = body;
+                    mail.IsBodyHtml = true;
+                    using (SmtpClient smtp = new SmtpClient(_smtpHost, _smtpPort))
+                    {
+                        smtp.Credentials = new NetworkCredential(_fromEmail, _fromPassword);
+                        smtp.EnableSsl = true;
+                        smtp.Send(mail);
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Password reset email sending failed: {ex.Message}");
+                return false;
+            }
+        }
+        private string GetPasswordResetEmailBody(string resetLink, string userName)
+        {
+            return $@"
+    <html>
+    <body style='font-family: Arial, sans-serif;'>
+        <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+            <h2 style='color: #333;'>Password Reset Request</h2>
+            <p>Hi {userName},</p>
+            <p>We received a request to reset your password. Click the button below to proceed:</p>
+            
+            <div style='text-align: center; margin: 30px 0;'>
+                <a href='{resetLink}' 
+                   style='display: inline-block; padding: 12px 30px; background-color: #667eea; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;'>
+                    Reset Password
+                </a>
+            </div>
+            
+            <p>Or copy and paste this link in your browser:</p>
+            <p style='word-break: break-all; background-color: #f4f4f4; padding: 10px; border-radius: 3px;'>
+                <code>{resetLink}</code>
+            </p>
+            
+            <p><strong>This link will expire in 15 minutes.</strong></p>
+            <p>If you didn't request this, please ignore this email and your password will remain unchanged.</p>
+            
+            <hr style='margin: 30px 0; border: none; border-top: 1px solid #ddd;'>
+            <p style='color: #666; font-size: 12px;'>This is an automated message, please do not reply.</p>
+        </div>
+    </body>
+    </html>
+";
+        }
     }
 }

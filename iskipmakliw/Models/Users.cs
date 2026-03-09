@@ -25,6 +25,8 @@
 
         // 🔹 Add 1-to-1 relationship with UserDetails
         public UserDetails? UserDetails { get; set; }
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpiry { get; set; }
     }
 
 }

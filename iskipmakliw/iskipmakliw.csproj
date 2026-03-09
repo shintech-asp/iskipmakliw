@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="9.0.9" />
@@ -23,6 +24,12 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	  <Content Update="wwwroot/uploads/**">
+		  <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+	  </Content>
+	  <Content Update="wwwroot/3dModel/**">
+		  <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+	  </Content>
+	  <Content Update="wwwroot/models/**">
 		  <CopyToPublishDirectory>Never</CopyToPublishDirectory>
 	  </Content>
   </ItemGroup>

@@ -58,9 +58,9 @@
                                         string statusClass;
                                         string statusDetails;
 
-                                        if (data.Status.ToLower() == "pending")
+                                        if (data.Status.ToLower() == "pending" && data.Users?.UserDetails?.Status == "Approved")
                                         {
-                                            statusDetails = data.Status;
+                                            statusDetails = data.Status + " for payment";
                                             statusClass = "badge badge-light-warning";
                                         }
                                         else

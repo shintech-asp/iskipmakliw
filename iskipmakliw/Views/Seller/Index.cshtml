@@ -256,6 +256,12 @@
         </p>
     </div>
 }
+else if (Model.Users.UserDetails?.Status == "Declined")
+{
+    <div class="alert alert-danger mt-5">
+        <p>Sorry, your application has been declined. Reason: @Model.Users.UserDetails.DeclinedReason.</p>
+    </div>
+}
 else if (Model.Users.UserDetails?.Status == "Approved")
 {
     @if (User.FindFirst("PaymentStatus").Value == "Pending")
