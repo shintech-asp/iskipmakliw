@@ -10,9 +10,12 @@ namespace iskipmakliw.Models
         public string GovernmentIdPath { get; set; }
         public string CapturedIdPath { get; set; }
         public string? CardName { get; set; }
-        public string? CardNumber { get; set; }
+        public string? PaymentNumber { get; set; }
         public int? Cvv { get; set; }
         public DateTime? ExpirationDate { get; set; }
+        public string? AccountName { get; set; }
+        public string? AccountNumber { get; set; }
+        public string? Ewallet { get; set; }
         public string? Address { get; set; }
         public string? City { get; set; }
         public string? Country { get; set; }
@@ -49,6 +52,13 @@ namespace iskipmakliw.Models
         public string? DeedOfSale { get; set; }
         public List<VehicleImages>? VehicleImages { get; set; }
         public string? DeclinedReason { get; set; }
+        public string? FullName { get; set; }
+        public DateTime? BirthDate { get; set; }
+        public int? Age { get; set; }
+        public string? Gender { get; set; }
+        public string? Civil { get; set; }
+        public string? Nationality { get; set; }
+
     }
 
 }

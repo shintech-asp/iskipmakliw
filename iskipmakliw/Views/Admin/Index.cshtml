@@ -188,7 +188,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @if (Model.PurchasedPlans.Any())
+                                        @if (Model.PurchasedPlans.Any() && Model.PurchasedPlans.Count > 0)
                                         {
                                             @foreach (var plan in Model.PurchasedPlans)
                                             {
@@ -200,10 +200,10 @@
                                                         <small class="text-muted">@plan.Email</small>
                                                     </td>
                                                     <td>
-                                                        <span class="badge bg-purple-lt">@plan.Subscription.FirstOrDefault().Plans.PlanName</span>
+                                                        <span class="badge bg-purple-lt">@plan.Subscription?.FirstOrDefault()?.Plans.PlanName</span>
                                                     </td>
                                                     <td>
-                                                        <strong>₱@plan.Subscription.FirstOrDefault().Plans.Price</strong>
+                                                        <strong>₱@plan.Subscription?.FirstOrDefault()?.Plans.Price</strong>
                                                     </td>
                                                     <td>
                                                         <small class="text-muted">@plan.DateCreated.ToString("MMM dd, yyyy")</small>

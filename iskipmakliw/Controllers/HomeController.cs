@@ -560,21 +560,10 @@ namespace iskipmakliw.Controllers
 
             if (ModelState.IsValid)
             {
-                if(user.CardNumber?.Length < 12)
+                if(user.AccountNumber?.Length < 11)
                 {
                     TempData["Error"] = "Your card number is invalid.";
                     return View(user);
-                }
-                if (user.Cvv?.ToString().Length < 3)
-                {
-                    TempData["Error"] = "Your cvv is invalid.";
-                    return View(user);
-                }
-                if(user.ExpirationDate < DateTime.Now)
-                {
-                    TempData["Error"] = "Please provide a non-expired card";
-                    return View(user);
-
                 }
                 // Save user details
                 _context.UserDetails.Add(user);

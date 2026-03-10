@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iskipmakliw.Data;
 
@@ -11,9 +12,11 @@ using iskipmakliw.Data;
 namespace iskipmakliw.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260310122055_NewFieldForTheRider")]
+    partial class NewFieldForTheRider
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -635,12 +638,6 @@ namespace iskipmakliw.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AccountName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AccountNumber")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
 
@@ -660,6 +657,9 @@ namespace iskipmakliw.Migrations
                     b.Property<string>("CardName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CardNumber")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("City")
                         .HasColumnType("nvarchar(max)");
 
@@ -676,9 +676,6 @@ namespace iskipmakliw.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DeedOfSale")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Ewallet")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("ExpirationDate")
@@ -707,9 +704,6 @@ namespace iskipmakliw.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OR")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PaymentNumber")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("PlansId")

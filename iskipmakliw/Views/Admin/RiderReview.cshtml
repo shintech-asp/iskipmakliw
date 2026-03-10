@@ -13,13 +13,34 @@
                             <div class="col-xl-12 col-lg-12 col-md-8 mt-md-0 mt-4">
                                 <div class="form">
                                     <div class="row">
+                                        <h6 class="">Basic Information</h6>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="fullName">Full Name</label>
-                                                <input type="text" class="form-control mb-3" id="fullName" value="@Model.Username" readonly>
+                                                <input type="text" class="form-control mb-3" id="fullName" value="@Model.UserDetails?.FullName" readonly>
                                             </div>
                                         </div>
 
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="fullName">Age</label>
+                                                <input type="text" class="form-control mb-3" id="fullName" value="@Model.UserDetails?.Age" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="fullName">Nationality</label>
+                                                <input type="text" class="form-control mb-3" id="fullName" value="@Model.UserDetails?.Nationality" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="fullName">Civil Status</label>
+                                                <input type="text" class="form-control mb-3" id="fullName" value="@Model.UserDetails?.Civil" readonly>
+                                            </div>
+                                        </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="profession">Profession</label>
@@ -34,7 +55,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-12">
                                             <div class="form-group">
                                                 <label for="email">Email</label>
                                                 <input type="text" class="form-control mb-3" id="email" value="@Model.Email" readonly>

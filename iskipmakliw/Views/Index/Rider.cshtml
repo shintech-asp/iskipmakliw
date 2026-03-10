@@ -10,165 +10,323 @@
     <link rel="icon" type="image/x-icon" href="~/src/assets/img/OakMartPNG.png" />
     <link href="~/layouts/collapsible-menu/css/light/loader.css" rel="stylesheet" type="text/css" />
     <script src="~/layouts/collapsible-menu/loader.js"></script>
-    <!-- BEGIN GLOBAL MANDATORY STYLES -->
     <link href="https://fonts.googleapis.com/css?family=Nunito:400,600,700" rel="stylesheet">
     <link href="~/src/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="~/layouts/collapsible-menu/css/light/plugins.css" rel="stylesheet" type="text/css" />
     <link href="~/src/assets/css/light/components/accordions.css" rel="stylesheet" type="text/css">
-    <!-- END GLOBAL MANDATORY STYLES -->
-    <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM STYLES -->
     <link href="~/src/plugins/src/apex/apexcharts.css" rel="stylesheet" type="text/css">
     <link href="~/src/assets/css/light/components/list-group.css" rel="stylesheet" type="text/css">
     <link href="~/src/assets/css/light/dashboard/dash_2.css" rel="stylesheet" type="text/css" />
-
     <link href="~/src/assets/css/light/components/modal.css" rel="stylesheet" type="text/css">
     <link href="~/src/assets/css/light/apps/contacts.css" rel="stylesheet" type="text/css">
-    <!-- END PAGE LEVEL PLUGINS/CUSTOM STYLES -->
-    <!-- SELLERS PAGE -->
     <link rel="stylesheet" type="text/css" href="~/src/plugins/src/table/datatable/datatables.css">
     <link rel="stylesheet" type="text/css" href="~/src/plugins/css/light/table/datatable/dt-global_style.css">
     <link href="~/src/assets/css/light/apps/invoice-list.css" rel="stylesheet" type="text/css">
-    <!-- PRODUCT -->
     <link rel="stylesheet" type="text/css" href="~/src/plugins/src/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css">
     <link rel="stylesheet" type="text/css" href="~/src/plugins/src/splide/splide.min.css">
     <link rel="stylesheet" type="text/css" href="~/src/plugins/src/glightbox/glightbox.min.css">
     <link rel="stylesheet" type="text/css" href="~/src/assets/css/light/components/tabs.css">
     <link rel="stylesheet" type="text/css" href="~/src/assets/css/light/apps/ecommerce-details.css">
-
     <link rel="stylesheet" type="text/css" href="~/src/assets/css/light/forms/switches.css">
     <link href="~/src/plugins/css/light/pricing-table/css/component.css" rel="stylesheet" type="text/css">
-    <!-- WIZARD -->
     <link rel="stylesheet" type="text/css" href="~/src/plugins/src/stepper/bsStepper.min.css">
     <link rel="stylesheet" type="text/css" href="~/src/assets/css/light/scrollspyNav.css">
     <link rel="stylesheet" type="text/css" href="~/src/plugins/css/light/stepper/custom-bsStepper.css">
-    <!-- FILE UPLOADER -->
     <link rel="stylesheet" href="~/src/plugins/src/filepond/filepond.min.css">
     <link rel="stylesheet" href="~/src/plugins/src/filepond/FilePondPluginImagePreview.min.css">
     <link href="~/src/plugins/css/light/filepond/custom-filepond.css" rel="stylesheet" type="text/css">
-
-    <link rel="stylesheet" href="~/src/plugins/src/filepond/filepond.min.css">
-    <link rel="stylesheet" href="~/src/plugins/src/filepond/FilePondPluginImagePreview.min.css">
     <link href="~/src/plugins/src/notification/snackbar/snackbar.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="~/src/plugins/src/sweetalerts2/sweetalerts2.css">
-
-    <link href="~/src/plugins/css/light/filepond/custom-filepond.css" rel="stylesheet" type="text/css" />
-    <link href="~/src/assets/css/light/components/tabs.css" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" type="text/css" href="~/src/assets/css/light/elements/alert.css">
-
     <link href="~/src/plugins/css/light/sweetalerts2/custom-sweetalert.css" rel="stylesheet" type="text/css" />
     <link href="~/src/plugins/css/light/notification/snackbar/custom-snackbar.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="~/src/assets/css/light/forms/switches.css">
-    <link href="~/src/assets/css/light/components/list-group.css" rel="stylesheet" type="text/css">
-
     <link href="~/src/assets/css/light/users/account-setting.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* Bootstrap-compatible inline field states */
+        .is-invalid ~ .invalid-feedback {
+            display: block;
+        }
 
+        .invalid-feedback {
+            color: #e7515a;
+            font-size: 0.82rem;
+            margin-top: 3px;
+        }
+        /* FilePond error (no native .is-invalid) */
+        .pond-error {
+            display: none;
+            color: #e7515a;
+            font-size: 0.82rem;
+            margin-top: 4px;
+        }
+
+            .pond-error.show {
+                display: block;
+            }
+
+        /* ── FilePond: force rectangular preview (remove circle) ── */
+        .filepond--image-preview-wrapper {
+            border-radius: 0 !important;
+        }
+
+        .filepond--image-preview {
+            border-radius: 0 !important;
+        }
+
+        .filepond--file-wrapper {
+            border-radius: 4px !important;
+        }
+
+        .filepond--item-panel {
+            border-radius: 4px !important;
+        }
+
+        .filepond--drip-blob {
+            border-radius: 4px !important;
+        }
+        /* Make the drop area itself a standard rectangle */
+        .filepond--drop-label {
+            border-radius: 4px !important;
+        }
+
+        .filepond--panel-root {
+            border-radius: 4px !important;
+        }
+
+        /* ── Force ALL FilePond image previews to be rectangular (no circle) ── */
+        .filepond--image-preview-overlay,
+        .filepond--image-preview-wrapper::before,
+        .filepond--image-clip,
+        .filepond--image-bitmap,
+        .filepond--image-vector {
+            border-radius: 0 !important;
+        }
+        /* The clip element is what forces the circle shape */
+        .filepond--image-clip {
+            border-radius: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        /* Override any inline styles added by FilePond JS */
+        .filepond--root .filepond--image-preview-wrapper {
+            border-radius: 0 !important;
+        }
+
+            .filepond--root .filepond--image-preview-wrapper .filepond--image-clip {
+                border-radius: 0 !important;
+                margin: 0 !important;
+            }
+    </style>
 </head>
 <body class="form layout-boxed">
     <div class="auth-container d-flex">
-
         <div class="container mx-auto align-self-center">
-
             <div class="row">
-
                 <div class="col-xxl-9 col-xl-9 col-lg-9 col-md-9 col-12 d-flex flex-column align-self-center mx-auto">
                     <div class="card mt-3 mb-3">
                         <div class="card-body">
-                            <form asp-controller="Index" asp-action="Rider" method="post" enctype="multipart/form-data">
+                            <form asp-controller="Index" asp-action="Rider" method="post" enctype="multipart/form-data" id="riderForm" novalidate>
                                 <div class="row">
                                     @if (ViewBag.Error != null)
                                     {
                                         <div class="col-md-12 mb-3">
-                                            <div class="alert alert-danger">
-                                                @ViewBag.Error
-                                            </div>
+                                            <div class="alert alert-danger">@ViewBag.Error</div>
                                         </div>
                                     }
                                     <div class="col-md-12 mb-3">
-
                                         <h2>Sign Up</h2>
-                                        <p>Enter your email and password to register</p>
-
+                                        <p>Fill in the details below to register as a rider</p>
                                     </div>
+
                                     <div class="bs-stepper stepper-form-one">
                                         <div class="bs-stepper-header" role="tablist">
                                             <div class="step" data-target="#defaultStep-one">
                                                 <button type="button" class="step-trigger" role="tab">
                                                     <span class="bs-stepper-circle">1</span>
-                                                    <span class="bs-stepper-label">Identification</span>
+                                                    <span class="bs-stepper-label">Basic Information</span>
                                                 </button>
                                             </div>
                                             <div class="line"></div>
                                             <div class="step" data-target="#defaultStep-two">
                                                 <button type="button" class="step-trigger" role="tab">
                                                     <span class="bs-stepper-circle">2</span>
-                                                    <span class="bs-stepper-label">Verification</span>
+                                                    <span class="bs-stepper-label">Government ID</span>
                                                 </button>
                                             </div>
                                             <div class="line"></div>
                                             <div class="step" data-target="#defaultStep-three">
                                                 <button type="button" class="step-trigger" role="tab">
                                                     <span class="bs-stepper-circle">3</span>
-                                                    <span class="bs-stepper-label">Vehicle</span>
+                                                    <span class="bs-stepper-label">Face Verification</span>
                                                 </button>
                                             </div>
                                             <div class="line"></div>
                                             <div class="step" data-target="#defaultStep-four">
                                                 <button type="button" class="step-trigger" role="tab">
                                                     <span class="bs-stepper-circle">4</span>
-                                                    <span class="bs-stepper-label">
-                                                        <span class="bs-stepper-title">Login details</span>
-                                                    </span>
+                                                    <span class="bs-stepper-label">Vehicle</span>
+                                                </button>
+                                            </div>
+                                            <div class="line"></div>
+                                            <div class="step" data-target="#defaultStep-five">
+                                                <button type="button" class="step-trigger" role="tab">
+                                                    <span class="bs-stepper-circle">5</span>
+                                                    <span class="bs-stepper-label">Login Details</span>
                                                 </button>
                                             </div>
                                         </div>
+
                                         <div class="bs-stepper-content">
+
+                                            <!-- ══════════════════════════════
+                                                 STEP 1 – Basic Information
+                                            ══════════════════════════════ -->
                                             <div id="defaultStep-one" class="content" role="tabpanel">
-                                                <div class="mb-5">
+                                                <div class="mb-4">
+                                                    <h5 class="mb-3">Personal Information</h5>
+
                                                     <div class="mb-3">
-                                                        <label class="form-label">Type of ID: </label>
-                                                        <select class="form-select" name="TypeId">
-                                                            <option value="Drivers License">Drivers License</option>
-                                                        </select>
+                                                        <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control" name="FullName" id="FullName" placeholder="e.g. Juan Dela Cruz" />
+                                                        <div class="invalid-feedback" id="err-FullName"></div>
                                                     </div>
-                                                    <label class="form-label">Upload ID: </label>
-                                                    <div class="card">
-                                                        <div class="card-body">
-                                                            <div class="profile-image" hidden>
 
-                                                                <div class="img-uploader-content">
-                                                                    <input type="file" class="filepond"
-                                                                           name="GovernmentIdFile" accept="image/png, image/jpeg, image/gif" />
-                                                                </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                                                        <input type="date" class="form-control" id="BirthDate" name="BirthDate" />
+                                                        <div class="invalid-feedback" id="err-BirthDate"></div>
+                                                    </div>
 
-                                                            </div>
-                                                            <div class="multiple-file-upload mt-3 mb-5">
-                                                                <input type="file"
-                                                                       class="filepond file-upload-multiple"
-                                                                       name="GovernmentIdFile"
-                                                                       data-allow-reorder="true"
-                                                                       data-max-file-size="3MB"
-                                                                       data-max-files="1"
-                                                                       id="govPicture"
-                                                                       required>
-                                                            </div>
-                                                        </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Age</label>
+                                                        <input type="text" class="form-control bg-light" id="Age" name="Age" readonly placeholder="Auto-calculated from date of birth" />
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Gender <span class="text-danger">*</span></label>
+                                                        <select class="form-select" name="Gender" id="Gender">
+                                                            <option value="">-- Select Gender --</option>
+                                                            <option value="Male">Male</option>
+                                                            <option value="Female">Female</option>
+                                                            <option value="n/a">Preferred not to say</option>
+                                                        </select>
+                                                        <div class="invalid-feedback" id="err-Gender"></div>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Civil Status <span class="text-danger">*</span></label>
+                                                        <select class="form-select" name="Civil" id="Civil">
+                                                            <option value="">-- Select Civil Status --</option>
+                                                            <option value="Single">Single</option>
+                                                            <option value="Married">Married</option>
+                                                            <option value="Widowed">Widowed</option>
+                                                            <option value="Divorced">Divorced</option>
+                                                            <option value="Separated">Separated</option>
+                                                            <option value="Annulled">Annulled</option>
+                                                        </select>
+                                                        <div class="invalid-feedback" id="err-Civil"></div>
+                                                    </div>
+
+                                                    <div class="mb-4">
+                                                        <label class="form-label">Nationality <span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control" name="Nationality" id="Nationality" placeholder="e.g. Filipino" />
+                                                        <div class="invalid-feedback" id="err-Nationality"></div>
+                                                    </div>
+
+                                                    <h5 class="mb-3">Contact Information</h5>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Home Address <span class="text-danger">*</span></label>
+                                                        <input name="Address" id="Address" type="text" class="form-control" placeholder="Street, Barangay, City, Province" />
+                                                        <div class="invalid-feedback" id="err-Address"></div>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Contact Number <span class="text-danger">*</span></label>
+                                                        <input type="text"
+                                                               name="ContactNumber"
+                                                               id="ContactNumber"
+                                                               class="form-control"
+                                                               maxlength="11"
+                                                               inputmode="numeric"
+                                                               placeholder="09XXXXXXXXX"
+                                                               oninput="this.value = this.value.replace(/\D/g, '')" />
+                                                        <div class="invalid-feedback" id="err-ContactNumber"></div>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Email Address <span class="text-danger">*</span></label>
+                                                        <input name="Email" id="Email" type="email" class="form-control" placeholder="you@example.com" />
+                                                        <div class="invalid-feedback" id="err-Email"></div>
                                                     </div>
                                                 </div>
+
                                                 <div class="button-action">
                                                     <button type="button" class="btn btn-secondary btn-prev me-3" disabled>Prev</button>
-                                                    <button type="button" class="btn btn-secondary btn-nxt">Next</button>
+                                                    <button type="button" class="btn btn-secondary" id="nxt-step1">Next</button>
                                                 </div>
                                             </div>
-                                            <div id="defaultStep-two" class="content" role="tabpanel">
 
-                                                <div class="mb-3" style="margin-bottom: 300px;">
-                                                    <div class="container mt-4 text-center" id="cameraDiv">
-                                                        <h4>Camera Preview</h4>
-                                                        <video id="camera" width="640" height="480" autoplay class="border"></video>
-                                                        <br />
-                                                        <button id="capture" type="button" class="btn btn-primary mt-3">📸 Capture</button>
+                                            <!-- ══════════════════════════════
+                                                 STEP 2 – Government ID
+                                            ══════════════════════════════ -->
+                                            <div id="defaultStep-two" class="content" role="tabpanel">
+                                                <div class="mb-4">
+                                                    <h5 class="mb-3">Government ID</h5>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Type of ID <span class="text-danger">*</span></label>
+                                                        <select class="form-select" name="TypeId" id="TypeId">
+                                                            <option value="">-- Select ID Type --</option>
+                                                            <option value="Drivers License">Driver's License</option>
+                                                            <option value="SSS">SSS</option>
+                                                            <option value="PhilHealth">PhilHealth</option>
+                                                            <option value="Passport">Passport</option>
+                                                            <option value="UMID">UMID</option>
+                                                        </select>
+                                                        <div class="invalid-feedback" id="err-TypeId"></div>
                                                     </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Upload ID Photo <span class="text-danger">*</span></label>
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <div class="multiple-file-upload mt-3 mb-2">
+                                                                    <input type="file"
+                                                                           class="filepond file-upload-multiple"
+                                                                           name="GovernmentIdFile"
+                                                                           data-max-file-size="3MB"
+                                                                           data-max-files="1"
+                                                                           id="govPicture" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="pond-error" id="err-govPicture"></div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="button-action mt-3">
+                                                    <button type="button" class="btn btn-secondary btn-prev me-3">Prev</button>
+                                                    <button type="button" class="btn btn-secondary" id="nxt-step2">Next</button>
+                                                </div>
+                                            </div>
+
+                                            <!-- ══════════════════════════════
+                                                 STEP 3 – Face Verification
+                                            ══════════════════════════════ -->
+                                            <div id="defaultStep-three" class="content" role="tabpanel">
+                                                <div class="mb-4">
+                                                    <h5 class="mb-2">Face Verification</h5>
+                                                    <p class="text-muted small mb-3">Capture a selfie or upload a photo. Your face must be clearly visible.</p>
+
+                                                    <div class="container text-center mb-3" id="cameraDiv">
+                                                        <h6>Camera Preview</h6>
+                                                        <video id="camera" width="100%" style="max-width:480px;" height="360" autoplay class="border rounded"></video>
+                                                        <br />
+                                                        <button id="capture" type="button" class="btn btn-primary mt-3">📸 Capture Selfie</button>
+                                                    </div>
+
+                                                    <!-- Capture preview modal -->
                                                     <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewLabel" aria-hidden="true">
                                                         <div class="modal-dialog modal-lg modal-dialog-centered">
                                                             <div class="modal-content">
@@ -186,168 +344,156 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="card">
-                                                        <div class="card-body">
-                                                            <div class="profile-image" hidden>
 
-                                                                <div class="img-uploader-content">
-                                                                    <input type="file" class="filepond"
-                                                                           name="CapturedIdFile" accept="image/png, image/jpeg, image/gif" />
-                                                                </div>
-
-                                                            </div>
-                                                            <div class="multiple-file-upload mt-5">
-                                                                <input type="file"
-                                                                       class="filepond file-upload-multiple"
-                                                                       name="CapturedIdFile"
-                                                                       data-allow-reorder="true"
-                                                                       data-max-file-size="3MB"
-                                                                       data-max-files="1"
-                                                                       id="idPicture"
-                                                                       required>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="button-action mt-5">
-                                                    <button type="button" class="btn btn-secondary btn-prev me-3">Prev</button>
-                                                    <button type="button" class="btn btn-secondary btn-nxt">Next</button>
-                                                </div>
-                                            </div>
-                                            <div id="defaultStep-three" class="content" role="tabpanel">
-                                                <div class="mb-3">
-                                                    <div class="col-md-12">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Vehicle Type</label>
-                                                            <select class="form-select" name="VehicleType">
-                                                                <option value="L300">L300</option>
-                                                                <option value="Van">Van</option>
-                                                                <option value="Pickup">Pick-up</option>
-                                                                <option value="Truck">Truck</option>
-                                                                <option value="Car">Car</option>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-12">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Vehicle brand</label>
-                                                            <input name="VehicleBrand" type="text" class="form-control">
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-12">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Vehicle Official Receipt (OR)</label>
-                                                            <div class="card">
-                                                                <div class="card-body">
-                                                                    <input type="file" name="ORFile" id="OfficialReceipt" class="filepond">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Selfie / Face Photo <span class="text-danger">*</span></label>
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <div class="multiple-file-upload mt-3">
+                                                                    <input type="file"
+                                                                           class="filepond file-upload-multiple"
+                                                                           name="CapturedIdFile"
+                                                                           data-max-file-size="3MB"
+                                                                           data-max-files="1"
+                                                                           id="idPicture" />
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-
-                                                    <div class="col-12">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Certificate of Registration (CR)</label>
-                                                            <div class="card">
-                                                                <div class="card-body">
-                                                                    <input type="file" name="CRFile" id="CertificateOfRegistration" class="filepond" >
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-12">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Plate Number</label>
-                                                            <input name="PlateNumber" type="text" class="form-control" placeholder="Enter plate number" required>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-12">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Vehicle Images (Front, Back, Side, Visible Plate)</label>
-                                                            <div class="card">
-                                                                <div class="card-body">
-                                                                    <input type="file" name="VehicleImagesFile" id="VehicleImages" class="filepond" multiple>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        <div class="pond-error" id="err-idPicture"></div>
                                                     </div>
                                                 </div>
 
                                                 <div class="button-action mt-3">
                                                     <button type="button" class="btn btn-secondary btn-prev me-3">Prev</button>
-                                                    <button type="button" class="btn btn-secondary btn-nxt">Next</button>
+                                                    <button type="button" class="btn btn-secondary" id="nxt-step3">Next</button>
                                                 </div>
                                             </div>
+
+                                            <!-- ══════════════════════════════
+                                                 STEP 4 – Vehicle
+                                            ══════════════════════════════ -->
                                             <div id="defaultStep-four" class="content" role="tabpanel">
-                                                 <div class="mb-3">
-                                                    <div class="col-md-12">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Username</label>
-                                                            <input name="Username" type="text" class="form-control add-billing-address-input">
-                                                        </div>
+                                                <div class="mb-3">
+                                                    <h5 class="mb-3">Vehicle Details</h5>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Vehicle Type <span class="text-danger">*</span></label>
+                                                        <select class="form-select" name="VehicleType" id="VehicleType">
+                                                            <option value="">-- Select Vehicle Type --</option>
+                                                            <option value="L300">L300</option>
+                                                            <option value="Van">Van</option>
+                                                            <option value="Pickup">Pick-up</option>
+                                                            <option value="Truck">Truck</option>
+                                                            <option value="Car">Car</option>
+                                                        </select>
+                                                        <div class="invalid-feedback" id="err-VehicleType"></div>
                                                     </div>
-                                                    <div class="col-md-12">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Contact Number</label>
-                                                            <input type="text"
-                                                                   name="ContactNumber"
-                                                                   class="form-control add-payment-method-input"
-                                                                   maxlength="11"
-                                                                   pattern="\d{11}"
-                                                                   inputmode="numeric"
-                                                                   oninput="this.value = this.value.replace(/\D/g, '')">
-                                                        </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Vehicle Brand <span class="text-danger">*</span></label>
+                                                        <input name="VehicleBrand" id="VehicleBrand" type="text" class="form-control" placeholder="e.g. Toyota, Isuzu, Ford" />
+                                                        <div class="invalid-feedback" id="err-VehicleBrand"></div>
                                                     </div>
-                                                    <div class="col-md-12">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Email</label>
-                                                            <input name="Email" type="email" class="form-control">
-                                                        </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Plate Number <span class="text-danger">*</span></label>
+                                                        <input name="PlateNumber" id="PlateNumber" type="text" class="form-control" placeholder="e.g. ABC 1234" />
+                                                        <div class="invalid-feedback" id="err-PlateNumber"></div>
                                                     </div>
-                                                    <div class="col-12">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Password</label>
-                                                            <input name="Password" type="password" class="form-control">
+
+                                                    <h5 class="mb-3 mt-4">Vehicle Documents</h5>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Official Receipt (OR) <span class="text-danger">*</span></label>
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <input type="file" name="ORFile" id="OfficialReceipt" class="filepond" />
+                                                            </div>
                                                         </div>
+                                                        <div class="pond-error" id="err-ORFile"></div>
                                                     </div>
-                                                    <div class="col-12">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Confirm Password</label>
-                                                            <input name="Confirm" type="password" class="form-control">
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Certificate of Registration (CR) <span class="text-danger">*</span></label>
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <input type="file" name="CRFile" id="CertificateOfRegistration" class="filepond" />
+                                                            </div>
                                                         </div>
+                                                        <div class="pond-error" id="err-CRFile"></div>
                                                     </div>
-                                                 </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Vehicle Images – Front, Back, Side, Plate <span class="text-danger">*</span></label>
+                                                        <p class="text-muted small mb-1">Upload at least 1 photo (max 5).</p>
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <input type="file" name="VehicleImagesFile" id="VehicleImages" class="filepond" multiple />
+                                                            </div>
+                                                        </div>
+                                                        <div class="pond-error" id="err-VehicleImages"></div>
+                                                    </div>
+                                                </div>
 
                                                 <div class="button-action mt-3">
                                                     <button type="button" class="btn btn-secondary btn-prev me-3">Prev</button>
-                                                    <button type="submit" class="btn btn-success me-3">Submit</button>
+                                                    <button type="button" class="btn btn-secondary" id="nxt-step4">Next</button>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    <div class="col-12">
+                                            <!-- ══════════════════════════════
+                                                 STEP 5 – Login Details
+                                            ══════════════════════════════ -->
+                                            <div id="defaultStep-five" class="content" role="tabpanel">
+                                                <div class="mb-3">
+                                                    <h5 class="mb-3">Create Your Account</h5>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Username <span class="text-danger">*</span></label>
+                                                        <input name="Username" id="Username" type="text" class="form-control" placeholder="4–20 characters, letters/numbers/underscore" />
+                                                        <div class="invalid-feedback" id="err-Username"></div>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Password <span class="text-danger">*</span></label>
+                                                        <input name="Password" id="Password" type="password" class="form-control" placeholder="At least 8 characters" />
+                                                        <div class="form-text text-muted">Must contain at least one letter and one number.</div>
+                                                        <div class="invalid-feedback" id="err-Password"></div>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                                                        <input name="Confirm" id="Confirm" type="password" class="form-control" placeholder="Re-enter your password" />
+                                                        <div class="invalid-feedback" id="err-Confirm"></div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="button-action mt-3">
+                                                    <button type="button" class="btn btn-secondary btn-prev me-3">Prev</button>
+                                                    <button type="submit" class="btn btn-success me-3" id="submitBtn">Submit</button>
+                                                </div>
+                                            </div>
+
+                                        </div><!-- /.bs-stepper-content -->
+                                    </div><!-- /.bs-stepper -->
+
+                                    <div class="col-12 mt-3">
                                         <div class="text-center">
-                                            <p class="mb-0">Already have an account ? <a asp-controller="Account" asp-action="Login" class="text-warning">Sign in</a></p>
+                                            <p class="mb-0">Already have an account? <a asp-controller="Account" asp-action="Login" class="text-warning">Sign in</a></p>
                                         </div>
                                     </div>
-
                                 </div>
                             </form>
                         </div>
                     </div>
                 </div>
-
             </div>
-
         </div>
 
         <canvas id="snapshot" width="640" height="480" style="display:none;"></canvas>
     </div>
-    <!-- END MAIN CONTAINER -->
-    <!-- BEGIN GLOBAL MANDATORY SCRIPTS -->
+
+    <!-- ════════════ SCRIPTS ════════════ -->
     <script src="~/src/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/src/plugins/src/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script src="~/src/plugins/src/mousetrap/mousetrap.min.js"></script>
@@ -356,28 +502,20 @@
     <script src="~/src/plugins/src/global/vendors.min.js"></script>
     <script src="~/src/plugins/src/highlight/highlight.pack.js"></script>
     <script src="~/src/assets/js/scrollspyNav.js"></script>
-    <!-- END GLOBAL MANDATORY SCRIPTS -->
-    <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
     <script src="~/src/plugins/src/apex/apexcharts.min.js"></script>
     <script src="~/src/assets/js/dashboard/dash_2.js"></script>
-    <script src="~/src/plugins/src/mousetrap/mousetrap.min.js"></script>
     <script src="~/src/assets/js/custom.js"></script>
-    <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
     <script src="~/src/plugins/src/jquery-ui/jquery-ui.min.js"></script>
     <script src="~/src/assets/js/apps/contact.js"></script>
-    <!-- SELLERS -->
     <script src="~/src/plugins/src/table/datatable/datatables.js"></script>
     <script src="~/src/plugins/src/table/datatable/button-ext/dataTables.buttons.min.js"></script>
     <script src="~/src/assets/js/apps/invoice-list.js"></script>
-
     <script src="~/src/plugins/src/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js"></script>
     <script src="~/src/plugins/src/glightbox/glightbox.min.js"></script>
     <script src="~/src/plugins/src/splide/splide.min.js"></script>
     <script src="~/src/assets/js/apps/ecommerce-details.js"></script>
-
     <script src="~/src/plugins/src/stepper/bsStepper.min.js"></script>
-    <script src="~/src/plugins/src/stepper/custom-bsStepper.min.js"></script>
-
+    <!-- custom-bsStepper.min.js removed: stepper managed manually -->
     <script src="~/src/plugins/src/filepond/filepond.min.js"></script>
     <script src="~/src/plugins/src/filepond/FilePondPluginFileValidateType.min.js"></script>
     <script src="~/src/plugins/src/filepond/FilePondPluginImageExifOrientation.min.js"></script>
@@ -387,160 +525,402 @@
     <script src="~/src/plugins/src/filepond/FilePondPluginImageTransform.min.js"></script>
     <script src="~/src/plugins/src/filepond/filepondPluginFileValidateSize.min.js"></script>
     <script src="~/src/plugins/src/filepond/custom-filepond.js"></script>
-
     <script src="~/src/plugins/src/notification/snackbar/snackbar.min.js"></script>
     <script src="~/src/assets/js/users/account-settings.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const video = document.getElementById('camera');
-        const canvas = document.getElementById('snapshot');
-        const ctx = canvas.getContext('2d');
-        const captureBtn = document.getElementById('capture');
-        const capturedImg = document.getElementById('capturedImg');
-        const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
 
+    <script>
+        // ═══════════════════════════════════════════════════════════════════
+        //  AUTO-CALCULATE AGE
+        // ═══════════════════════════════════════════════════════════════════
+        (function () {
+            const bdInput = document.getElementById('BirthDate');
+            // Prevent future dates
+            bdInput.setAttribute('max', new Date().toISOString().split('T')[0]);
+
+            bdInput.addEventListener('change', function () {
+                const dob = new Date(this.value);
+                if (isNaN(dob.getTime())) { document.getElementById('Age').value = ''; return; }
+                const age = Math.floor((Date.now() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+                document.getElementById('Age').value = (age >= 0 && age <= 120) ? age : '';
+            });
+        })();
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  CAMERA
+        // ═══════════════════════════════════════════════════════════════════
+        const video        = document.getElementById('camera');
+        const canvas       = document.getElementById('snapshot');
+        const ctx          = canvas.getContext('2d');
+        const captureBtn   = document.getElementById('capture');
+        const capturedImg  = document.getElementById('capturedImg');
+        const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
         let stream;
 
-        // Start the camera
         function startCamera() {
             navigator.mediaDevices.getUserMedia({ video: true })
-                .then(s => {
-                    stream = s;
-                    video.srcObject = s;
-                })
-                .catch(err => console.error("Camera error:", err));
+                .then(s => { stream = s; video.srcObject = s; })
+                .catch(err => console.warn("Camera unavailable:", err));
         }
-
-        // Stop the camera
         function stopCamera() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                video.srcObject = null;
-                stream = null;
-            }
+            if (stream) { stream.getTracks().forEach(t => t.stop()); video.srcObject = null; stream = null; }
         }
-
-        // Start camera on page load
         startCamera();
 
-        FilePond.setOptions({
-            server: null,          // Disable instant uploads to server
-            instantUpload: false,  // Wait for form submission
-            allowMultiple: false,  // Default for all FilePond inputs
-            maxFiles: 1,           // Default max for single-file fields
-            storeAsFile: true      // Store file directly in FormData
-        });
-        // Create FilePond instances
-        const pondGov = FilePond.create(document.getElementById('govPicture'), {
-            name: 'GovernmentIdFile',  // ✅ Explicitly set the name
-            storeAsFile: true
-        });
-        const pondOR = FilePond.create(document.getElementById('OfficialReceipt'), {
-            name: 'ORFile',  // ✅ Explicitly set the name
-            storeAsFile: true
-        });
-        const pondCR = FilePond.create(document.getElementById('CertificateOfRegistration'), {
-            name: 'CRFile',  // ✅ Explicitly set the name
-            storeAsFile: true
-        });
-        const pondDeedOfSale = FilePond.create(document.getElementById('DeedOfSale'), {
-            name: 'DeedOfSaleFile',  // ✅ Explicitly set the name
-            storeAsFile: true
-        });
-        const pondVehicleImages = FilePond.create(document.getElementById('VehicleImages'), {
-            name: 'VehicleImagesFile',
-            allowMultiple: true,  // Allow multiple vehicle photos
-            maxFiles: 5,          // (Optional) limit number of uploads
-            storeAsFile: true
-        });
-        const pondId = FilePond.create(document.getElementById('idPicture'), {
-            name: 'CapturedIdFile',  // ✅ Explicitly set the name
-            storeAsFile: true
-        });
-
-        // Capture photo
         captureBtn.addEventListener('click', () => {
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             capturedImg.src = canvas.toDataURL("image/png");
             previewModal.show();
         });
-
-        // Retake
-        document.getElementById('retake').addEventListener('click', () => {
-            previewModal.hide();
-            startCamera();
-        });
-
-        // Accept → add captured image into FilePond
+        document.getElementById('retake').addEventListener('click', () => { previewModal.hide(); startCamera(); });
         document.getElementById('accept').addEventListener('click', () => {
-            fetch(capturedImg.src)
-                .then(res => res.blob())
-                .then(blob => {
-                    const file = new File([blob], "capture.png", { type: "image/png" });
-            
-                    // Add captured photo to CapturedIdFile only
-                    pondId.removeFiles();
-                    pondId.addFile(file);
-
-                    previewModal.hide();
-                    stopCamera();
-                    $("#cameraDiv").hide();
-                });
+            fetch(capturedImg.src).then(r => r.blob()).then(blob => {
+                const file = new File([blob], "selfie.png", { type: "image/png" });
+                pondId.removeFiles();
+                pondId.addFile(file);
+                previewModal.hide();
+                stopCamera();
+                document.getElementById('cameraDiv').style.display = 'none';
+            });
         });
 
-        // ✅ IMPORTANT: Before form submission, ensure FilePond processes files
-        const form = document.querySelector('form');
-        form.addEventListener('submit', function(e) {
-            // Check if files are present
-            const govFiles = pondGov.getFiles();
-            const idFiles = pondId.getFiles();
-            const ORFiles = pondOR.getFiles();
-            const CRFiles = pondCR.getFiles();
-            const DOSFiles = pondDeedOfSale.getFiles();
-            const VehicleImagesFiles = pondVehicleImages.getFiles();
-    
-            console.log('Gov files:', govFiles);
-            console.log('ID files:', idFiles);
-    
-            // If no files, you might want to prevent submission
-            if (govFiles.length === 0 || idFiles.length === 0 || ORFiles.length === 0 || CRFiles.length === 0 || VehicleImagesFiles.length === 0) {
-                e.preventDefault();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Please upload both required files',
-                    confirmButtonColor: '#d33'
-                    });
-                return false;
+        // ═══════════════════════════════════════════════════════════════════
+        //  FILEPOND
+        // ═══════════════════════════════════════════════════════════════════
+        FilePond.setOptions({ server: null, instantUpload: false, allowMultiple: false, maxFiles: 1, storeAsFile: true });
+
+        const pondGov           = FilePond.create(document.getElementById('govPicture'),               { name: 'GovernmentIdFile',  storeAsFile: true, imageCropAspectRatio: null, styleImageFitMode: 'cover' });
+        const pondId            = FilePond.create(document.getElementById('idPicture'),                { name: 'CapturedIdFile',    storeAsFile: true, imageCropAspectRatio: null, styleImageFitMode: 'cover' });
+        const pondOR            = FilePond.create(document.getElementById('OfficialReceipt'),           { name: 'ORFile',            storeAsFile: true });
+        const pondCR            = FilePond.create(document.getElementById('CertificateOfRegistration'), { name: 'CRFile',            storeAsFile: true });
+        const pondVehicleImages = FilePond.create(document.getElementById('VehicleImages'),             { name: 'VehicleImagesFile', allowMultiple: true, maxFiles: 5, storeAsFile: true });
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  VALIDATION HELPERS
+        // ═══════════════════════════════════════════════════════════════════
+
+        /**
+         * Mark a native <input>/<select> valid or invalid and set message text.
+         * Bootstrap's .is-invalid + .invalid-feedback pair handles rendering.
+         */
+        function setField(id, isValid, msg) {
+            const el  = document.getElementById(id);
+            const err = document.getElementById('err-' + id);
+            if (!el) return;
+            el.classList.toggle('is-invalid', !isValid);
+            el.classList.toggle('is-valid',    isValid);
+            if (err) err.textContent = isValid ? '' : msg;
+        }
+
+        /**
+         * Show/hide the .pond-error div for FilePond fields.
+         */
+        function setPondErr(id, isValid, msg) {
+            const err = document.getElementById(id);
+            if (!err) return;
+            err.textContent = isValid ? '' : msg;
+            err.classList.toggle('show', !isValid);
+        }
+
+        /** Build a SweetAlert bulleted list from an array of error strings. */
+        function swalErrors(errors) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Please complete the required fields:',
+                html: '<ul style="text-align:left;margin:0;padding-left:1.4rem;line-height:1.8">'
+                      + errors.map(e => `<li>${e}</li>`).join('')
+                      + '</ul>',
+                confirmButtonColor: '#e2a03f',
+                confirmButtonText: 'OK, fix it'
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  STEP 1  –  Basic Information
+        //  Rules:
+        //   FullName      required | letters, spaces, dots, apostrophes | ≥2 words
+        //   BirthDate     required | rider must be ≥18 yrs old
+        //   Gender        required | must choose a value
+        //   Civil         required | must choose a value
+        //   Nationality   required | letters & spaces only
+        //   Address       required | min 10 chars (street-level detail)
+        //   ContactNumber required | exactly 11 digits, starts with 09
+        //   Email         required | valid email format
+        // ═══════════════════════════════════════════════════════════════════
+        function validateStep1() {
+            const errs = [];
+
+            // Full Name
+            const fullName   = document.getElementById('FullName').value.trim();
+            const nameOk     = fullName.length >= 2
+                               && /^[a-zA-Z\s.'ñÑ-]+$/.test(fullName)
+                               && fullName.trim().split(/\s+/).length >= 2;
+            setField('FullName', nameOk, 'Enter your full name (first & last name, letters only).');
+            if (!nameOk) errs.push('Full Name – must include first and last name, letters only');
+
+            // Date of Birth (≥18)
+            const dobVal    = document.getElementById('BirthDate').value;
+            let   dobOk     = false;
+            let   dobMsg    = 'Please enter your date of birth.';
+            if (dobVal) {
+                const age = Math.floor((Date.now() - new Date(dobVal).getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+                if      (age < 18)  dobMsg = 'You must be at least 18 years old to register.';
+                else if (age > 100) dobMsg = 'Please enter a valid date of birth.';
+                else                dobOk  = true;
             }
+            setField('BirthDate', dobOk, dobMsg);
+            if (!dobOk) errs.push('Date of Birth – ' + dobMsg);
+
+            // Gender
+            const genderOk = document.getElementById('Gender').value !== '';
+            setField('Gender', genderOk, 'Please select your gender.');
+            if (!genderOk) errs.push('Gender – selection required');
+
+            // Civil Status
+            const civilOk = document.getElementById('Civil').value !== '';
+            setField('Civil', civilOk, 'Please select your civil status.');
+            if (!civilOk) errs.push('Civil Status – selection required');
+
+            // Nationality
+            const nat    = document.getElementById('Nationality').value.trim();
+            const natOk  = nat.length >= 2 && /^[a-zA-ZñÑ\s-]+$/.test(nat);
+            setField('Nationality', natOk, 'Enter a valid nationality (letters only, e.g. Filipino).');
+            if (!natOk) errs.push('Nationality – letters only');
+
+            // Address
+            const addr   = document.getElementById('Address').value.trim();
+            const addrOk = addr.length >= 10;
+            setField('Address', addrOk, 'Enter your complete home address (minimum 10 characters).');
+            if (!addrOk) errs.push('Home Address – provide complete address (min 10 chars)');
+
+            // Contact Number  (09XXXXXXXXX – Philippine mobile)
+            const contact   = document.getElementById('ContactNumber').value.trim();
+            const contactOk = /^09\d{9}$/.test(contact);
+            setField('ContactNumber', contactOk, 'Enter a valid 11-digit PH mobile number starting with 09.');
+            if (!contactOk) errs.push('Contact Number – must be 11 digits starting with 09');
+
+            // Email
+            const email   = document.getElementById('Email').value.trim();
+            const emailOk = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/.test(email);
+            setField('Email', emailOk, 'Enter a valid email address (e.g. you@example.com).');
+            if (!emailOk) errs.push('Email Address – invalid format');
+
+            if (errs.length) { swalErrors(errs); return false; }
+            return true;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  STEP 2  –  Government ID
+        //  Rules:
+        //   TypeId      required | must choose a value
+        //   govPicture  required | at least 1 file uploaded
+        // ═══════════════════════════════════════════════════════════════════
+        function validateStep2() {
+            const errs = [];
+
+            // ID Type
+            const typeOk = document.getElementById('TypeId').value !== '';
+            setField('TypeId', typeOk, 'Please select the type of ID you are uploading.');
+            if (!typeOk) errs.push('Type of ID – selection required');
+
+            // Government ID upload
+            const govOk = pondGov.getFiles().length > 0;
+            setPondErr('err-govPicture', govOk, 'Please upload a clear photo of your government ID.');
+            if (!govOk) errs.push('Government ID – photo required');
+
+            if (errs.length) { swalErrors(errs); return false; }
+            return true;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  STEP 3  –  Face Verification
+        //  Rules:
+        //   idPicture   required | at least 1 file uploaded (selfie/capture)
+        // ═══════════════════════════════════════════════════════════════════
+        function validateStep3() {
+            const errs = [];
+
+            // Selfie / face photo
+            const selfieOk = pondId.getFiles().length > 0;
+            setPondErr('err-idPicture', selfieOk, 'Please capture or upload your selfie for face verification.');
+            if (!selfieOk) errs.push('Face / Selfie Photo – capture or upload required');
+
+            if (errs.length) { swalErrors(errs); return false; }
+            return true;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  STEP 4  –  Vehicle
+        //  Rules:
+        //   VehicleType   required | must choose a value
+        //   VehicleBrand  required | letters, numbers, spaces, hyphens
+        //   PlateNumber   required | alphanumeric 4–10 chars (PH format)
+        //   ORFile        required | file upload
+        //   CRFile        required | file upload
+        //   VehicleImages required | at least 1 photo
+        // ═══════════════════════════════════════════════════════════════════
+        function validateStep4() {
+            const errs = [];
+
+            // Vehicle Type
+            const vtOk = document.getElementById('VehicleType').value !== '';
+            setField('VehicleType', vtOk, 'Please select the vehicle type.');
+            if (!vtOk) errs.push('Vehicle Type – selection required');
+
+            // Vehicle Brand
+            const vb   = document.getElementById('VehicleBrand').value.trim();
+            const vbOk = vb.length >= 2 && /^[a-zA-Z0-9\s\-]+$/.test(vb);
+            setField('VehicleBrand', vbOk, 'Enter a valid vehicle brand (letters and numbers only).');
+            if (!vbOk) errs.push('Vehicle Brand – letters/numbers only, min 2 characters');
+
+            // Plate Number – PH plates: 3 letters + space/dash + 3-4 digits (e.g. ABC 1234)
+            const plate   = document.getElementById('PlateNumber').value.trim().toUpperCase();
+            const plateOk = /^[A-Z]{2,3}[\s\-]?\d{3,4}$/.test(plate) || /^[A-Z0-9]{4,10}$/.test(plate);
+            setField('PlateNumber', plateOk, 'Enter a valid plate number (e.g. ABC 1234).');
+            if (!plateOk) errs.push('Plate Number – invalid format (e.g. ABC 1234)');
+
+            // OR
+            const orOk = pondOR.getFiles().length > 0;
+            setPondErr('err-ORFile', orOk, 'Please upload the Official Receipt (OR).');
+            if (!orOk) errs.push('Official Receipt (OR) – file required');
+
+            // CR
+            const crOk = pondCR.getFiles().length > 0;
+            setPondErr('err-CRFile', crOk, 'Please upload the Certificate of Registration (CR).');
+            if (!crOk) errs.push('Certificate of Registration (CR) – file required');
+
+            // Vehicle Images
+            const viOk = pondVehicleImages.getFiles().length > 0;
+            setPondErr('err-VehicleImages', viOk, 'Please upload at least one vehicle image.');
+            if (!viOk) errs.push('Vehicle Images – at least 1 photo required');
+
+            if (errs.length) { swalErrors(errs); return false; }
+            return true;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  STEP 5  –  Login Details
+        //  Rules:
+        //   Username  required | 4–20 chars | alphanumeric + underscore only
+        //   Password  required | ≥8 chars | must contain ≥1 letter AND ≥1 digit
+        //   Confirm   required | must exactly match Password
+        // ═══════════════════════════════════════════════════════════════════
+        function validateStep5() {
+            const errs = [];
+
+            // Username
+            const uname   = document.getElementById('Username').value.trim();
+            const unameOk = /^[a-zA-Z0-9_]{4,20}$/.test(uname);
+            setField('Username', unameOk, 'Username must be 4–20 characters (letters, numbers, underscore only).');
+            if (!unameOk) errs.push('Username – 4–20 alphanumeric characters or underscores');
+
+            // Password
+            const pwd   = document.getElementById('Password').value;
+            const pwdOk = pwd.length >= 8 && /[a-zA-Z]/.test(pwd) && /\d/.test(pwd);
+            setField('Password', pwdOk, 'Password must be at least 8 characters and include a letter and a number.');
+            if (!pwdOk) errs.push('Password – min 8 characters with at least one letter and one number');
+
+            // Confirm Password
+            const conf   = document.getElementById('Confirm').value;
+            const confOk = conf !== '' && conf === pwd;
+            setField('Confirm', confOk, conf === '' ? 'Please confirm your password.' : 'Passwords do not match.');
+            if (!confOk) errs.push('Confirm Password – ' + (conf === '' ? 'field is empty' : 'does not match password'));
+
+            if (errs.length) { swalErrors(errs); return false; }
+            return true;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  WIRE BUTTONS
+        // ═══════════════════════════════════════════════════════════════════
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // custom-bsStepper.min.js already auto-inits the stepper.
+            // We get that existing instance instead of creating a new one.
+            // bsStepper attaches the instance to the element as ._stepper,
+            // but the exact key differs by version — so we create our own
+            // controlled instance AFTER removing the auto-init one.
+            const stepperEl = document.querySelector('.bs-stepper');
+
+            // Destroy any auto-created instance to avoid conflicts
+            if (stepperEl._stepper) {
+                try { stepperEl._stepper.destroy(); } catch(e) {}
+            }
+
+            // Create a fresh controlled instance
+            const stepper = new Stepper(stepperEl, { linear: false, animation: true });
+
+            // ── Next buttons ──────────────────────────────────────────────
+            // Step 1: Basic Information
+            document.getElementById('nxt-step1').addEventListener('click', function () {
+                if (validateStep1()) stepper.next();
+            });
+
+            // Step 2: Government ID
+            document.getElementById('nxt-step2').addEventListener('click', function () {
+                if (validateStep2()) stepper.next();
+            });
+
+            // Step 3: Face Verification
+            document.getElementById('nxt-step3').addEventListener('click', function () {
+                if (validateStep3()) stepper.next();
+            });
+
+            // Step 4: Vehicle
+            document.getElementById('nxt-step4').addEventListener('click', function () {
+                if (validateStep4()) stepper.next();
+            });
+
+            // ── Prev buttons ──────────────────────────────────────────────
+            document.querySelectorAll('.btn-prev').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    stepper.previous();
+                });
+            });
+
+            // ── Form submit ───────────────────────────────────────────────
+            document.getElementById('riderForm').addEventListener('submit', function (e) {
+                if (!validateStep5()) { e.preventDefault(); return false; }
+
+                // Final guard: all file ponds must have content
+                const allFiles =
+                    pondGov.getFiles().length > 0 &&
+                    pondId.getFiles().length  > 0 &&
+                    pondOR.getFiles().length  > 0 &&
+                    pondCR.getFiles().length  > 0 &&
+                    pondVehicleImages.getFiles().length > 0;
+
+                if (!allFiles) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Missing File Uploads',
+                        text: 'One or more required file uploads are missing. Please go back and complete all upload fields.',
+                        confirmButtonColor: '#d33'
+                    });
+                    return false;
+                }
+            });
+
         });
     </script>
+
+    <!-- TempData toasts in a separate script block to avoid Razor/JS bracket conflicts -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-        @if (TempData["Success"] != null)
-        {
-                <text>
-                    Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: '@TempData["Success"]',
-                    showConfirmButton: false,
-                    timer: 2000
-                    });
-                </text>
-        }
-        @if (TempData["Error"] != null)
-        {
-                <text>
-                    Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: '@TempData["Error"]',
-                    confirmButtonColor: '#d33'
-                    });
-                </text>
-        }
+            @if (TempData["Success"] != null)
+            {
+                    <text>
+                    Swal.fire({ icon: 'success', title: 'Success!', text: '@TempData["Success"]', showConfirmButton: false, timer: 2500 });
+                    </text>
+            }
+            @if (TempData["Error"] != null)
+            {
+                    <text>
+                    Swal.fire({ icon: 'error', title: 'Oops...', text: '@TempData["Error"]', confirmButtonColor: '#d33' });
+                    </text>
+            }
         });
     </script>
 </body>
