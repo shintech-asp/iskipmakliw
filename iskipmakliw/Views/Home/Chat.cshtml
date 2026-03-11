@@ -155,362 +155,169 @@
         </div>
     </div>
 </div>
+
 @section Scripts {
     <script>
-        //Chat Data3DTexture Modeling Render
         let currentOrderId = null;
-        let lastMessageId = 0;
-        let pollInterval = null;
+        let lastMessageId  = 0;
+        let pollInterval   = null;
 
-        // Search functionality
+        // ── Search ──────────────────────────────────────────────────
         document.getElementById('searchChats')?.addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
+            const q = e.target.value.toLowerCase();
             document.querySelectorAll('.chat-item').forEach(item => {
-                const text = item.textContent.toLowerCase();
-                item.style.display = text.includes(searchTerm) ? '' : 'none';
+                item.style.display = item.textContent.toLowerCase().includes(q) ? '' : 'none';
             });
         });
 
-                $("#chatArea").on("click", "#CancelOrder", function () {
+        // ── Cancel Order ────────────────────────────────────────────
+        $("#chatArea").on("click", "#CancelOrder", function () {
             const orderId = $(this).data("id");
-
             Swal.fire({
                 title: "Cancel Order",
                 html: `
                     <h5 class="text-start">Cancellation Reason:</h5>
                     <div style="text-align:left;">
-                        <div class="form-check mb-2">
-                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Out of stock">
-                            <label class="form-check-label">Out of stock</label>
-                        </div>
-
-                        <div class="form-check mb-2">
-                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Cancelled by buyer request">
-                            <label class="form-check-label">Cancelled by buyer request</label>
-                        </div>
-
-                        <div class="form-check mb-2">
-                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Pricing error">
-                            <label class="form-check-label">Pricing error</label>
-                        </div>
-
-                        <div class="form-check mb-2">
-                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Delivery issue">
-                            <label class="form-check-label">Delivery issue</label>
-                        </div>
-
-                        <div class="form-check mb-2">
-                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Other">
-                            <label class="form-check-label">Other (please specify)</label>
-                        </div>
-
-                        <textarea id="otherReason"
-                            class="form-control mt-2"
-                            placeholder="Please specify..."
-                            style="display:none;"></textarea>
-                    </div>
-                `,
+                        <div class="form-check mb-2"><input class="form-check-input cancel-reason" type="radio" name="reason" value="Out of stock"><label class="form-check-label">Out of stock</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input cancel-reason" type="radio" name="reason" value="Cancelled by buyer request"><label class="form-check-label">Cancelled by buyer request</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input cancel-reason" type="radio" name="reason" value="Pricing error"><label class="form-check-label">Pricing error</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input cancel-reason" type="radio" name="reason" value="Delivery issue"><label class="form-check-label">Delivery issue</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input cancel-reason" type="radio" name="reason" value="Other"><label class="form-check-label">Other (please specify)</label></div>
+                        <textarea id="otherReason" class="form-control mt-2" placeholder="Please specify..." style="display:none;"></textarea>
+                    </div>`,
                 showCancelButton: true,
                 confirmButtonText: "Confirm Cancellation",
                 cancelButtonText: "Cancel",
                 preConfirm: () => {
                     const selected = document.querySelector(".cancel-reason:checked");
-                    if (!selected) {
-                        Swal.showValidationMessage("Please select a reason");
-                        return false;
-                    }
-
+                    if (!selected) { Swal.showValidationMessage("Please select a reason"); return false; }
                     if (selected.value === "Other") {
-                        const otherText = document.getElementById("otherReason").value.trim();
-                        if (otherText.length < 5) {
-                            Swal.showValidationMessage("Please specify at least 5 characters");
-                            return false;
-                        }
-                        submitCancellation(orderId, otherText);
+                        const txt = document.getElementById("otherReason").value.trim();
+                        if (txt.length < 5) { Swal.showValidationMessage("Please specify at least 5 characters"); return false; }
+                        submitCancellation(orderId, txt);
+                    } else {
+                        submitCancellation(orderId, selected.value);
                     }
-
-                    submitCancellation(orderId, selected.value);
                 }
             });
-
-            // Toggle textarea when "Other" is selected
             $(document).on("change", ".cancel-reason", function () {
-                if (this.value === "Other") {
-                    $("#otherReason").slideDown();
-                } else {
-                    $("#otherReason").slideUp().val("");
-                }
+                this.value === "Other" ? $("#otherReason").slideDown() : $("#otherReason").slideUp().val("");
             });
         });
 
-        // --- Submit function ---
-         function submitCancellation(orderId, reason) {
-            // Save current scroll position
+        function submitCancellation(orderId, reason) {
             sessionStorage.setItem("scrollPos", window.scrollY);
-
             $.ajax({
-                url: "/Home/Cancel3d",
-                method: "POST",
-                data: {
-                    Id: orderId,
-                    Reason: reason
-                },
-                success: function () {
-                    Swal.fire("Cancelled", "Order has been cancelled successfully.", "success")
-                        .then(() => {
-                            location.reload();
-                        });
-                },
-                error: function () {
-                    Swal.fire("Error", "Failed to cancel order.", "error");
-                }
+                url: "/Home/Cancel3d", method: "POST", data: { Id: orderId, Reason: reason },
+                success: () => Swal.fire("Cancelled", "Order has been cancelled successfully.", "success").then(() => location.reload()),
+                error:   () => Swal.fire("Error", "Failed to cancel order.", "error")
             });
         }
-
-        // Restore scroll position after reload
         window.addEventListener("load", function () {
-            const scrollPos = sessionStorage.getItem("scrollPos");
-            if (scrollPos) {
-                window.scrollTo(0, parseInt(scrollPos));
-                sessionStorage.removeItem("scrollPos");
-            }
+            const pos = sessionStorage.getItem("scrollPos");
+            if (pos) { window.scrollTo(0, parseInt(pos)); sessionStorage.removeItem("scrollPos"); }
         });
 
+        // ── Payment ─────────────────────────────────────────────────
         $("#chatArea").on("click", "#PayOrderTrigger", function(){
             const CustomizationOrderId = $(this).data("Id");
-            console.log(CustomizationOrderId)
-           $("#PayOrderModal").modal("show")
-        })
+            console.log(CustomizationOrderId);
+            $("#PayOrderModal").modal("show");
+        });
 
         $("#chatArea").on("click", "#SubmitPayment", function() {
-            const orderId = currentOrderId || $(this).data("id");
-            console.log("SubmitPayment clicked for order ID:", orderId);
-
+            const orderId         = currentOrderId || $(this).data("id");
             const paymentMethodId = $("input[name='paymentMethodOnline']:checked").val();
-            const billingId = $("input[name='billings']:checked").val();
-            const amount = parseFloat($("#AmountContainer").val()) || 0;
-            const amountInCents = Math.round(amount * 100);
+            const billingId       = $("input[name='billings']:checked").val();
+            const amount          = parseFloat($("#AmountContainer").val()) || 0;
+            const amountInCents   = Math.round(amount * 100);
 
             if (!paymentMethodId || !billingId || isNaN(amount) || amount <= 0 || amountInCents <= 0) {
-                Swal.fire({
-                    title: "Error",
-                    text: "Please select payment method, delivery address, and ensure valid price.",
-                    icon: "error",
-                    confirmButtonText: "OK",
-                    buttonsStyling: false,
-                    customClass: { confirmButton: "btn btn-primary" }
-                });
+                Swal.fire({ title:"Error", text:"Please select payment method, delivery address, and ensure valid price.", icon:"error", confirmButtonText:"OK", buttonsStyling:false, customClass:{confirmButton:"btn btn-primary"} });
                 return;
             }
-
             const formattedPrice = "P " + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-
             Swal.fire({
-                title: "Confirm Payment",
-                html: `Pay <strong>${formattedPrice}</strong>? You'll be redirected to secure payment.`,
-                icon: "question",
-                showCancelButton: true,
-                confirmButtonText: "Yes, Pay Now",
-                cancelButtonText: "Cancel",
-                buttonsStyling: false,
-                customClass: {
-                    confirmButton: "btn btn-primary",
-                    cancelButton: "btn btn-secondary"
-                }
+                title:"Confirm Payment", html:`Pay <strong>${formattedPrice}</strong>? You'll be redirected to secure payment.`,
+                icon:"question", showCancelButton:true, confirmButtonText:"Yes, Pay Now", cancelButtonText:"Cancel",
+                buttonsStyling:false, customClass:{confirmButton:"btn btn-primary", cancelButton:"btn btn-secondary"}
             }).then(result => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: "/Payments/Pay3dProduct",
-                        method: "POST",
-                        data: {
-                            amount: amountInCents,
-                            billings: billingId,
-                            PaymentMethodId: paymentMethodId,
-                            CustomizationOrdersId: orderId
-                        },
-                        success: function(response) {
-                            if (response.success && response.redirectUrl) {
-                                window.location.href = response.redirectUrl;
-                            } else {
-                                Swal.fire({
-                                    title: "Error",
-                                    text: response.message || "Payment session failed.",
-                                    icon: "error",
-                                    confirmButtonText: "OK",
-                                    buttonsStyling: false,
-                                    customClass: { confirmButton: "btn btn-primary" }
-                                });
-                            }
-                        },
-                        error: function(xhr) {
-                            console.error("Payment error:", xhr.responseText);
-                            Swal.fire({
-                                title: "Error",
-                                text: "Payment failed. Try again.",
-                                icon: "error",
-                                confirmButtonText: "OK",
-                                buttonsStyling: false,
-                                customClass: { confirmButton: "btn btn-primary" }
-                            });
+                if (!result.isConfirmed) return;
+                $.ajax({
+                    url: "/Payments/Pay3dProduct", method: "POST",
+                    data: { amount: amountInCents, billings: billingId, PaymentMethodId: paymentMethodId, CustomizationOrdersId: orderId },
+                    success: response => {
+                        if (response.success && response.redirectUrl) {
+                            window.location.href = response.redirectUrl;
+                        } else {
+                            Swal.fire({ title:"Error", text: response.message || "Payment session failed.", icon:"error", confirmButtonText:"OK", buttonsStyling:false, customClass:{confirmButton:"btn btn-primary"} });
                         }
-                    });
-                }
+                    },
+                    error: xhr => {
+                        console.error("Payment error:", xhr.responseText);
+                        Swal.fire({ title:"Error", text:"Payment failed. Try again.", icon:"error", confirmButtonText:"OK", buttonsStyling:false, customClass:{confirmButton:"btn btn-primary"} });
+                    }
+                });
             });
         });
 
-        // Load chat partial
+        // ── Load Chat ────────────────────────────────────────────────
         function loadChat(orderId) {
             if (currentOrderId === orderId) return;
             currentOrderId = orderId;
 
-            if (pollInterval) {
-                clearInterval(pollInterval);
-                pollInterval = null;
-            }
+            if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
 
-            document.querySelectorAll('.chat-item').forEach(item => {
-                item.classList.remove('active');
-            });
+            document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
             document.querySelector(`[data-order-id="${orderId}"]`)?.classList.add('active');
 
             const chatArea = document.getElementById("chatArea");
             chatArea.innerHTML = `
-                <div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+                <div class="d-flex justify-content-center align-items-center" style="min-height:70vh;">
                     <div class="text-center">
-                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
+                        <div class="spinner-border text-primary" role="status" style="width:3rem;height:3rem;"></div>
                         <p class="mt-3 text-muted">Loading conversation...</p>
                     </div>
                 </div>`;
 
             fetch(`/Home/LoadChatPartial?orderId=${orderId}`)
-                .then(response => response.text())
+                .then(r => r.text())
                 .then(html => {
                     chatArea.innerHTML = html;
                     chatArea.style.height = '80vh';
 
                     const chatBox = document.getElementById('chatBox');
-                    if (chatBox) {
-                        chatBox.scrollTop = chatBox.scrollHeight;
-                    }
+                    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
 
+                    // Get initial lastMessageId
                     fetch(`/Home/GetNewMessages?orderId=${orderId}&lastMessageId=0`)
-                        .then(response => response.json())
-                        .then(allMessages => {
-                            if (allMessages && allMessages.length > 0) {
-                                lastMessageId = Math.max(...allMessages.map(m => m.id));
-                                console.log(`Set lastMessageId to ${lastMessageId} based on loaded messages`);
-                            } else {
-                                lastMessageId = 0;
-                            }
-                        })
-                        .catch(err => {
-                            console.error('Error fetching initial messages for ID:', err);
-                            lastMessageId = 0;
-                        })
-                        .finally(() => {
-                            startPolling();
-                        });
+                        .then(r => r.json())
+                        .then(msgs => { lastMessageId = msgs?.length > 0 ? Math.max(...msgs.map(m => m.id)) : 0; })
+                        .catch(() => { lastMessageId = 0; })
+                        .finally(() => startPolling());
 
-                    function startPolling() {
-                        pollInterval = setInterval(() => {
-                            if (currentOrderId && lastMessageId >= 0) {
-                                fetch(`/Home/GetNewMessages?orderId=${currentOrderId}&lastMessageId=${lastMessageId}`)
-                                    .then(response => response.json())
-                                    .then(newMessages => {
-                                        if (newMessages && newMessages.length > 0) {
-                                            const chatBox = document.getElementById('chatBox');
-                                            if (chatBox) {
-                                                newMessages.forEach(msg => {
-                                                    const isBuyer = msg.isCustomer;
-                                                    const avatar = "/src/assets/img/user-profile.jpeg";
-
-                                                    let timeStr = new Date().toLocaleTimeString('en-US', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                        hour12: true
-                                                    });
-                                                    if (msg.dateSent) {
-                                                        const date = new Date(msg.dateSent);
-                                                        if (!isNaN(date.getTime())) {
-                                                            timeStr = date.toLocaleTimeString('en-US', {
-                                                                hour: '2-digit',
-                                                                minute: '2-digit',
-                                                                hour12: true
-                                                            });
-                                                        } else {
-                                                            console.warn('Invalid date received:', msg.dateSent);
-                                                        }
-                                                    } else {
-                                                        console.warn('No date sent for message:', msg);
-                                                    }
-
-                                                    const bubbleClass = isBuyer ? "buyer" : "seller";
-                                                    const textClass = isBuyer ? "text-white" : "text-dark";
-                                                    const timeTextClass = isBuyer ? "text-white-50" : "text-muted";
-
-                                                    const html = `
-                                                        <div class="d-flex mb-3 ${isBuyer ? "justify-content-end" : "justify-content-start"}">
-                                                            ${!isBuyer ? `<img src="${avatar}" class="rounded-circle me-2" style="width:32px; height:32px; object-fit:cover;" />` : ''}
-                                                            <div class="message-bubble ${bubbleClass} p-3 rounded-3 shadow-sm ${textClass}" data-id="${msg.id}">
-                                                                <div class="mb-1">${msg.message || ''}</div>
-                                                                <div class="small ${timeTextClass} text-end">
-                                                                    ${timeStr}
-                                                                </div>
-                                                            </div>
-                                                            ${isBuyer ? `<img src="${avatar}" class="rounded-circle ms-2" style="width:32px; height:32px; object-fit:cover;" />` : ''}
-                                                        </div>
-                                                    `;
-                                                    chatBox.insertAdjacentHTML('beforeend', html);
-                                                });
-
-                                                lastMessageId = Math.max(...newMessages.map(m => m.id));
-                                                chatBox.scrollTop = chatBox.scrollHeight;
-                                            }
-                                        }
-                                    })
-                                    .catch(err => {
-                                        console.error('Error fetching new messages:', err);
-                                    });
-                            }
-                        }, 1000);
-                    }
-
-                    // Initialize 3D viewer
+                    // ── 3D VIEWER ─────────────────────────────────────────
                     const canvas = document.getElementById("viewer");
                     if (canvas) {
+                        // modelPath is the GLB saved in /3dpurchased/
+                        // It already has color + texture baked in — load it directly
                         const modelPath = canvas.dataset.model || "";
-                        const color = canvas.dataset.color || "#ffffff";
-                        const texture = canvas.dataset.texture || "";
-                        const scale = parseFloat(canvas.dataset.scale) || 1;
-                        const width = parseFloat(canvas.dataset.width) || 1;
-                        const height = parseFloat(canvas.dataset.height) || 1;
-
-                        console.log("🎨 Initializing 3D viewer:", { modelPath, color, texture, scale, width, height });
-                        initThreeViewer(modelPath, color, texture, scale, width, height);
+                        if (modelPath) {
+                            console.log("🎨 Loading baked GLB:", modelPath);
+                            initThreeViewer(modelPath);
+                        } else {
+                            console.warn("No model path found on canvas");
+                        }
                     }
 
-                    // Send message handler
+                    // ── Send message ──────────────────────────────────────
                     $("#Send").off("click").on("click", function(){
-                        console.log("Send clicked");
-                        var Message = $("#Message").val().trim();
-                        if (!Message) return;
-
+                        const msg = $("#Message").val().trim();
+                        if (!msg) return;
                         $.ajax({
-                            url: "/Home/SendMessage",
-                            method: "POST",
-                            data: {
-                                Id: orderId,
-                                Message: Message
-                            },
-                            success: function(response){
-                                console.log(response);
-                                $("#Message").val('');
-                            },
-                            error: function(xhr){
-                                console.log(xhr.responseText);
-                            }
+                            url: "/Home/SendMessage", method: "POST", data: { Id: orderId, Message: msg },
+                            success: () => $("#Message").val(''),
+                            error: xhr => console.error(xhr.responseText)
                         });
                     });
                 })
@@ -525,250 +332,163 @@
                 });
         }
 
-        // Initialize 3D viewer
-        function initThreeViewer(modelPath, color, texture, scale, width, height) {
+        function startPolling() {
+            pollInterval = setInterval(() => {
+                if (!currentOrderId || lastMessageId < 0) return;
+                fetch(`/Home/GetNewMessages?orderId=${currentOrderId}&lastMessageId=${lastMessageId}`)
+                    .then(r => r.json())
+                    .then(newMessages => {
+                        if (!newMessages?.length) return;
+                        const chatBox = document.getElementById('chatBox');
+                        if (!chatBox) return;
+                        newMessages.forEach(msg => {
+                            const isBuyer = msg.isCustomer;
+                            const avatar  = "/src/assets/img/user-profile.jpeg";
+                            let timeStr   = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true });
+                            if (msg.dateSent) {
+                                const d = new Date(msg.dateSent);
+                                if (!isNaN(d.getTime())) timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true });
+                            }
+                            const bubbleClass    = isBuyer ? "buyer" : "seller";
+                            const textClass      = isBuyer ? "text-white" : "text-dark";
+                            const timeTextClass  = isBuyer ? "text-white-50" : "text-muted";
+                            chatBox.insertAdjacentHTML('beforeend', `
+                                <div class="d-flex mb-3 ${isBuyer ? "justify-content-end" : "justify-content-start"}">
+                                    ${!isBuyer ? `<img src="${avatar}" class="rounded-circle me-2" style="width:32px;height:32px;object-fit:cover;" />` : ''}
+                                    <div class="message-bubble ${bubbleClass} p-3 rounded-3 shadow-sm ${textClass}" data-id="${msg.id}">
+                                        <div class="mb-1">${msg.message || ''}</div>
+                                        <div class="small ${timeTextClass} text-end">${timeStr}</div>
+                                    </div>
+                                    ${isBuyer ? `<img src="${avatar}" class="rounded-circle ms-2" style="width:32px;height:32px;object-fit:cover;" />` : ''}
+                                </div>`);
+                        });
+                        lastMessageId = Math.max(...newMessages.map(m => m.id));
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    })
+                    .catch(err => console.error('Polling error:', err));
+            }, 1000);
+        }
+
+
+        // ════════════════════════════════════════════════════════════
+        // 3D VIEWER — loads baked GLB directly, orbit + zoom enabled
+        // ════════════════════════════════════════════════════════════
+        function initThreeViewer(modelPath) {
             setTimeout(() => {
                 const canvas = document.getElementById("viewer");
-                if (!canvas) {
-                    console.error("Canvas not found");
-                    return;
-                }
-
-                if (typeof THREE === 'undefined') {
-                    const script = document.createElement('script');
-                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-                    script.onload = () => loadGLTFLoader(modelPath, color, texture, scale, width, height, canvas);
-                    document.head.appendChild(script);
-                } else {
-                    loadGLTFLoader(modelPath, color, texture, scale, width, height, canvas);
-                }
+                if (!canvas) { console.error("Canvas not found"); return; }
+                canvas.title = "Click & drag to rotate · Scroll to zoom";
+                canvas.style.cursor = "grab";
+                loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', () =>
+                    loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js', () =>
+                        loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js', () =>
+                            initScene(modelPath, canvas)
+                        )
+                    )
+                );
             }, 100);
         }
 
-        function loadGLTFLoader(modelPath, color, texture, scale, width, height, canvas) {
-            const gltfScript = document.createElement('script');
-            gltfScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
-            gltfScript.onload = () => loadOrbitControls(modelPath, color, texture, scale, width, height, canvas);
-            document.head.appendChild(gltfScript);
+        function loadScript(src, cb) {
+            if (document.querySelector(`script[src="${src}"]`)) { cb(); return; }
+            const s = document.createElement('script');
+            s.src = src; s.onload = cb;
+            document.head.appendChild(s);
         }
 
-        function loadOrbitControls(modelPath, color, texture, scale, width, height, canvas) {
-            const orbitScript = document.createElement('script');
-            orbitScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
-            orbitScript.onload = () => initScene(modelPath, color, texture, scale, width, height, canvas);
-            document.head.appendChild(orbitScript);
-        }
-
-        function initScene(modelPath, color, texture, scale, width, height, canvas) {
-            console.log("🎨 Rendering model:", modelPath);
-            console.log("📏 Dimensions - Scale:", scale, "Width:", width, "Height:", height);
-            console.log("🖼️ Texture:", texture, "Color:", color);
-
+        function initScene(modelPath, canvas) {
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xf0f2f5);
+            scene.background = new THREE.Color(0x0a0c14);
+            scene.fog        = new THREE.FogExp2(0x0a0c14, 0.06);
 
-            const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({
-                canvas,
-                antialias: true,
-                alpha: true,
-                premultipliedAlpha: false
-            });
-            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.outputEncoding = THREE.sRGBEncoding;
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.2;
-            renderer.shadowMap.enabled = true;
-
-            // Lighting setup
-            const ambient = new THREE.AmbientLight(0xffffff, 0.8);
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
-            hemiLight.position.set(0, 20, 0);
-
-            const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-            dirLight.position.set(5, 10, 7.5);
-            dirLight.castShadow = true;
-            dirLight.shadow.mapSize.width = 2048;
-            dirLight.shadow.mapSize.height = 2048;
-
-            const rimLight = new THREE.DirectionalLight(0x667eea, 0.5);
-            rimLight.position.set(-5, 5, -5);
-
-            scene.add(ambient, hemiLight, dirLight, rimLight);
-
-            // Controls
-            const controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 1.0;
+            const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.01, 1000);
             camera.position.set(0, 1.5, 4);
 
-            // Load model
-            const loader = new THREE.GLTFLoader();
-            const originalMaterials = new Map();
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+            renderer.outputEncoding      = THREE.sRGBEncoding;
+            renderer.toneMapping         = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.1;
+            renderer.shadowMap.enabled   = true;
 
-            loader.load(
+            const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+            const hemi    = new THREE.HemisphereLight(0xffffff, 0x334, 0.5);
+            hemi.position.set(0, 20, 0);
+            const dir = new THREE.DirectionalLight(0xffffff, 1.4);
+            dir.position.set(5, 10, 7.5); dir.castShadow = true;
+            dir.shadow.mapSize.width = dir.shadow.mapSize.height = 2048;
+            const rim = new THREE.DirectionalLight(0xffffff, 0.2);
+            rim.position.set(-5, 4, -5);
+            scene.add(ambient, hemi, dir, rim);
+
+            const grid = new THREE.GridHelper(20, 40, 0x1e2336, 0x1e2336);
+            grid.material.opacity = 0.6; grid.material.transparent = true;
+            scene.add(grid);
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping   = true;
+            controls.dampingFactor   = 0.05;
+            controls.enableZoom      = true;
+            controls.enablePan       = false;
+            controls.autoRotate      = true;
+            controls.autoRotateSpeed = 1.0;
+            controls.minDistance     = 0.5;
+            controls.maxDistance     = 20;
+
+            let autoRotateTimer = null;
+            canvas.addEventListener('pointerdown', () => {
+                controls.autoRotate = false;
+                canvas.style.cursor = 'grabbing';
+                clearTimeout(autoRotateTimer);
+            });
+            canvas.addEventListener('pointerup', () => {
+                canvas.style.cursor = 'grab';
+                autoRotateTimer = setTimeout(() => { controls.autoRotate = true; }, 3000);
+            });
+            canvas.addEventListener('wheel', () => {
+                controls.autoRotate = false;
+                clearTimeout(autoRotateTimer);
+                autoRotateTimer = setTimeout(() => { controls.autoRotate = true; }, 3000);
+            });
+
+            new THREE.GLTFLoader().load(
                 modelPath,
-                (gltf) => {
+                gltf => {
                     const model = gltf.scene;
-                    const colorHex = color || "#ffffff";
-                    const textureName = texture || null;
-                    const textureLoader = new THREE.TextureLoader();
-
-                    // Store original materials and apply customizations
-                    model.traverse((node) => {
-                        if (node.isMesh && node.material) {
-                            node.castShadow = true;
-                            node.receiveShadow = true;
-
-                            // Store original material properties BEFORE any modifications
-                            if (!originalMaterials.has(node)) {
-                                originalMaterials.set(node, {
-                                    color: node.material.color.clone(),
-                                    transparent: node.material.transparent,
-                                    opacity: node.material.opacity !== undefined ? node.material.opacity : 1.0,
-                                    metalness: node.material.metalness,
-                                    roughness: node.material.roughness,
-                                    transmission: node.material.transmission,
-                                    side: node.material.side
-                                });
-                            }
-
-                            // Clone material to avoid modifying shared materials
-                            node.material = node.material.clone();
-
-                            const original = originalMaterials.get(node);
-
-                            // CRITICAL: Preserve transparency and glass properties
-                            if (original.transparent || original.opacity < 1) {
-                                node.material.transparent = true;
-                                node.material.opacity = original.opacity;
-                                node.material.side = THREE.DoubleSide;
-                                node.material.depthWrite = false;
-                                console.log("🪟 Glass material detected - preserving transparency:", {
-                                    opacity: original.opacity,
-                                    transparent: original.transparent
-                                });
-                            }
-
-                            // Preserve PBR properties for realistic materials (glass, metal)
-                            if (original.metalness !== undefined) {
-                                node.material.metalness = original.metalness;
-                                node.material.roughness = original.roughness;
-                            }
-
-                            // Apply texture if specified
-                            if (textureName && textureName.trim() !== '') {
-                                const texturePath = `${textureName.toLowerCase()}`;
-                                console.log("🖼️ Loading texture:", texturePath);
-
-                                textureLoader.load(
-                                    texturePath,
-                                    (tex) => {
-                                        tex.encoding = THREE.sRGBEncoding;
-                                        tex.wrapS = THREE.RepeatWrapping;
-                                        tex.wrapT = THREE.RepeatWrapping;
-                                        tex.repeat.set(1, 1);
-
-                                        node.material.map = tex;
-
-                                        // If color is white (default), keep original color
-                                        if (colorHex.toLowerCase() === "#ffffff") {
-                                            node.material.color.copy(original.color);
-                                        } else {
-                                            node.material.color = new THREE.Color(colorHex);
-                                        }
-
-                                        node.material.needsUpdate = true;
-                                        console.log("✅ Texture loaded successfully:", textureName);
-                                    },
-                                    undefined,
-                                    (error) => {
-                                        console.error("❌ Error loading texture:", texturePath, error);
-                                    }
-                                );
-                            } else {
-                                // No texture specified
-                                node.material.map = null;
-
-                                // Only apply color if it's not white (default)
-                                if (colorHex.toLowerCase() === "#ffffff") {
-                                    // Keep original color for glass/transparent parts
-                                    node.material.color.copy(original.color);
-                                } else {
-                                    // Apply custom color
-                                    node.material.color = new THREE.Color(colorHex);
-                                }
-                            }
-
-                            node.material.needsUpdate = true;
-                        }
+                    model.traverse(node => {
+                        if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; }
                     });
-
-                    // Calculate bounding box for the model
-                    const box = new THREE.Box3().setFromObject(model);
-                    const center = box.getCenter(new THREE.Vector3());
-                    const size = box.getSize(new THREE.Vector3());
-
-                    // Apply custom scale from database
-                    model.scale.set(scale, scale, scale);
-
-                    // Normalize the model size first
+                    const box    = new THREE.Box3().setFromObject(model);
+                    const size   = box.getSize(new THREE.Vector3());
                     const maxDim = Math.max(size.x, size.y, size.z);
-                    if (maxDim > 0) {
-                        const normalizeScale = 2 / maxDim;
-                        model.scale.multiplyScalar(normalizeScale);
-                    }
-
-                    // Apply custom proportions based on width and height
-                    model.scale.x *= width;
-                    model.scale.y *= height;
-                    model.scale.z *= width;
-
-                    // Recalculate center after scaling
+                    if (maxDim > 0) model.scale.multiplyScalar(2.2 / maxDim);
                     box.setFromObject(model);
-                    const newCenter = box.getCenter(new THREE.Vector3());
-
-                    // Center the model
-                    model.position.x = -newCenter.x;
-                    model.position.y = -newCenter.y;
-                    model.position.z = -newCenter.z;
-
+                    model.position.sub(box.getCenter(new THREE.Vector3()));
                     scene.add(model);
-
-                    // Adjust camera based on model size
-                    const finalSize = box.getSize(new THREE.Vector3());
-                    const maxFinalDim = Math.max(finalSize.x, finalSize.y, finalSize.z);
-                    const cameraDistance = maxFinalDim * 2.5;
-                    camera.position.set(0, cameraDistance * 0.4, cameraDistance);
+                    const s2   = box.getSize(new THREE.Vector3());
+                    const dist = Math.max(s2.x, s2.y, s2.z) * 2.5;
+                    camera.position.set(0, dist * 0.4, dist);
+                    controls.minDistance = dist * 0.3;
+                    controls.maxDistance = dist * 5;
                     camera.lookAt(0, 0, 0);
-
-                    console.log(`✅ Model loaded with dimensions - W: ${width}, H: ${height}, S: ${scale}`);
-                    if (textureName) {
-                        console.log(`🎨 Texture applied: ${textureName}`);
-                    }
+                    console.log("GLB loaded — orbit & zoom enabled");
                 },
-                (xhr) => console.log(`Loading: ${(xhr.loaded / xhr.total * 100).toFixed(1)}%`),
-                (error) => console.error("❌ Error loading model:", error)
+                xhr => console.log(`Loading: ${(xhr.loaded / xhr.total * 100).toFixed(1)}%`),
+                err => console.error("GLB load error:", err)
             );
 
-            // Animation loop
-            function animate() {
+            (function animate() {
                 requestAnimationFrame(animate);
                 controls.update();
                 renderer.render(scene, camera);
-            }
-            animate();
+            })();
 
-            // Handle resize
-            const resizeObserver = new ResizeObserver(() => {
+            new ResizeObserver(() => {
                 camera.aspect = canvas.clientWidth / canvas.clientHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-            });
-            resizeObserver.observe(canvas);
+            }).observe(canvas);
         }
 
     </script>

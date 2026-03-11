@@ -252,9 +252,17 @@
 {
     <div class="alert alert-info my-5">
         <p>
-            <strong>Please wait! </strong> Your account is currently waiting for admins approval.
+            <strong>Please wait! </strong> Your account is pending.
         </p>
     </div>
+}
+else if (Model.Users.UserDetails?.Status == "For approval")
+{
+<div class="alert alert-info my-5">
+    <p>
+        <strong>Please wait! </strong> Your account is currently waiting for admins approval.
+    </p>
+</div>
 }
 else if (Model.Users.UserDetails?.Status == "Declined")
 {

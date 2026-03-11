@@ -29,6 +29,9 @@
 	  <Content Update="wwwroot/3dModel/**">
 		  <CopyToPublishDirectory>Never</CopyToPublishDirectory>
 	  </Content>
+	  <Content Update="wwwroot/3dpurchased/**">
+		  <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+	  </Content>
 	  <Content Update="wwwroot/models/**">
 		  <CopyToPublishDirectory>Never</CopyToPublishDirectory>
 	  </Content>

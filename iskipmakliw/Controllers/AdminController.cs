@@ -1,6 +1,7 @@
 ﻿using iskipmakliw.Data;
 using iskipmakliw.Models;
 using iskipmakliw.Models.ViewModels;
+using iskipmakliw.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,9 +12,11 @@ namespace iskipmakliw.Controllers
     public class AdminController : Controller
     {
         ApplicationDbContext _context;
-        public AdminController(ApplicationDbContext context)
+        EmailService _emailService;
+        public AdminController(ApplicationDbContext context, EmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
         public IActionResult Search(string query)
         {
@@ -209,10 +212,18 @@ namespace iskipmakliw.Controllers
         [HttpPost]
         public IActionResult SellerReview(string Status, int Ids, string? DeclinedReason)
         {
-            var user = _context.Users.Include(u=> u.UserDetails).Where(u => u.Id == Ids).FirstOrDefault();
+            var user = _context.Users
+                .Include(u => u.UserDetails)
+                .Where(u => u.Id == Ids)
+                .FirstOrDefault();
+
             user.UserDetails.Status = Status;
             user.UserDetails.DeclinedReason = DeclinedReason;
             _context.SaveChanges();
+
+            // Send status email
+            _emailService.SendSellerStatusEmail(user.Email, Status, DeclinedReason, user.Username);
+
             TempData["Success"] = "Status successfully changed!";
             return RedirectToAction("Index");
         }

@@ -160,15 +160,10 @@ else
 
                 <!-- 3D Viewer -->
                 <div class="viewer-container mb-4 position-relative">
-                    <canvas id="viewer"
-                            style="width:100%; height:280px; display: block;"
-                            data-model="@selectedChat.CustomizationOrders?.Model"
-                            data-color="@selectedChat.CustomizationOrders?.Color"
-                            data-texture="@selectedChat.CustomizationOrders?.Texture"
-                            data-scale="@selectedChat.CustomizationOrders?.Scale"
-                            data-width="@selectedChat.CustomizationOrders?.Width"
-                            data-height="@selectedChat.CustomizationOrders?.Height">
-                    </canvas>
+                <canvas id="viewer"
+                        data-model="@selectedChat?.CustomizationOrders?.Model"
+                        class="w-100 rounded-3" style="height:350px;">
+                </canvas>
                 </div>
 
                 <!-- Specifications -->

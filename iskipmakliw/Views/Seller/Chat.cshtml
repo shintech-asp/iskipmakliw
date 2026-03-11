@@ -158,583 +158,233 @@
 
 @section Scripts {
     <script>
-        //Chat Data3DTexture Modeling Render
-
         let currentOrderId = null;
-        let lastMessageId = 0;
-        let pollInterval = null;
-        // Search functionality
+        let lastMessageId  = 0;
+        let pollInterval   = null;
+
+        // ── Search ──────────────────────────────────────────────────
         document.getElementById('searchChats')?.addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
+            const q = e.target.value.toLowerCase();
             document.querySelectorAll('.chat-item').forEach(item => {
-                const text = item.textContent.toLowerCase();
-                item.style.display = text.includes(searchTerm) ? '' : 'none';
+                item.style.display = item.textContent.toLowerCase().includes(q) ? '' : 'none';
             });
         });
+
+        // ── Approve Order ────────────────────────────────────────────
         $("#chatArea").on("click", "#ApproveOrder", function(){
-            const orderId = $(this).data("id")
-            console.log("ApproveOrder clicked");
-            Swal.fire({
-                title: "Approve Order?",
-                text: "Are you sure you want to approve this order?",
-                icon: "question",
-                showCancelButton: true,
-                confirmButtonText: "Yes, Approve",
-                cancelButtonText: "Cancel"
+            const orderId = $(this).data("id");
+            Swal.fire({ title:"Approve Order?", text:"Are you sure you want to approve this order?", icon:"question",
+                showCancelButton:true, confirmButtonText:"Yes, Approve", cancelButtonText:"Cancel"
             }).then(result => {
-                if (result.isConfirmed) {
-                    // Add AJAX call to approve the order
-                    $.ajax({
-                        url: "/Seller/Approve3DOrder",
-                        method: "POST",
-                        data: { Id: orderId },
-                        success: function(response) {
-                            console.log("Order approved:", response);
-                            Swal.fire({
-                                title: "Success",
-                                text: "Order has been approved!",
-                                icon: "success",
-                                confirmButtonText: "OK"
-                            });
-                            // Optionally reload the chat to update status
-                            loadChat(currentOrderId);
-                        },
-                        error: function(xhr) {
-                            console.error("Error approving order:", xhr.responseText);
-                            Swal.fire({
-                                title: "Error",
-                                text: "Failed to approve order. Please try again.",
-                                icon: "error",
-                                confirmButtonText: "OK"
-                            });
-                            location.reload();
-                        }
-                    });
-                }
-            });
-        });
-            $("#chatArea").on("click", "#MarkAsComplete", function(){
-                const orderId = $(this).data("id")
-                console.log("MarkAsComplete clicked");
-                Swal.fire({
-                    title: "Complete Order?",
-                    text: "Are you sure you want to mark this as delivered?",
-                    icon: "question",
-                    showCancelButton: true,
-                    confirmButtonText: "Yes",
-                    cancelButtonText: "Cancel"
-                }).then(result => {
-                    if (result.isConfirmed) {
-                        // Add AJAX call to approve the order
-                        $.ajax({
-                            url: "/Seller/Mark3dAsComplete",
-                            method: "POST",
-                            data: { Id: orderId },
-                            success: function(response) {
-                                console.log("Order completed:", response);
-                                Swal.fire({
-                                    title: "Success",
-                                    text: "Order completed!",
-                                    icon: "success",
-                                    confirmButtonText: "OK"
-                                });
-                                location.reload();
-                                loadChat(currentOrderId);
-                            },
-                            error: function(xhr) {
-                                console.error("Error approving order:", xhr.responseText);
-                                Swal.fire({
-                                    title: "Error",
-                                    text: "Failed to approve order. Please try again.",
-                                    icon: "error",
-                                    confirmButtonText: "OK"
-                                });
-                                location.reload();
-                            }
-                        });
-                    }
+                if (!result.isConfirmed) return;
+                $.ajax({
+                    url: "/Seller/Approve3DOrder", method:"POST", data:{ Id: orderId },
+                    success: () => { Swal.fire({ title:"Success", text:"Order has been approved!", icon:"success", confirmButtonText:"OK" }); loadChat(currentOrderId); },
+                    error: xhr => { console.error(xhr.responseText); Swal.fire({ title:"Error", text:"Failed to approve order.", icon:"error" }); location.reload(); }
                 });
             });
-        $("#chatArea").on("click", "#DeliverOrder", function(){
-            const orderId = $(this).data("id")
-            console.log("DeliverOrder clicked");
-            Swal.fire({
-                title: "Deliver Order?",
-                text: "Are you sure you want to deliver this order?",
-                icon: "question",
-                showCancelButton: true,
-                confirmButtonText: "Yes, deliver",
-                cancelButtonText: "Cancel"
+        });
+
+        // ── Mark as Complete ─────────────────────────────────────────
+        $("#chatArea").on("click", "#MarkAsComplete", function(){
+            const orderId = $(this).data("id");
+            Swal.fire({ title:"Complete Order?", text:"Mark this as delivered?", icon:"question",
+                showCancelButton:true, confirmButtonText:"Yes", cancelButtonText:"Cancel"
             }).then(result => {
-                if (result.isConfirmed) {
-                    // Add AJAX call to approve the order
-                    $.ajax({
-                        url: "/Seller/Deliver3d",
-                        method: "POST",
-                        data: { Id: orderId },
-                        success: function(response) {
-                            console.log("Order delivered:", response);
-                            Swal.fire({
-                                title: "Success",
-                                text: "Order has been sent to delivery!",
-                                icon: "success",
-                                confirmButtonText: "OK"
-                            });
-                            location.reload();
-                            loadChat(currentOrderId);
-                        },
-                        error: function(xhr) {
-                            console.error("Error approving order:", xhr.responseText);
-                            Swal.fire({
-                                title: "Error",
-                                text: "Failed to approve order. Please try again.",
-                                icon: "error",
-                                confirmButtonText: "OK"
-                            });
-                            location.reload();
-                        }
-                    });
-                }
+                if (!result.isConfirmed) return;
+                $.ajax({
+                    url: "/Seller/Mark3dAsComplete", method:"POST", data:{ Id: orderId },
+                    success: () => { Swal.fire({ title:"Success", text:"Order completed!", icon:"success", confirmButtonText:"OK" }).then(() => location.reload()); },
+                    error: xhr => { console.error(xhr.responseText); Swal.fire({ title:"Error", text:"Failed to complete order.", icon:"error" }); location.reload(); }
+                });
             });
         });
-                $("#chatArea").on("click", "#CancelOrder", function () {
-            const orderId = $(this).data("id");
 
+        // ── Deliver Order ────────────────────────────────────────────
+        $("#chatArea").on("click", "#DeliverOrder", function(){
+            const orderId = $(this).data("id");
+            Swal.fire({ title:"Deliver Order?", text:"Send this order to delivery?", icon:"question",
+                showCancelButton:true, confirmButtonText:"Yes, deliver", cancelButtonText:"Cancel"
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                $.ajax({
+                    url: "/Seller/Deliver3d", method:"POST", data:{ Id: orderId },
+                    success: () => { Swal.fire({ title:"Success", text:"Order sent to delivery!", icon:"success", confirmButtonText:"OK" }).then(() => location.reload()); },
+                    error: xhr => { console.error(xhr.responseText); Swal.fire({ title:"Error", text:"Failed to deliver order.", icon:"error" }); location.reload(); }
+                });
+            });
+        });
+
+        // ── Cancel Order ─────────────────────────────────────────────
+        $("#chatArea").on("click", "#CancelOrder", function () {
+            const orderId = $(this).data("id");
             Swal.fire({
                 title: "Cancel Order",
                 html: `
                     <h5 class="text-start">Cancellation Reason:</h5>
                     <div style="text-align:left;">
-                        <div class="form-check mb-2">
-                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Out of stock">
-                            <label class="form-check-label">Out of stock</label>
-                        </div>
-
-                        <div class="form-check mb-2">
-                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Cancelled by buyer request">
-                            <label class="form-check-label">Cancelled by buyer request</label>
-                        </div>
-
-                        <div class="form-check mb-2">
-                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Pricing error">
-                            <label class="form-check-label">Pricing error</label>
-                        </div>
-
-                        <div class="form-check mb-2">
-                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Delivery issue">
-                            <label class="form-check-label">Delivery issue</label>
-                        </div>
-
-                        <div class="form-check mb-2">
-                            <input class="form-check-input cancel-reason" type="radio" name="reason" value="Other">
-                            <label class="form-check-label">Other (please specify)</label>
-                        </div>
-
-                        <textarea id="otherReason"
-                            class="form-control mt-2"
-                            placeholder="Please specify..."
-                            style="display:none;"></textarea>
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: "Confirm Cancellation",
-                cancelButtonText: "Cancel",
+                        <div class="form-check mb-2"><input class="form-check-input cancel-reason" type="radio" name="reason" value="Out of stock"><label class="form-check-label">Out of stock</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input cancel-reason" type="radio" name="reason" value="Cancelled by buyer request"><label class="form-check-label">Cancelled by buyer request</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input cancel-reason" type="radio" name="reason" value="Pricing error"><label class="form-check-label">Pricing error</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input cancel-reason" type="radio" name="reason" value="Delivery issue"><label class="form-check-label">Delivery issue</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input cancel-reason" type="radio" name="reason" value="Other"><label class="form-check-label">Other (please specify)</label></div>
+                        <textarea id="otherReason" class="form-control mt-2" placeholder="Please specify..." style="display:none;"></textarea>
+                    </div>`,
+                showCancelButton: true, confirmButtonText:"Confirm Cancellation", cancelButtonText:"Cancel",
                 preConfirm: () => {
                     const selected = document.querySelector(".cancel-reason:checked");
-                    if (!selected) {
-                        Swal.showValidationMessage("Please select a reason");
-                        return false;
+                    if (!selected) { Swal.showValidationMessage("Please select a reason"); return false; }
+                    const val = selected.value === "Other"
+                        ? document.getElementById("otherReason").value.trim()
+                        : selected.value;
+                    if (selected.value === "Other" && val.length < 5) {
+                        Swal.showValidationMessage("Please specify at least 5 characters"); return false;
                     }
-
-                    if (selected.value === "Other") {
-                        const otherText = document.getElementById("otherReason").value.trim();
-                        if (otherText.length < 5) {
-                            Swal.showValidationMessage("Please specify at least 5 characters");
-                            return false;
-                        }
-                        submitCancellation(orderId, otherText);
-                    }
-
-                    submitCancellation(orderId, selected.value);
+                    submitCancellation(orderId, val);
                 }
             });
-
-            // Toggle textarea when "Other" is selected
             $(document).on("change", ".cancel-reason", function () {
-                if (this.value === "Other") {
-                    $("#otherReason").slideDown();
-                } else {
-                    $("#otherReason").slideUp().val("");
-                }
+                this.value === "Other" ? $("#otherReason").slideDown() : $("#otherReason").slideUp().val("");
             });
         });
 
-        // --- Submit function ---
-         function submitCancellation(orderId, reason) {
-            // Save current scroll position
+        function submitCancellation(orderId, reason) {
             sessionStorage.setItem("scrollPos", window.scrollY);
-
             $.ajax({
-                url: "/Seller/Cancel3d",
-                method: "POST",
-                data: {
-                    Id: orderId,
-                    Reason: reason
-                },
-                success: function () {
-                    Swal.fire("Cancelled", "Order has been cancelled successfully.", "success")
-                        .then(() => {
-                            location.reload();
-                        });
-                },
-                error: function () {
-                    Swal.fire("Error", "Failed to cancel order.", "error");
-                }
+                url: "/Seller/Cancel3d", method:"POST", data:{ Id: orderId, Reason: reason },
+                success: () => Swal.fire("Cancelled","Order cancelled successfully.","success").then(() => location.reload()),
+                error:   () => Swal.fire("Error","Failed to cancel order.","error")
             });
         }
-
-        // Restore scroll position after reload
         window.addEventListener("load", function () {
-            const scrollPos = sessionStorage.getItem("scrollPos");
-            if (scrollPos) {
-                window.scrollTo(0, parseInt(scrollPos));
-                sessionStorage.removeItem("scrollPos");
-            }
+            const pos = sessionStorage.getItem("scrollPos");
+            if (pos) { window.scrollTo(0, parseInt(pos)); sessionStorage.removeItem("scrollPos"); }
         });
 
-
+        // ── Modify Price ─────────────────────────────────────────────
         $("#chatArea").on("click", "#ModifyPrice", function(){
             const orderId = $(this).data("id") || currentOrderId;
-            console.log("ModifyPrice clicked for order ID:", orderId);
-
-            // Fetch current price and payment mode
             $.ajax({
-                url: "/Seller/GetPrice",
-                method: "GET",
-                data: { Id: orderId },
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            title: "Modify Price",
-                            html: `
-                                <div class="form-group mb-3">
-                                    <label for="priceInput">Price</label>
-                                    <input type="number" id="priceInput" class="swal2-input" placeholder="Enter price" min="0" step="0.01" value="${response.Price || ''}" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="paymentMode">Payment Mode</label>
-                                    <select id="paymentMode" class="swal2-select" required>
-                                        <option value="" disabled ${!response.ModeOfPayment ? 'selected' : ''}>Select payment mode</option>
-                                        <option value="COD" ${response.ModeOfPayment === 'COD' ? 'selected' : ''}>COD</option>
-                                        <option value="E-wallet" ${response.ModeOfPayment === 'E-wallet' ? 'selected' : ''}>E-wallet</option>
-                                    </select>
-                                </div>
-                            `,
-                            icon: "question",
-                            showCancelButton: true,
-                            confirmButtonText: "Submit",
-                            cancelButtonText: "Cancel",
-                            focusConfirm: false,
-                            preConfirm: () => {
-                                const price = document.getElementById("priceInput").value;
-                                const paymentMode = document.getElementById("paymentMode").value;
-                                if (!price || isNaN(price) || price <= 0) {
-                                    Swal.showValidationMessage("Please enter a valid price");
-                                    return false;
-                                }
-                                if (!paymentMode) {
-                                    Swal.showValidationMessage("Please select a payment mode");
-                                    return false;
-                                }
-                                return { price: parseFloat(price), paymentMode };
-                            }
-                        }).then(result => {
-                            if (result.isConfirmed) {
-                                const { price, paymentMode } = result.value;
-                                $.ajax({
-                                    url: "/Seller/Add3dPrice",
-                                    method: "POST",
-                                    data: {
-                                        Id: orderId,
-                                        Price: price,
-                                        ModeOfPayment: paymentMode
-                                    },
-                                    success: function(response) {
-                                        console.log("Price modified:", response);
-                                        Swal.fire({
-                                            title: "Success",
-                                            text: "Price and payment mode have been updated!",
-                                            icon: "success",
-                                            confirmButtonText: "OK"
-                                        });
-                                        loadChat(orderId);
-                                    },
-                                    error: function(xhr) {
-                                        console.error("Error modifying price:", xhr.responseText);
-                                        Swal.fire({
-                                            title: "Error",
-                                            text: "Failed to modify price. Please try again.",
-                                            icon: "error",
-                                            confirmButtonText: "OK"
-                                        });
-                                    }
-                                });
-                            }
-                        });
-                    } else {
-                        Swal.fire({
-                            title: "Error",
-                            text: "Failed to fetch current price and payment mode.",
-                            icon: "error",
-                            confirmButtonText: "OK"
-                        });
-                    }
-                },
-                error: function(xhr) {
-                    console.error("Error fetching price:", xhr.responseText);
+                url: "/Seller/GetPrice", method:"GET", data:{ Id: orderId },
+                success: response => {
+                    if (!response.success) { Swal.fire({ title:"Error", text:"Failed to fetch price.", icon:"error" }); return; }
                     Swal.fire({
-                        title: "Error",
-                        text: "Failed to fetch current price. Please try again.",
-                        icon: "error",
-                        confirmButtonText: "OK"
+                        title:"Modify Price",
+                        html:`<div class="form-group mb-3"><label>Price</label>
+                              <input type="number" id="priceInput" class="swal2-input" placeholder="Enter price" min="0" step="0.01" value="${response.Price || ''}"></div>
+                              <div class="form-group"><label>Payment Mode</label>
+                              <select id="paymentMode" class="swal2-select">
+                                  <option value="" disabled ${!response.ModeOfPayment ? 'selected' : ''}>Select payment mode</option>
+                                  <option value="COD" ${response.ModeOfPayment === 'COD' ? 'selected' : ''}>COD</option>
+                                  <option value="E-wallet" ${response.ModeOfPayment === 'E-wallet' ? 'selected' : ''}>E-wallet</option>
+                              </select></div>`,
+                        icon:"question", showCancelButton:true, confirmButtonText:"Submit", cancelButtonText:"Cancel", focusConfirm:false,
+                        preConfirm: () => {
+                            const price = document.getElementById("priceInput").value;
+                            const mode  = document.getElementById("paymentMode").value;
+                            if (!price || isNaN(price) || price <= 0) { Swal.showValidationMessage("Enter a valid price"); return false; }
+                            if (!mode) { Swal.showValidationMessage("Select a payment mode"); return false; }
+                            return { price: parseFloat(price), paymentMode: mode };
+                        }
+                    }).then(result => {
+                        if (!result.isConfirmed) return;
+                        $.ajax({
+                            url:"/Seller/Add3dPrice", method:"POST",
+                            data:{ Id: orderId, Price: result.value.price, ModeOfPayment: result.value.paymentMode },
+                            success: () => { Swal.fire({ title:"Success", text:"Price updated!", icon:"success" }); loadChat(orderId); },
+                            error: xhr => { console.error(xhr.responseText); Swal.fire({ title:"Error", text:"Failed to update price.", icon:"error" }); }
+                        });
                     });
-                }
+                },
+                error: xhr => { console.error(xhr.responseText); Swal.fire({ title:"Error", text:"Failed to fetch price.", icon:"error" }); }
             });
         });
+
+        // ── Add Price ────────────────────────────────────────────────
         $("#chatArea").on("click", "#AddPrice", function(){
             const orderId = $(this).data("id");
-            console.log("AddPrice clicked for order ID:", orderId);
             Swal.fire({
-                title: "Add Price",
-                html: `
-                    <div class="form-group mb-3">
-                        <label for="priceInput">Price</label>
-                        <input type="number" id="priceInput" class="swal2-input" placeholder="Enter price" min="0" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="paymentMode">Payment Mode</label>
-                        <select id="paymentMode" class="swal2-select" required>
-                            <option value="" disabled selected>Select payment mode</option>
-                            <option value="COD">COD</option>
-                            <option value="E-wallet">E-wallet</option>
-                        </select>
-                    </div>
-                `,
-                icon: "question",
-                showCancelButton: true,
-                confirmButtonText: "Submit",
-                cancelButtonText: "Cancel",
-                focusConfirm: false,
+                title:"Add Price",
+                html:`<div class="form-group mb-3"><label>Price</label>
+                      <input type="number" id="priceInput" class="swal2-input" placeholder="Enter price" min="0" step="0.01"></div>
+                      <div class="form-group"><label>Payment Mode</label>
+                      <select id="paymentMode" class="swal2-select">
+                          <option value="" disabled selected>Select payment mode</option>
+                          <option value="COD">COD</option>
+                          <option value="E-wallet">E-wallet</option>
+                      </select></div>`,
+                icon:"question", showCancelButton:true, confirmButtonText:"Submit", cancelButtonText:"Cancel", focusConfirm:false,
                 preConfirm: () => {
                     const price = document.getElementById("priceInput").value;
-                    const paymentMode = document.getElementById("paymentMode").value;
-                    if (!price || isNaN(price) || price <= 0) {
-                        Swal.showValidationMessage("Please enter a valid price");
-                        return false;
-                    }
-                    if (!paymentMode) {
-                        Swal.showValidationMessage("Please select a payment mode");
-                        return false;
-                    }
-                    return { price: parseFloat(price), paymentMode };
+                    const mode  = document.getElementById("paymentMode").value;
+                    if (!price || isNaN(price) || price <= 0) { Swal.showValidationMessage("Enter a valid price"); return false; }
+                    if (!mode) { Swal.showValidationMessage("Select a payment mode"); return false; }
+                    return { price: parseFloat(price), paymentMode: mode };
                 }
             }).then(result => {
-                if (result.isConfirmed) {
-                    const { price, paymentMode } = result.value;
-                    $.ajax({
-                        url: "/Seller/Add3dPrice",
-                        method: "POST",
-                        data: {
-                            Id: orderId,
-                            Price: price,
-                            ModeOfPayment: paymentMode
-                        },
-                        success: function(response) {
-                            console.log("Price added:", response);
-                            Swal.fire({
-                                title: "Success",
-                                text: "Price and payment mode have been added!",
-                                icon: "success",
-                                confirmButtonText: "OK"
-                            });
-                            location.reload();
-                        },
-                        error: function(xhr) {
-                            console.error("Error adding price:", xhr.responseText);
-                            Swal.fire({
-                                title: "Error",
-                                text: "Failed to add price. Please try again.",
-                                icon: "error",
-                                confirmButtonText: "OK"
-                            });
-                        }
-                    });
-                }
+                if (!result.isConfirmed) return;
+                $.ajax({
+                    url:"/Seller/Add3dPrice", method:"POST",
+                    data:{ Id: orderId, Price: result.value.price, ModeOfPayment: result.value.paymentMode },
+                    success: () => Swal.fire({ title:"Success", text:"Price added!", icon:"success" }).then(() => location.reload()),
+                    error: xhr => { console.error(xhr.responseText); Swal.fire({ title:"Error", text:"Failed to add price.", icon:"error" }); }
+                });
             });
         });
-        // Load chat partial
+
+        // ── Load Chat ────────────────────────────────────────────────
         function loadChat(orderId) {
             if (currentOrderId === orderId) return;
             currentOrderId = orderId;
 
-            // Clear previous polling
-            if (pollInterval) {
-                clearInterval(pollInterval);
-                pollInterval = null;
-            }
-            
-            // Update active state
-            document.querySelectorAll('.chat-item').forEach(item => {
-                item.classList.remove('active');
-            });
+            if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+
+            document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
             document.querySelector(`[data-order-id="${orderId}"]`)?.classList.add('active');
 
             const chatArea = document.getElementById("chatArea");
             chatArea.innerHTML = `
-                <div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+                <div class="d-flex justify-content-center align-items-center" style="min-height:70vh;">
                     <div class="text-center">
-                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
+                        <div class="spinner-border text-primary" role="status" style="width:3rem;height:3rem;"></div>
                         <p class="mt-3 text-muted">Loading conversation...</p>
                     </div>
                 </div>`;
 
             fetch(`/Seller/LoadChatPartial?orderId=${orderId}`)
-                .then(response => response.text())
+                .then(r => r.text())
                 .then(html => {
                     chatArea.innerHTML = html;
-                    chatArea.style.height = '80vh'; // Ensure height is maintained
+                    chatArea.style.height = '80vh';
 
-                    // Scroll to bottom of chat
                     const chatBox = document.getElementById('chatBox');
-                    if (chatBox) {
-                        chatBox.scrollTop = chatBox.scrollHeight;
-                    }
+                    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
 
-                    // Fetch all messages to determine the last message ID without reprinting
                     fetch(`/Seller/GetNewMessages?orderId=${orderId}&lastMessageId=0`)
-                        .then(response => response.json())
-                        .then(allMessages => {
-                            if (allMessages && allMessages.length > 0) {
-                                lastMessageId = Math.max(...allMessages.map(m => m.id));
-                                console.log(`Set lastMessageId to ${lastMessageId} based on loaded messages`);
-                            } else {
-                                lastMessageId = 0;
-                            }
-                        })
-                        .catch(err => {
-                            console.error('Error fetching initial messages for ID:', err);
-                            lastMessageId = 0;
-                        })
-                        .finally(() => {
-                            // Start polling after setting lastMessageId
-                            startPolling();
-                        });
+                        .then(r => r.json())
+                        .then(msgs => { lastMessageId = msgs?.length > 0 ? Math.max(...msgs.map(m => m.id)) : 0; })
+                        .catch(() => { lastMessageId = 0; })
+                        .finally(() => startPolling());
 
-                    function startPolling() {
-                        pollInterval = setInterval(() => {
-                            if (currentOrderId && lastMessageId >= 0) {
-                                fetch(`/Seller/GetNewMessages?orderId=${currentOrderId}&lastMessageId=${lastMessageId}`)
-                                    .then(response => response.json())
-                                    .then(newMessages => {
-                                        if (newMessages && newMessages.length > 0) {
-                                            const chatBox = document.getElementById('chatBox');
-                                            if (chatBox) {
-                                                newMessages.forEach(msg => {
-                                                    const isFromBuyer = msg.isCustomer;
-                                                    const avatar = "/src/assets/img/user-profile.jpeg";
-
-                                                    // Robust date parsing with exact format match
-                                                    let timeStr = new Date().toLocaleTimeString('en-US', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                        hour12: true
-                                                    });
-                                                    if (msg.dateSent) {
-                                                        const date = new Date(msg.dateSent);
-                                                        if (!isNaN(date.getTime())) {
-                                                            timeStr = date.toLocaleTimeString('en-US', {
-                                                                hour: '2-digit',
-                                                                minute: '2-digit',
-                                                                hour12: true
-                                                            });
-                                                        } else {
-                                                            console.warn('Invalid date received:', msg.dateSent);
-                                                        }
-                                                    } else {
-                                                        console.warn('No date sent for message:', msg);
-                                                    }
-
-                                                    const bubbleClass = isFromBuyer ? "seller" : "buyer";
-                                                    const textClass = isFromBuyer ? "text-dark" : "text-white";
-                                                    const timeTextClass = isFromBuyer ? "text-muted" : "text-white-50";
-
-                                                    const html = `
-                                                        <div class="d-flex mb-3 ${isFromBuyer ? "justify-content-start" : "justify-content-end"}">
-                                                            ${isFromBuyer ? `<img src="${avatar}" class="rounded-circle me-2" style="width:32px; height:32px; object-fit:cover;" />` : ''}
-                                                            <div class="message-bubble ${bubbleClass} p-3 rounded-3 shadow-sm ${textClass}" data-id="${msg.id}">
-                                                                <div class="mb-1">${msg.message || ''}</div>
-                                                                <div class="small ${timeTextClass} text-end">
-                                                                    ${timeStr}
-                                                                </div>
-                                                            </div>
-                                                            ${!isFromBuyer ? `<img src="${avatar}" class="rounded-circle ms-2" style="width:32px; height:32px; object-fit:cover;" />` : ''}
-                                                        </div>
-                                                    `;
-                                                    chatBox.insertAdjacentHTML('beforeend', html);
-                                                });
-
-                                                // Update lastMessageId to the latest
-                                                lastMessageId = Math.max(...newMessages.map(m => m.id));
-
-                                                // Scroll to bottom
-                                                chatBox.scrollTop = chatBox.scrollHeight;
-                                            }
-                                        }
-                                    })
-                                    .catch(err => {
-                                        console.error('Error fetching new messages:', err);
-                                    });
-                            }
-                        }, 1000); // Poll every 5 seconds
-                    }
-
-                    // Initialize 3D viewer
+                    // ── 3D VIEWER ─────────────────────────────────────────
                     const canvas = document.getElementById("viewer");
                     if (canvas) {
                         const modelPath = canvas.dataset.model || "";
-                        const color = canvas.dataset.color || "#ffffff";
-                        const texture = canvas.dataset.texture || "";
-                        const scale = parseFloat(canvas.dataset.scale) || 1;
-                        const width = parseFloat(canvas.dataset.width) || 1;
-                        const height = parseFloat(canvas.dataset.height) || 1;
-
-                        console.log("🎨 Initializing 3D viewer:", { modelPath, color, texture, scale, width, height });
-                        initThreeViewer(modelPath, color, texture, scale, width, height);
+                        if (modelPath) {
+                            initThreeViewer(modelPath);
+                        } else {
+                            console.warn("No model path on canvas");
+                        }
                     }
 
-                    // Send message handler
+                    // ── Send message ──────────────────────────────────────
                     $("#Send").off("click").on("click", function(){
-                        console.log("Send clicked");
-                        var Message = $("#Message").val().trim();
-                        if (!Message) return;
-
+                        const msg = $("#Message").val().trim();
+                        if (!msg) return;
                         $.ajax({
-                            url: "/Seller/SendMessage",
-                            method: "POST",
-                            data: {
-                                Id: orderId,
-                                Message: Message
-                            },
-                            success: function(response){
-                                console.log(response);
-                                $("#Message").val('');
-                                // The new message will be appended on next poll
-                            },
-                            error: function(xhr){
-                                console.log(xhr.responseText);
-                            }
+                            url: "/Seller/SendMessage", method:"POST", data:{ Id: orderId, Message: msg },
+                            success: () => $("#Message").val(''),
+                            error: xhr => console.error(xhr.responseText)
                         });
                     });
                 })
@@ -749,198 +399,170 @@
                 });
         }
 
-        // Initialize 3D viewer
-        function initThreeViewer(modelPath, color, texture, scale, width, height) {
+        function startPolling() {
+            pollInterval = setInterval(() => {
+                if (!currentOrderId || lastMessageId < 0) return;
+                fetch(`/Seller/GetNewMessages?orderId=${currentOrderId}&lastMessageId=${lastMessageId}`)
+                    .then(r => r.json())
+                    .then(newMessages => {
+                        if (!newMessages?.length) return;
+                        const chatBox = document.getElementById('chatBox');
+                        if (!chatBox) return;
+                        newMessages.forEach(msg => {
+                            // From seller's POV: isCustomer=true means buyer sent it (left side)
+                            const isFromBuyer = msg.isCustomer;
+                            const avatar      = "/src/assets/img/user-profile.jpeg";
+                            let timeStr       = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true });
+                            if (msg.dateSent) {
+                                const d = new Date(msg.dateSent);
+                                if (!isNaN(d.getTime())) timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true });
+                            }
+                            const bubbleClass   = isFromBuyer ? "seller" : "buyer";
+                            const textClass     = isFromBuyer ? "text-dark" : "text-white";
+                            const timeTextClass = isFromBuyer ? "text-muted" : "text-white-50";
+                            chatBox.insertAdjacentHTML('beforeend', `
+                                <div class="d-flex mb-3 ${isFromBuyer ? "justify-content-start" : "justify-content-end"}">
+                                    ${isFromBuyer ? `<img src="${avatar}" class="rounded-circle me-2" style="width:32px;height:32px;object-fit:cover;" />` : ''}
+                                    <div class="message-bubble ${bubbleClass} p-3 rounded-3 shadow-sm ${textClass}" data-id="${msg.id}">
+                                        <div class="mb-1">${msg.message || ''}</div>
+                                        <div class="small ${timeTextClass} text-end">${timeStr}</div>
+                                    </div>
+                                    ${!isFromBuyer ? `<img src="${avatar}" class="rounded-circle ms-2" style="width:32px;height:32px;object-fit:cover;" />` : ''}
+                                </div>`);
+                        });
+                        lastMessageId = Math.max(...newMessages.map(m => m.id));
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    })
+                    .catch(err => console.error('Polling error:', err));
+            }, 1000);
+        }
+
+        // ════════════════════════════════════════════════════════════
+        // 3D VIEWER — loads baked GLB directly, orbit + zoom enabled
+        // ════════════════════════════════════════════════════════════
+        function initThreeViewer(modelPath) {
             setTimeout(() => {
                 const canvas = document.getElementById("viewer");
-                if (!canvas) {
-                    console.error("Canvas not found");
-                    return;
-                }
-
-                if (typeof THREE === 'undefined') {
-                    const script = document.createElement('script');
-                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-                    script.onload = () => loadGLTFLoader(modelPath, color, texture, scale, width, height, canvas);
-                    document.head.appendChild(script);
-                } else {
-                    loadGLTFLoader(modelPath, color, texture, scale, width, height, canvas);
-                }
+                if (!canvas) { console.error("Canvas not found"); return; }
+                canvas.title = "Click & drag to rotate · Scroll to zoom";
+                canvas.style.cursor = "grab";
+                loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', () =>
+                    loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js', () =>
+                        loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js', () =>
+                            initScene(modelPath, canvas)
+                        )
+                    )
+                );
             }, 100);
         }
 
-        function loadGLTFLoader(modelPath, color, texture, scale, width, height, canvas) {
-            const gltfScript = document.createElement('script');
-            gltfScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
-            gltfScript.onload = () => loadOrbitControls(modelPath, color, texture, scale, width, height, canvas);
-            document.head.appendChild(gltfScript);
+        function loadScript(src, cb) {
+            if (document.querySelector(`script[src="${src}"]`)) { cb(); return; }
+            const s = document.createElement('script');
+            s.src = src; s.onload = cb;
+            document.head.appendChild(s);
         }
 
-        function loadOrbitControls(modelPath, color, texture, scale, width, height, canvas) {
-            const orbitScript = document.createElement('script');
-            orbitScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
-            orbitScript.onload = () => initScene(modelPath, color, texture, scale, width, height, canvas);
-            document.head.appendChild(orbitScript);
-        }
-
-        function initScene(modelPath, color, texture, scale, width, height, canvas) {
-            console.log("🎨 Rendering model:", modelPath);
-            console.log("📏 Dimensions - Scale:", scale, "Width:", width, "Height:", height);
-            console.log("🖼️ Texture:", texture, "Color:", color);
-
+        function initScene(modelPath, canvas) {
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xf0f2f5);
+            scene.background = new THREE.Color(0x0a0c14);
+            scene.fog        = new THREE.FogExp2(0x0a0c14, 0.06);
 
-            const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.outputEncoding = THREE.sRGBEncoding;
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.2;
-            renderer.shadowMap.enabled = true;
-
-            // Lighting setup
-            const ambient = new THREE.AmbientLight(0xffffff, 0.8);
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
-            hemiLight.position.set(0, 20, 0);
-
-            const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-            dirLight.position.set(5, 10, 7.5);
-            dirLight.castShadow = true;
-            dirLight.shadow.mapSize.width = 2048;
-            dirLight.shadow.mapSize.height = 2048;
-
-            const rimLight = new THREE.DirectionalLight(0x667eea, 0.5);
-            rimLight.position.set(-5, 5, -5);
-
-            scene.add(ambient, hemiLight, dirLight, rimLight);
-
-            // Controls
-            const controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 1.0;
+            const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.01, 1000);
             camera.position.set(0, 1.5, 4);
 
-            // Load model
-            const loader = new THREE.GLTFLoader();
-            loader.load(
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+            renderer.outputEncoding      = THREE.sRGBEncoding;
+            renderer.toneMapping         = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.1;
+            renderer.shadowMap.enabled   = true;
+
+            // Identical lighting to the builder
+            const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+            const hemi    = new THREE.HemisphereLight(0xffffff, 0x334, 0.5);
+            hemi.position.set(0, 20, 0);
+            const dir = new THREE.DirectionalLight(0xffffff, 1.4);
+            dir.position.set(5, 10, 7.5); dir.castShadow = true;
+            dir.shadow.mapSize.width = dir.shadow.mapSize.height = 2048;
+            const rim = new THREE.DirectionalLight(0xffffff, 0.2);
+            rim.position.set(-5, 4, -5);
+            scene.add(ambient, hemi, dir, rim);
+
+            const grid = new THREE.GridHelper(20, 40, 0x1e2336, 0x1e2336);
+            grid.material.opacity = 0.6; grid.material.transparent = true;
+            scene.add(grid);
+
+            // OrbitControls — fully interactive
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping   = true;
+            controls.dampingFactor   = 0.05;
+            controls.enableZoom      = true;       // scroll to zoom
+            controls.enablePan       = false;      // no pan — cleaner UX
+            controls.autoRotate      = true;       // starts rotating
+            controls.autoRotateSpeed = 1.0;
+            controls.minDistance     = 0.5;
+            controls.maxDistance     = 20;
+
+            // Stop auto-rotate on interaction, resume after 3s idle
+            let autoRotateTimer = null;
+            canvas.addEventListener('pointerdown', () => {
+                controls.autoRotate = false;
+                canvas.style.cursor = 'grabbing';
+                clearTimeout(autoRotateTimer);
+            });
+            canvas.addEventListener('pointerup', () => {
+                canvas.style.cursor = 'grab';
+                autoRotateTimer = setTimeout(() => { controls.autoRotate = true; }, 3000);
+            });
+            canvas.addEventListener('wheel', () => {
+                controls.autoRotate = false;
+                clearTimeout(autoRotateTimer);
+                autoRotateTimer = setTimeout(() => { controls.autoRotate = true; }, 3000);
+            });
+
+            // Load GLB — color + texture already baked in, don't touch materials
+            new THREE.GLTFLoader().load(
                 modelPath,
-                (gltf) => {
+                gltf => {
                     const model = gltf.scene;
-                    const colorHex = color || "#ffffff";
-                    const textureName = texture || null;
-                    const textureLoader = new THREE.TextureLoader();
-
-                    // Apply materials with proper handling
-                    model.traverse((node) => {
-                        if (node.isMesh && node.material) {
-                            node.castShadow = true;
-                            node.receiveShadow = true;
-
-                            // Clone material to avoid modifying shared materials
-                            node.material = node.material.clone();
-
-                            // Apply texture if specified
-                            if (textureName && textureName.trim() !== '') {
-                                const texturePath = `${textureName.toLowerCase()}`;
-                                console.log("🖼️ Loading texture:", texturePath);
-
-                                textureLoader.load(
-                                    texturePath,
-                                    (tex) => {
-                                        // Configure texture
-                                        tex.encoding = THREE.sRGBEncoding;
-                                        tex.wrapS = THREE.RepeatWrapping;
-                                        tex.wrapT = THREE.RepeatWrapping;
-                                        tex.repeat.set(1, 1);
-
-                                        // Apply texture to material
-                                        node.material.map = tex;
-                                        node.material.needsUpdate = true;
-
-                                        console.log("✅ Texture loaded successfully:", textureName);
-                                    },
-                                    undefined,
-                                    (error) => {
-                                        console.error("❌ Error loading texture:", texturePath, error);
-                                    }
-                                );
-                            } else {
-                                // No texture, just apply color
-                                node.material.map = null;
-                            }
-
-                            // Apply color (will be combined with texture if present)
-                            node.material.color = new THREE.Color(colorHex);
-                            node.material.needsUpdate = true;
-                        }
+                    model.traverse(node => {
+                        if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; }
                     });
 
-                    // Calculate bounding box for the model
-                    const box = new THREE.Box3().setFromObject(model);
-                    const center = box.getCenter(new THREE.Vector3());
-                    const size = box.getSize(new THREE.Vector3());
-
-                    // Apply custom scale from database
-                    model.scale.set(scale, scale, scale);
-
-                    // Normalize the model size first
+                    const box    = new THREE.Box3().setFromObject(model);
+                    const size   = box.getSize(new THREE.Vector3());
                     const maxDim = Math.max(size.x, size.y, size.z);
-                    if (maxDim > 0) {
-                        const normalizeScale = 2 / maxDim; // Normalize to size 2
-                        model.scale.multiplyScalar(normalizeScale);
-                    }
-
-                    // Apply custom proportions based on width and height
-                    model.scale.x *= width;
-                    model.scale.y *= height;
-                    model.scale.z *= width; // Use width for depth to maintain proportions
-
-                    // Recalculate center after scaling
+                    if (maxDim > 0) model.scale.multiplyScalar(2.2 / maxDim);
                     box.setFromObject(model);
-                    const newCenter = box.getCenter(new THREE.Vector3());
-
-                    // Center the model
-                    model.position.x = -newCenter.x;
-                    model.position.y = -newCenter.y;
-                    model.position.z = -newCenter.z;
-
+                    model.position.sub(box.getCenter(new THREE.Vector3()));
                     scene.add(model);
 
-                    // Adjust camera based on model size
-                    const finalSize = box.getSize(new THREE.Vector3());
-                    const maxFinalDim = Math.max(finalSize.x, finalSize.y, finalSize.z);
-                    const cameraDistance = maxFinalDim * 2.5;
-                    camera.position.set(0, cameraDistance * 0.4, cameraDistance);
+                    const s2   = box.getSize(new THREE.Vector3());
+                    const dist = Math.max(s2.x, s2.y, s2.z) * 2.5;
+                    camera.position.set(0, dist * 0.4, dist);
+                    controls.minDistance = dist * 0.3;
+                    controls.maxDistance = dist * 5;
                     camera.lookAt(0, 0, 0);
-
-                    console.log(`✅ Model loaded with dimensions - W: ${width}, H: ${height}, S: ${scale}`);
-                    if (textureName) {
-                        console.log(`🎨 Texture applied: ${textureName}`);
-                    }
+                    console.log("GLB loaded — orbit & zoom enabled");
                 },
-                (xhr) => console.log(`Loading: ${(xhr.loaded / xhr.total * 100).toFixed(1)}%`),
-                (error) => console.error("❌ Error loading model:", error)
+                xhr => console.log(`Loading: ${(xhr.loaded / xhr.total * 100).toFixed(1)}%`),
+                err => console.error("GLB load error:", err)
             );
 
-            // Animation loop
-            function animate() {
+            (function animate() {
                 requestAnimationFrame(animate);
                 controls.update();
                 renderer.render(scene, camera);
-            }
-            animate();
+            })();
 
-            // Handle resize
-            const resizeObserver = new ResizeObserver(() => {
+            new ResizeObserver(() => {
                 camera.aspect = canvas.clientWidth / canvas.clientHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-            });
-            resizeObserver.observe(canvas);
+            }).observe(canvas);
         }
+
     </script>
 }

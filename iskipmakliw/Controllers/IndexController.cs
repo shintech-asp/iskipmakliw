@@ -29,10 +29,29 @@ namespace iskipmakliw.Controllers
         {
             return View();
         }
-        public IActionResult Index()
+
+        public IActionResult Index(string? color, string? material, decimal? minPrice, decimal? maxPrice, double? minRating)
         {
-            var data = _context.Product
-                .Where(u => u.ProductVariants.Any())
+
+            var query = _context.Product
+                .Where(u => u.ProductVariants.Any(v => v.isArchive == null))
+                .AsQueryable();
+
+            // Filter by color
+            if (!string.IsNullOrEmpty(color))
+                query = query.Where(p => p.ProductVariants.Any(v => v.Color == color && v.isArchive == null));
+
+            // Filter by material
+            if (!string.IsNullOrEmpty(material))
+                query = query.Where(p => p.ProductVariants.Any(v => v.Material == material && v.isArchive == null));
+
+            // Filter by price
+            if (minPrice.HasValue)
+                query = query.Where(p => p.ProductVariants.Where(v => v.isArchive == null).OrderBy(v => v.Price).First().Price >= (double)minPrice);
+            if (maxPrice.HasValue)
+                query = query.Where(p => p.ProductVariants.Where(v => v.isArchive == null).OrderBy(v => v.Price).First().Price <= (double)maxPrice);
+
+            var data = query
                 .Select(p => new ClientViewModel
                 {
                     ProductId = p.Id,
@@ -40,13 +59,53 @@ namespace iskipmakliw.Controllers
                     SellerName = p.Users.Username,
                     SellerId = p.UsersId,
                     Price = p.ProductVariants
-                        .OrderBy(v => v.Price)
-                        .Select(v => v.Price)
-                        .FirstOrDefault(),
-                    Image = p.ProductVariants.FirstOrDefault().ProductImage
-
+                                    .Where(v => v.isArchive == null)
+                                    .OrderBy(v => v.Price)
+                                    .Select(v => v.Price)
+                                    .FirstOrDefault(),
+                    Image = p.ProductVariants
+                                    .Where(v => v.isArchive == null)
+                                    .Select(v => v.ProductImage)
+                                    .FirstOrDefault(),
+                    AverageRating = p.ProductVariants
+                                    .Where(v => v.isArchive == null)
+                                    .SelectMany(v => v.Ratings)
+                                    .Any()
+                                        ? p.ProductVariants
+                                            .Where(v => v.isArchive == null)
+                                            .SelectMany(v => v.Ratings)
+                                            .Average(r => (double)r.Stars)
+                                        : 0,
+                    ReviewCount = p.ProductVariants
+                                    .Where(v => v.isArchive == null)
+                                    .SelectMany(v => v.Ratings)
+                                    .Count()
                 })
                 .ToList();
+
+            // Rating filter (post-query since it's computed)
+            if (minRating.HasValue)
+                data = data.Where(p => p.AverageRating >= minRating.Value).ToList();
+
+            // Populate filter dropdowns from non-archived variants
+            var activeVariants = _context.ProductVariants.Where(v => v.isArchive == null);
+
+            ViewBag.Colors = activeVariants
+                .Where(v => v.Color != null)
+                .Select(v => v.Color)
+                .Distinct().OrderBy(c => c).ToList();
+
+            ViewBag.Materials = activeVariants
+                .Where(v => v.Material != null)
+                .Select(v => v.Material)
+                .Distinct().OrderBy(m => m).ToList();
+
+            // Pass active filters back
+            ViewBag.CurrentColor = color;
+            ViewBag.CurrentMaterial = material;
+            ViewBag.CurrentMinPrice = minPrice;
+            ViewBag.CurrentMaxPrice = maxPrice;
+            ViewBag.CurrentRating = minRating;
 
             return View(data);
         }

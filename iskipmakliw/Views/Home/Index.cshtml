@@ -4,7 +4,10 @@
     Layout = "_LayoutCustomer";
 }
 @model IEnumerable<ClientViewModel>;
+
 <div class="row layout-top-spacing">
+
+    @* ── Billing/Payment alert (unchanged) ── *@
     @if (!ViewBag.IsBilling || !ViewBag.IsPaymentMethod)
     {
         <div class="alert alert-info alert-dismissible fade show d-flex align-items-start gap-3 border-0 shadow-sm" role="alert">
@@ -36,47 +39,198 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
+
+    @* ── Filter Bar ── *@
+    <form method="get" asp-action="Index" asp-controller="Home" class="mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body py-3">
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-12 col-md-auto d-flex align-items-center">
+                        <span class="fw-semibold text-muted me-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel me-1" viewBox="0 0 16 16">
+                                <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z" />
+                            </svg>
+                            Filters
+                        </span>
+                    </div>
+
+                    @* Color *@
+                    <div class="col-6 col-md-2">
+                        <label class="form-label small text-muted mb-1">Color</label>
+                        <select name="color" class="form-select form-select-sm">
+                            <option value="">All Colors</option>
+                            @foreach (var c in ViewBag.Colors as List<string> ?? new List<string>())
+                            {
+                                <option value="@c" selected="@(ViewBag.CurrentColor == c ? "selected" : null)">@c</option>
+                            }
+                        </select>
+                    </div>
+
+                    @* Material *@
+                    <div class="col-6 col-md-2">
+                        <label class="form-label small text-muted mb-1">Material</label>
+                        <select name="material" class="form-select form-select-sm">
+                            <option value="">All Materials</option>
+                            @foreach (var m in ViewBag.Materials as List<string> ?? new List<string>())
+                            {
+                                <option value="@m" selected="@(ViewBag.CurrentMaterial == m ? "selected" : null)">@m</option>
+                            }
+                        </select>
+                    </div>
+
+                    @* Min Price *@
+                    <div class="col-6 col-md-2">
+                        <label class="form-label small text-muted mb-1">Min Price (₱)</label>
+                        <input type="number" name="minPrice" class="form-control form-control-sm"
+                               placeholder="0" min="0" value="@ViewBag.CurrentMinPrice" />
+                    </div>
+
+                    @* Max Price *@
+                    <div class="col-6 col-md-2">
+                        <label class="form-label small text-muted mb-1">Max Price (₱)</label>
+                        <input type="number" name="maxPrice" class="form-control form-control-sm"
+                               placeholder="Any" min="0" value="@ViewBag.CurrentMaxPrice" />
+                    </div>
+
+                    @* Rating *@
+                    <div class="col-6 col-md-1">
+                        <label class="form-label small text-muted mb-1">Rating</label>
+                        <select name="minRating" class="form-select form-select-sm">
+                            <option value="">All</option>
+                            @foreach (var r in new[] { 4.5, 4.0, 3.5, 3.0 })
+                            {
+                                <option value="@r" selected="@(ViewBag.CurrentRating != null && (double)ViewBag.CurrentRating == r ? "selected" : null)">
+                                    @r+ ★
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    @* Buttons *@
+                    <div class="col-12 col-md-auto d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm px-4">Apply</button>
+                        <a asp-action="Index" asp-controller="Home" class="btn btn-outline-secondary btn-sm px-3">Clear</a>
+                    </div>
+
+                    @* Active filter badges *@
+                    @if (ViewBag.CurrentColor != null || ViewBag.CurrentMaterial != null ||
+                                        ViewBag.CurrentMinPrice != null || ViewBag.CurrentMaxPrice != null ||
+                                        ViewBag.CurrentRating != null)
+                    {
+                        <div class="col-12 d-flex flex-wrap gap-2 pt-1">
+                            <span class="text-muted small me-1">Active:</span>
+                            @if (ViewBag.CurrentColor != null)
+                            {
+                                <span class="badge bg-primary bg-opacity-10 text-white fw-normal">Color: @ViewBag.CurrentColor</span>
+                            }
+                            @if (ViewBag.CurrentMaterial != null)
+                            {
+                                <span class="badge bg-primary bg-opacity-10 text-white fw-normal">Material: @ViewBag.CurrentMaterial</span>
+                            }
+                            @if (ViewBag.CurrentMinPrice != null || ViewBag.CurrentMaxPrice != null)
+                            {
+                                <span class="badge bg-primary bg-opacity-10 text-white fw-normal">
+                                    Price: ₱@(ViewBag.CurrentMinPrice ?? 0) – @(ViewBag.CurrentMaxPrice != null ? "₱" + ViewBag.CurrentMaxPrice : "Any")
+                                </span>
+                            }
+                            @if (ViewBag.CurrentRating != null)
+                            {
+                                <span class="badge bg-primary bg-opacity-10 text-primary fw-normal">Rating: @ViewBag.CurrentRating+ ★</span>
+                            }
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </form>
+    @* ── Results count ── *@
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="text-muted small mb-0">Showing <strong>@Model.Count()</strong> product@(Model.Count() != 1 ? "s" : "")</p>
+    </div>
+
+    @* ── Product Grid (unchanged) ── *@
     <div class="row">
-        @foreach(var data in Model)
+        @foreach (var data in Model)
         {
             <div class="col-xxl-2 col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-4">
                 <a class="card style-6" asp-action="Product" asp-controller="Home" asp-route-Id="@data.ProductId" asp-route-SellerId="@data.SellerId">
                     <span class="badge badge-primary">NEW</span>
                     @if (data.Image != null)
                     {
-                        <img src="@data.Image"
-                             class="card-img-top img-fluid"
-                             style="min-height:200px; max-height: 200px; object-fit:contain;"
-                             alt="Product image" />
+                        <img src="@data.Image" class="card-img-top img-fluid"
+                             style="min-height:200px; max-height:200px; object-fit:contain;" alt="Product image" />
                     }
                     else
                     {
-                        <img src="~/src/assets/img/OakMartLogo.png"
-                             class="card-img-top img-fluid"
-                             style="min-height:200px; max-height: 200px; object-fit:contain;"
-                             alt="Default product" />
+                        <img src="~/src/assets/img/OakMartLogo.png" class="card-img-top img-fluid"
+                             style="min-height:200px; max-height:200px; object-fit:contain;" alt="Default product" />
                     }
-                    <span class="badge badge-secondary mb-0">
-                        ₱@data.Price.ToString("N0")
-                    </span>
+                    <span class="badge badge-secondary mb-0">₱@data.Price.ToString("N0")</span>
                     <div class="card-footer">
                         <div class="row">
                             <div class="col-12 mb-2">
                                 <b>@data.Name</b>
                             </div>
+
+                            @* ── Star rating display ── *@
+                            <div class="col-12 mb-2">
+                                @{
+                                    var fullStars = (int)Math.Floor(data.AverageRating);
+                                    var halfStar = (data.AverageRating - fullStars) >= 0.5;
+                                    var emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+                                }
+                                <span class="text-warning" style="font-size:13px;">
+                                    @for (int i = 0; i < fullStars; i++)
+                                    {
+                                        <text>★</text>
+                                    }
+                                    @if (halfStar)
+                                    {
+                                        <text>½</text>
+                                    }
+                                    @for (int i = 0; i < emptyStars; i++)
+                                    {
+                                        <text>☆</text>
+                                    }
+                                </span>
+                                <span class="text-muted" style="font-size:11px;">
+                                    @data.AverageRating.ToString("0.0") (@data.ReviewCount)
+                                </span>
+                            </div>
+
                             <div class="col-12 mb-4">
                                 <p class="fw-bold"><span class="fw-light">Seller</span><br />@data.SellerName</p>
                             </div>
                             <div class="col-3">
                                 <button class="btn btn-secondary">Buy</button>
-                                </div>
+                            </div>
                             <div class="col-9 text-end">
-                                <button class="btn btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></button>
+                                <button class="btn btn-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart">
+                                        <circle cx="9" cy="21" r="1"></circle>
+                                        <circle cx="20" cy="21" r="1"></circle>
+                                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </a>
             </div>
         }
+
+        @if (!Model.Any())
+        {
+            <div class="col-12 text-center py-5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-search text-muted mb-3" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z" />
+                </svg>
+                <h5 class="text-muted">No products match your filters</h5>
+                <a asp-action="Index" asp-controller="Home" class="btn btn-outline-primary mt-2">Clear Filters</a>
+            </div>
+        }
     </div>
+
 </div>
