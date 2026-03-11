@@ -133,10 +133,11 @@
                                                         <p>@data.Address</p>
                                                     </div>
                                                     <div class="billing-edit align-self-center ms-auto">
-                                                        <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
+                                                        <a class="btn btn-dark _effect--ripple waves-effect waves-light" asp-action="DeleteBillings" asp-route-Id="@data.Id">Delete</a>
                                                     </div>
                                                 </div>
                                             </label>
+                                            id++;
                                         }
                                     </div>
                                 </div>
@@ -170,7 +171,7 @@
                                                         <p>@data.Number</p>
                                                     </div>
                                                     <div class="billing-edit align-self-center ms-auto">
-                                                        <button class="btn btn-dark _effect--ripple waves-effect waves-light">Edit</button>
+                                                        <a class="btn btn-dark _effect--ripple waves-effect waves-light" asp-action="DeletePayment" asp-route-Id="@data.Id">Delete</a>
                                                     </div>
                                                 </div>
                                             </label>
@@ -201,8 +202,8 @@
                                                        name="ContactNumber"
                                                        class="form-control"
                                                        maxlength="11"
-                                                       pattern="\d{11}"
                                                        inputmode="numeric"
+                                                       placeholder="09XXXXXXXXX"
                                                        oninput="this.value = this.value.replace(/\D/g, '')"
                                                        id="Contact">
                                             </div>
@@ -276,11 +277,11 @@
                                                 <label class="form-label">Number</label>
                                                 <input type="text"
                                                     name="PaymentContactNumber"
-                                                    class="form-control add-payment-method-input"
-                                                   maxlength="11"
-                                                   pattern="\d{11}"
-                                                   inputmode="numeric"
-                                                   oninput="this.value = this.value.replace(/\D/g, '')">
+                                                       class="form-control add-payment-method-input"
+                                                       maxlength="11"
+                                                       inputmode="numeric"
+                                                       placeholder="09XXXXXXXXX"
+                                                       oninput="this.value = this.value.replace(/\D/g, '')" />
                                             </div>
                                         </div>
                                         <div class="col-md-12">

@@ -9,7 +9,7 @@
         public int UsersId { get; set; }
         public Users Users { get; set; }
         public DateTime? DueDate { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int? SellersId { get; set; }
     }
 }

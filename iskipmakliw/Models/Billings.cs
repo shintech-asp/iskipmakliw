@@ -14,5 +14,6 @@
         public string Latitude { get; set; }
         public int UsersId { get; set; }
         public Users Users { get; set; }
+        public bool? isDeleted { get; set; } = false;
     }
 }

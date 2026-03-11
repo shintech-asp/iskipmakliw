@@ -146,7 +146,7 @@
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <span class="badge bg-blue-lt">@subscriber.Subscription.FirstOrDefault().Plans.PlanName</span>
+                                                        <span class="badge bg-primary">@subscriber.Subscription.FirstOrDefault().Plans.PlanName</span>
                                                     </td>
                                                     <td>
                                                         <small class="text-muted">@subscriber.DateCreated.ToString("MMM dd, yyyy")</small>
@@ -200,7 +200,7 @@
                                                         <small class="text-muted">@plan.Email</small>
                                                     </td>
                                                     <td>
-                                                        <span class="badge bg-purple-lt">@plan.Subscription?.FirstOrDefault()?.Plans.PlanName</span>
+                                                        <span class="badge bg-primary">@plan.Subscription?.FirstOrDefault()?.Plans.PlanName</span>
                                                     </td>
                                                     <td>
                                                         <strong>₱@plan.Subscription?.FirstOrDefault()?.Plans.Price</strong>

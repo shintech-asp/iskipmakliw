@@ -275,7 +275,6 @@
                               <div class="form-group"><label>Payment Mode</label>
                               <select id="paymentMode" class="swal2-select">
                                   <option value="" disabled ${!response.ModeOfPayment ? 'selected' : ''}>Select payment mode</option>
-                                  <option value="COD" ${response.ModeOfPayment === 'COD' ? 'selected' : ''}>COD</option>
                                   <option value="E-wallet" ${response.ModeOfPayment === 'E-wallet' ? 'selected' : ''}>E-wallet</option>
                               </select></div>`,
                         icon:"question", showCancelButton:true, confirmButtonText:"Submit", cancelButtonText:"Cancel", focusConfirm:false,

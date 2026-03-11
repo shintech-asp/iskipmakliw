@@ -84,7 +84,7 @@ namespace iskipmakliw.Controllers
             {
                 // Recent Subscribers (last 7 days)
                 RecentSubscribers = await _context.Users
-                    .Include(s => s.Subscription.Where(u => u.Expiration >= DateTime.Now))
+                    .Include(s => s.Subscription.Where(u => u.Expiration >= DateTime.UtcNow))
                             .ThenInclude(s => s.Plans)
                     .Include(s => s.UserDetails)
                     .Where(s => s.DateCreated >= DateTime.UtcNow.AddDays(-7) && s.Role == "Seller")
@@ -119,9 +119,10 @@ namespace iskipmakliw.Controllers
 
                 // Statistics
                 TotalSubscribers = await _context.Users.Where(s => s.Role == "Seller").CountAsync(),
-                ActiveSubscriptions = await _context.Users.Include(r => r.Subscription)
-                    .Where(s => s.Subscription.Any(u => u.Expiration >= DateTime.UtcNow))
-                    .CountAsync(),
+                ActiveSubscriptions = await _context.Payments
+                        .Where(p => p.DueDate >= DateTime.UtcNow && p.Status == "Paid")
+                        .GroupBy(p => p.UsersId)
+                        .CountAsync(),
                 PendingRiders = await _context.Users.Include(r => r.UserDetails)
                     .Where(r => r.UserDetails.Status == "Pending")
                     .CountAsync(),

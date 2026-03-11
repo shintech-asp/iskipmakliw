@@ -202,7 +202,7 @@ namespace iskipmakliw.Controllers
                         Source = "ProductVariants",
                         PaymentStatus = "Pending",
                         PaymentMethod = "Cash on Delivery",
-                        PurchasedDate = DateTime.Now,
+                        PurchasedDate = DateTime.UtcNow,
                         BillingsId = billings
                     };
                     _context.PurchasedProduct.Add(purchasedProduct);
@@ -341,7 +341,7 @@ namespace iskipmakliw.Controllers
                             _ => "Pending"
                         },
                         PaymentMethod = "Online",
-                        PurchasedDate = DateTime.Now,
+                        PurchasedDate = DateTime.UtcNow,
                         BillingsId = int.Parse(billingId)
                     };
                     _context.PurchasedProduct.Add(purchasedProduct);
@@ -409,7 +409,7 @@ namespace iskipmakliw.Controllers
                     _ => "Pending"
                 },
                 PaymentMethod = "E-wallet",
-                PurchasedDate = DateTime.Now,
+                PurchasedDate = DateTime.UtcNow,
                 BillingsId = int.Parse(billingId)
             };
              _context.PurchasedProduct.Add(purchasedProduct);

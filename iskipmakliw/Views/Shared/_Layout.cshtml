@@ -88,6 +88,7 @@
     </style>
 </head>
 <body class="alt-menu">
+    <div id="mobileOverlay"></div>
     <!-- BEGIN LOADER -->
     <div id="load_screen">
         <div class="loader">
@@ -257,6 +258,7 @@
     <script src="~/src/plugins/src/notification/snackbar/snackbar.min.js"></script>
 
     <script src="~/src/assets/js/users/account-settings.js"></script>
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const sidebarCollapse = document.querySelector(".sidebarCollapse");
@@ -316,6 +318,105 @@
                             });
                         </text>
             }
+        });
+    </script>
+    <style>
+        @@media (max-width: 991px) {
+            /* Force sidebar off-screen by default — override everything Cork sets */
+            #container .sidebar-wrapper,
+            .sidebar-wrapper {
+                position: fixed !important;
+                top: 0 !important;
+                left: -300px !important;
+                width: 255px !important;
+                height: 100vh !important;
+                z-index: 99999 !important;
+                transition: left 0.3s ease !important;
+                transform: none !important;
+                visibility: visible !important;
+                display: block !important;
+                overflow-y: auto !important;
+                background: #fff !important;
+            }
+                /* Slide in when active */
+                #container .sidebar-wrapper.mobile-open,
+                .sidebar-wrapper.mobile-open {
+                    left: 0 !important;
+                }
+            /* Dimmed overlay */
+            #mobileOverlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 99998;
+            }
+
+                #mobileOverlay.show {
+                    display: block;
+                }
+            /* Make sure main content doesn't shift */
+            #content {
+                margin-left: 0 !important;
+            }
+        }
+    </style>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const sidebar  = document.querySelector(".sidebar-wrapper");
+            const overlay  = document.getElementById("mobileOverlay");
+            const triggers = document.querySelectorAll(".sidebarCollapse");
+
+            if (!sidebar || !overlay) return;
+
+            function isMobile() {
+                return window.innerWidth <= 991;
+            }
+
+            function openSidebar() {
+                sidebar.classList.add("mobile-open");
+                overlay.classList.add("show");
+                document.body.style.overflow = "hidden"; // prevent background scroll
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove("mobile-open");
+                overlay.classList.remove("show");
+                document.body.style.overflow = "";
+            }
+
+            // Burger button click
+            triggers.forEach(function (btn) {
+                btn.addEventListener("click", function (e) {
+                    if (!isMobile()) return;
+                    e.preventDefault();
+                    e.stopImmediatePropagation(); // stop Cork's handler too
+
+                    if (sidebar.classList.contains("mobile-open")) {
+                        closeSidebar();
+                    } else {
+                        openSidebar();
+                    }
+                }, true); // useCapture=true so we fire BEFORE Cork's listener
+            });
+
+            // Tap overlay to close
+            overlay.addEventListener("click", closeSidebar);
+
+            // Tap a nav link to close
+            sidebar.querySelectorAll("a").forEach(function (link) {
+                link.addEventListener("click", function () {
+                    if (isMobile()) closeSidebar();
+                });
+            });
+
+            // Clean up on resize to desktop
+            window.addEventListener("resize", function () {
+                if (!isMobile()) closeSidebar();
+            });
         });
     </script>
     @RenderSection("Scripts", required: false)

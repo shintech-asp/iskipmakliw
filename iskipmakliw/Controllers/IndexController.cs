@@ -480,7 +480,7 @@ namespace iskipmakliw.Controllers
                 if (emailSent)
                 {
                     TempData["Email"] = users.Email;
-                    TempData["Success"] = "Registration successful! We've sent a 4-digit verification code to your email.";
+                    TempData["Success"] = "Registration successful! Check your verification code to your email.";
                     return RedirectToAction("VerifyEmail");
                 }
                 else

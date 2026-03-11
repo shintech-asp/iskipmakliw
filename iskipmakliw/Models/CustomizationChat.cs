@@ -10,7 +10,7 @@
         public int CustomizationOrdersId { get; set; }
         public CustomizationOrders CustomizationOrders { get; set; }
         public string Message { get; set; }
-        public DateTime DateSent { get; set; } = DateTime.Now;
+        public DateTime DateSent { get; set; } = DateTime.UtcNow;
         public DateTime? DateReceived { get; set; }
         public bool IsFromBuyer { get; set; }
 

@@ -250,8 +250,8 @@ namespace iskipmakliw.Controllers
         public IActionResult Account()
         {
             var usersId = int.Parse(User.FindFirst("UsersId")?.Value);
-            var billings = _context.Billings.Where(u => u.UsersId == usersId).ToList();
-            var paymentMethods = _context.PaymentMethod.Where(u => u.UsersId == usersId).ToList();
+            var billings = _context.Billings.Where(u => u.UsersId == usersId && u.isDeleted != true).ToList();
+            var paymentMethods = _context.PaymentMethod.Where(u => u.UsersId == usersId && u.isDeleted != true).ToList();
 
             var billingDetails = new BillingDetailsViewModel
             {
@@ -467,7 +467,7 @@ namespace iskipmakliw.Controllers
             var folder = Path.Combine(_env.WebRootPath, "3dpurchased");
             Directory.CreateDirectory(folder); // ensure folder exists
 
-            var fileName = $"custom_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.glb";
+            var fileName = $"custom_{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.glb";
             var filePath = Path.Combine(folder, fileName);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
@@ -563,7 +563,7 @@ namespace iskipmakliw.Controllers
             {
                 if (!data2.IsFromBuyer)
                 {
-                    data2.DateReceived = DateTime.Now;
+                    data2.DateReceived = DateTime.UtcNow;
                     _context.CustomizationChat.Update(data2);
                     _context.SaveChanges();
                 }
@@ -685,7 +685,7 @@ namespace iskipmakliw.Controllers
                         PaymentDetails = "Subscription",
                         Status = "Pending",
                         UsersId = user.UsersId,
-                        DueDate = DateTime.Now.AddMonths(1)
+                        DueDate = DateTime.UtcNow.AddMonths(1)
                     });
 
                     _context.Subscription.Add(new Models.Subscription
@@ -705,7 +705,32 @@ namespace iskipmakliw.Controllers
             TempData["Error"] = "There was an error with your submission. Please try again.";
             return View(user);
         }
+        public IActionResult DeleteBillings(int Id)
+        {
+            var data = _context.Billings.FirstOrDefault(u => u.Id == Id);
 
+            if (data != null)
+            {
+                data.isDeleted = true;
+                _context.Billings.Update(data);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("Account");
+        }
+        public IActionResult DeletePayment(int Id)
+        {
+            var data = _context.PaymentMethod.FirstOrDefault(u => u.Id == Id);
+
+            if (data != null)
+            {
+                data.isDeleted = true;
+                _context.PaymentMethod.Update(data);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("Account");
+        }
         [HttpPost]
         public IActionResult Product(int Id, Cart model)
         {
