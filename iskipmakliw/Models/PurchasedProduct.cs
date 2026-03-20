@@ -15,7 +15,7 @@
         public double? ShippingFee { get; set; }
         public string PaymentStatus { get; set; }
         public string PaymentMethod { get; set; }
-        public DateTime PurchasedDate { get; set; } = DateTime.UtcNow;
+        public DateTime PurchasedDate { get; set; } = DateTime.UtcNow.AddHours(8);
         public string TransactionStatus { get; set; } = "Pending";
         public int BillingsId { get; set; }
         public Billings Billings { get; set; }

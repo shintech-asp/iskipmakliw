@@ -128,7 +128,7 @@ namespace iskipmakliw.Controllers
 
             // Generate reset token (valid for 15 minutes)
             string resetToken = Guid.NewGuid().ToString();
-            var expiryTime = DateTime.UtcNow.AddMinutes(15);
+            var expiryTime = DateTime.UtcNow.AddHours(8).AddMinutes(15);
 
             // Save token to User model
             user.PasswordResetToken = resetToken;
@@ -182,7 +182,7 @@ namespace iskipmakliw.Controllers
             }
 
             // Check if token is expired
-            if (user.PasswordResetTokenExpiry == null || user.PasswordResetTokenExpiry < DateTime.UtcNow)
+            if (user.PasswordResetTokenExpiry == null || user.PasswordResetTokenExpiry < DateTime.UtcNow.AddHours(8))
             {
                 TempData["Error"] = "This reset link has expired. Please request a new one.";
                 return RedirectToAction("Index");
@@ -225,7 +225,7 @@ namespace iskipmakliw.Controllers
             }
 
             // Check if token is expired
-            if (user.PasswordResetTokenExpiry == null || user.PasswordResetTokenExpiry < DateTime.UtcNow)
+            if (user.PasswordResetTokenExpiry == null || user.PasswordResetTokenExpiry < DateTime.UtcNow.AddHours(8))
             {
                 TempData["Error"] = "This reset link has expired. Please request a new one.";
                 return RedirectToAction("Index");
@@ -376,8 +376,8 @@ namespace iskipmakliw.Controllers
                     users.Role = "Rider";
                     users.IsEmailVerified = false;
                     users.VerificationCode = otpCode;
-                    users.CodeCreatedAt = DateTime.UtcNow;
-                    users.LastCodeSentAt = DateTime.UtcNow;
+                    users.CodeCreatedAt = DateTime.UtcNow.AddHours(8);
+                    users.LastCodeSentAt = DateTime.UtcNow.AddHours(8);
                     _context.Users.Add(users);
                     _context.SaveChanges();
                     userDetails.Status = "Pending";
@@ -471,8 +471,8 @@ namespace iskipmakliw.Controllers
                 users.Password = hasher.HashPassword(users, users.Password);
                 users.IsEmailVerified = false;
                 users.VerificationCode = otpCode;
-                users.CodeCreatedAt = DateTime.UtcNow;
-                users.LastCodeSentAt = DateTime.UtcNow;
+                users.CodeCreatedAt = DateTime.UtcNow.AddHours(8);
+                users.LastCodeSentAt = DateTime.UtcNow.AddHours(8);
 
                 _context.Users.Add(users);
                 _context.SaveChanges();
@@ -595,8 +595,8 @@ namespace iskipmakliw.Controllers
                 // Generate new OTP
                 string newCode = OTPHelper.GenerateOTP();
                 user.VerificationCode = newCode;
-                user.CodeCreatedAt = DateTime.UtcNow;
-                user.LastCodeSentAt = DateTime.UtcNow;
+                user.CodeCreatedAt = DateTime.UtcNow.AddHours(8);
+                user.LastCodeSentAt = DateTime.UtcNow.AddHours(8);
                 _context.SaveChanges();
 
                 // Send email

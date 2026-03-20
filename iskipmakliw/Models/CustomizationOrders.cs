@@ -20,6 +20,6 @@
         public string? TransactionStatus { get; set; }
         public string? CancellationReason { get; set; }
         public ICollection<CustomizationChat> CustomizationChat { get; set; }
-        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow.AddHours(8);
     }
 }

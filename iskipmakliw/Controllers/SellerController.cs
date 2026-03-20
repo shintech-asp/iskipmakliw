@@ -251,7 +251,7 @@ namespace iskipmakliw.Controllers
             {
                 if (data2.IsFromBuyer)
                 {
-                    data2.DateReceived = DateTime.UtcNow;
+                    data2.DateReceived = DateTime.UtcNow.AddHours(8);
                     _context.CustomizationChat.Update(data2);
                     _context.SaveChanges();
                 }
@@ -387,7 +387,7 @@ namespace iskipmakliw.Controllers
                     var existing = _context.ProductVariants.FirstOrDefault(p => p.Id == Id);
                     if (existing != null)
                     {
-                        existing.isArchive = DateTime.UtcNow;
+                        existing.isArchive = DateTime.UtcNow.AddHours(8);
                         _context.ProductVariants.Update(existing);
                         _context.SaveChanges();
                         TempData["Success"] = "Item successfully deleted";
@@ -912,7 +912,7 @@ namespace iskipmakliw.Controllers
                 Directory.CreateDirectory(dir);
 
                 if (string.IsNullOrWhiteSpace(fileName))
-                    fileName = $"model_{DateTime.UtcNow:yyyyMMddHHmmss}";
+                    fileName = $"model_{DateTime.UtcNow.AddHours(8):yyyyMMddHHmmss}";
 
                 if (!fileName.EndsWith(".glb", StringComparison.OrdinalIgnoreCase))
                     fileName += ".glb";

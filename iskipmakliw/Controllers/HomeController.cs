@@ -467,7 +467,7 @@ namespace iskipmakliw.Controllers
             var folder = Path.Combine(_env.WebRootPath, "3dpurchased");
             Directory.CreateDirectory(folder); // ensure folder exists
 
-            var fileName = $"custom_{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.glb";
+            var fileName = $"custom_{DateTime.UtcNow.AddHours(8):yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.glb";
             var filePath = Path.Combine(folder, fileName);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
@@ -563,7 +563,7 @@ namespace iskipmakliw.Controllers
             {
                 if (!data2.IsFromBuyer)
                 {
-                    data2.DateReceived = DateTime.UtcNow;
+                    data2.DateReceived = DateTime.UtcNow.AddHours(8);
                     _context.CustomizationChat.Update(data2);
                     _context.SaveChanges();
                 }
@@ -685,7 +685,7 @@ namespace iskipmakliw.Controllers
                         PaymentDetails = "Subscription",
                         Status = "Pending",
                         UsersId = user.UsersId,
-                        DueDate = DateTime.UtcNow.AddMonths(1)
+                        DueDate = DateTime.UtcNow.AddHours(8).AddMonths(1)
                     });
 
                     _context.Subscription.Add(new Models.Subscription

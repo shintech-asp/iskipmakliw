@@ -182,6 +182,7 @@
                                     <thead>
                                         <tr>
                                             <th>Customer</th>
+                                            <th>Status</th>
                                             <th>Plan</th>
                                             <th>Amount</th>
                                             <th>Date</th>
@@ -198,6 +199,9 @@
                                                             <a href="#" class="text-reset">@plan.Username</a>
                                                         </div>
                                                         <small class="text-muted">@plan.Email</small>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-secondary">@(plan.Payments.LastOrDefault().DueDate >= DateTime.UtcNow.AddHours(8) ? "Active" : "Inactive")</span>
                                                     </td>
                                                     <td>
                                                         <span class="badge bg-primary">@plan.Subscription?.FirstOrDefault()?.Plans.PlanName</span>

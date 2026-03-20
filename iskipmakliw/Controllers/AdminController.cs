@@ -84,10 +84,10 @@ namespace iskipmakliw.Controllers
             {
                 // Recent Subscribers (last 7 days)
                 RecentSubscribers = await _context.Users
-                    .Include(s => s.Subscription.Where(u => u.Expiration >= DateTime.UtcNow))
+                    .Include(s => s.Subscription.Where(u => u.Expiration >= DateTime.UtcNow.AddHours(8)))
                             .ThenInclude(s => s.Plans)
                     .Include(s => s.UserDetails)
-                    .Where(s => s.DateCreated >= DateTime.UtcNow.AddDays(-7) && s.Role == "Seller")
+                    .Where(s => s.DateCreated >= DateTime.UtcNow.AddHours(8).AddDays(-7) && s.Role == "Seller")
                     .OrderByDescending(s => s.DateCreated)
                     .Take(10)
                     .ToListAsync(),
@@ -96,6 +96,7 @@ namespace iskipmakliw.Controllers
                 PurchasedPlans = await _context.Users
                     .Include(s => s.Subscription)
                             .ThenInclude(s => s.Plans)
+                    .Include(s => s.Payments)
                     .Include(s => s.UserDetails)
                     .Where(s => s.Role == "Seller")
                     .OrderByDescending(s => s.DateCreated)
@@ -112,7 +113,7 @@ namespace iskipmakliw.Controllers
 
                 // Recently Registered Customers
                 RecentCustomers = await _context.Users
-                    .Where(u => u.DateCreated >= DateTime.UtcNow.AddDays(-7) && u.Role == "Customer")
+                    .Where(u => u.DateCreated >= DateTime.UtcNow.AddHours(8).AddDays(-7) && u.Role == "Customer")
                     .OrderByDescending(u => u.DateCreated)
                     .Take(10)
                     .ToListAsync(),
@@ -120,7 +121,7 @@ namespace iskipmakliw.Controllers
                 // Statistics
                 TotalSubscribers = await _context.Users.Where(s => s.Role == "Seller").CountAsync(),
                 ActiveSubscriptions = await _context.Payments
-                        .Where(p => p.DueDate >= DateTime.UtcNow && p.Status == "Paid")
+                        .Where(p => p.DueDate >= DateTime.UtcNow.AddHours(8) && p.Status == "Paid")
                         .GroupBy(p => p.UsersId)
                         .CountAsync(),
                 PendingRiders = await _context.Users.Include(r => r.UserDetails)
@@ -140,7 +141,7 @@ namespace iskipmakliw.Controllers
         private async Task<List<MonthlySubscriberData>> GetMonthlySubscriberData()
         {
             var data = new List<MonthlySubscriberData>();
-            var today = DateTime.UtcNow;
+            var today = DateTime.UtcNow.AddHours(8);
 
             for (int i = 11; i >= 0; i--)
             {
@@ -217,13 +218,24 @@ namespace iskipmakliw.Controllers
                 .Include(u => u.UserDetails)
                 .Where(u => u.Id == Ids)
                 .FirstOrDefault();
+            if(user.Role == "Seller")
+            {
+                user.UserDetails.Status = Status;
+                user.UserDetails.DeclinedReason = DeclinedReason;
+                _context.SaveChanges();
 
-            user.UserDetails.Status = Status;
+                // Send status email
+                _emailService.SendSellerStatusEmail(user.Email, Status, DeclinedReason, user.Username);
+            }else if(user.Role == "Rider")
+            {
+                    user.UserDetails.Status = Status;
             user.UserDetails.DeclinedReason = DeclinedReason;
             _context.SaveChanges();
 
             // Send status email
-            _emailService.SendSellerStatusEmail(user.Email, Status, DeclinedReason, user.Username);
+            _emailService.SendDriverStatusEmail(user.Email, Status, DeclinedReason, user.Username);
+            }
+            
 
             TempData["Success"] = "Status successfully changed!";
             return RedirectToAction("Index");

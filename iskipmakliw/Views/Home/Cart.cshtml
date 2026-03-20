@@ -4,7 +4,7 @@
     Layout = "_LayoutCustomer";
 }
 @model CartViewModel
-<form asp-action="PayProduct" asp-controller="Payments">
+<form id="checkoutForm" asp-action="PayProduct" asp-controller="Payments">
     <div class="container-fluid mt-4">
         <div class="row">
             <!-- Cart Items -->
@@ -219,7 +219,9 @@
                     </div>
                 </div>
 
-                <button class="btn btn-success w-100">Proceed to Checkout</button>
+                <button type="button" id="checkoutBtn" class="btn btn-success w-100">
+                    Proceed to Checkout
+                </button>
             </div>
         </div>
     </div>
@@ -228,7 +230,35 @@
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("checkoutBtn").addEventListener("click", function () {
 
+            const selectedItems = document.querySelectorAll(".cart-select:checked");
+
+            if(selectedItems.length === 0){
+                Swal.fire({
+                    icon: "warning",
+                    title: "No Item Selected",
+                    text: "Please select at least one product to checkout."
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: "Proceed to Checkout?",
+                text: "Please confirm your order before continuing.",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#28a745",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, checkout",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById("checkoutForm").submit();
+                }
+            });
+
+        });
         $("#Quantity").on("change", function(){
             var id = $(this).data("id");
             var quantity = $(this).val();

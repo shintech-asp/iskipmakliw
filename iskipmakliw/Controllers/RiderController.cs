@@ -49,7 +49,7 @@ namespace iskipmakliw.Controllers
             foreach (var item in data)
             {
                 item.isRemitted = true;
-                item.RemittedOn = DateTime.UtcNow; 
+                item.RemittedOn = DateTime.UtcNow.AddHours(8); 
             }
             _context.SaveChanges();
             TempData["Success"] = "Cash remitted successfully";
@@ -112,7 +112,7 @@ namespace iskipmakliw.Controllers
             var data = _context.DeliverProduct.Where(u => u.Id == Id).FirstOrDefault();
             data.RiderId = usersId;
             data.Status = "Accepted";
-            data.AcceptedOn = DateTime.UtcNow;
+            data.AcceptedOn = DateTime.UtcNow.AddHours(8);
             _context.DeliverProduct.Update(data);
             _context.SaveChanges();
             TempData["Success"] = "Delivery accepted!";
@@ -167,7 +167,7 @@ namespace iskipmakliw.Controllers
                 if (Type == 1)
                 {
                     var data = _context.DeliverProduct.Where(u => u.Id == Id).FirstOrDefault();
-                    data.PickUpOn = DateTime.UtcNow;
+                    data.PickUpOn = DateTime.UtcNow.AddHours(8);
                     _context.DeliverProduct.Update(data);
                     _context.SaveChanges();
                     var transaction = _context.PurchasedProduct.Include(u => u.Users).Where(u => u.Id == data.PurchasedProductId).FirstOrDefault();
@@ -178,7 +178,7 @@ namespace iskipmakliw.Controllers
                 else if (Type == 2)
                 {
                     var data = _context.DeliverProduct.Where(u => u.Id == Id).FirstOrDefault();
-                    data.DropOffOn = DateTime.UtcNow;
+                    data.DropOffOn = DateTime.UtcNow.AddHours(8);
                     _context.DeliverProduct.Update(data);
                     var transaction = _context.PurchasedProduct.Include(u => u.Users).Where(u => u.Id == data.PurchasedProductId).FirstOrDefault();
                     transaction.TransactionStatus = "In transit";
@@ -214,7 +214,7 @@ namespace iskipmakliw.Controllers
                             path = $"/uploads/{govFileName}";
                         }
                         var data = _context.DeliverProduct.Where(u => u.Id == Id).FirstOrDefault();
-                        data.DeliveredOn = DateTime.UtcNow;
+                        data.DeliveredOn = DateTime.UtcNow.AddHours(8);
                         data.Status = "Delivered";
                         data.ProofImage = path;
                         _context.DeliverProduct.Update(data);

@@ -9,6 +9,6 @@
         public Plans Plans { get; set; }
         public DateTime? Expiration { get; set; }
         public string Status { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(8);
     }
 }

@@ -18,6 +18,148 @@ namespace iskipmakliw.Services
         {
             _context = context;
         }
+        public bool SendDriverStatusEmail(string toEmail, string status, string? declinedReason, string username)
+        {
+            try
+            {
+                string subject = status switch
+                {
+                    "Approved" => "🎉 Your Driver Application Has Been Approved!",
+                    "Declined" => "Your Driver Application Status Update",
+                    _ => "Your Driver Application Is Under Review"
+                };
+
+                var statusColor = status switch
+                {
+                    "Approved" => "#16a34a",
+                    "Declined" => "#dc2626",
+                    _ => "#667eea"
+                };
+
+                var statusIcon = status switch
+                {
+                    "Approved" => "✅",
+                    "Declined" => "❌",
+                    _ => "⏳"
+                };
+
+                var statusHeading = status switch
+                {
+                    "Approved" => "Congratulations! Your driver application has been approved.",
+                    "Declined" => "Unfortunately, your driver application was not approved.",
+                    _ => "Your driver application is currently under review."
+                };
+
+                var statusMessage = status switch
+                {
+                    "Approved" => "Your driver application has been reviewed and accepted. You can now log in and start accepting delivery orders.",
+                    "Declined" => "After reviewing your application, we are unable to approve your driver account at this time.",
+                    _ => "Our team is currently reviewing your driver application. We will notify you once a decision has been made."
+                };
+
+                // Declined reason — only if declined and reason exists
+                var declinedBlock = (status == "Declined" && !string.IsNullOrEmpty(declinedReason))
+                    ? $@"
+<div style='background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 14px 16px; margin: 20px 0;'>
+    <strong style='color: #991b1b;'>Reason for Decline:</strong>
+    <p style='margin: 6px 0 0; color: #7f1d1d; font-size: 13px;'>{declinedReason}</p>
+</div>"
+                    : "";
+
+                // Approved: go to dashboard CTA | Declined: final notice | Pending: timeline info
+                var nextStepsBlock = status switch
+                {
+                    "Approved" => @"
+<div style='background-color: #f0fdf4; border-left: 4px solid #16a34a; padding: 14px 16px; margin: 20px 0;'>
+    <strong style='color: #166534;'>🚗 You're Ready to Drive!</strong>
+    <p style='margin: 6px 0 0; color: #15803d; font-size: 13px;'>
+        Your driver account is now active. Log in to your Driver Dashboard to 
+        set your availability and start accepting delivery orders.
+    </p>
+</div>
+<div style='text-align: center; margin: 28px 0;'>
+    <a href='#' style='background-color: #16a34a; color: #ffffff; text-decoration: none;
+       padding: 14px 36px; border-radius: 6px; font-weight: bold; font-size: 15px;
+       display: inline-block; letter-spacing: 0.3px;'>
+        Go to Driver Dashboard
+    </a>
+    <p style='margin: 12px 0 0; color: #999; font-size: 12px;'>
+        Click the button above to access your dashboard.
+    </p>
+</div>",
+
+                    "Declined" => @"
+<div style='background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 14px 16px; margin: 20px 0;'>
+    <strong style='color: #991b1b;'>⚠️ Application Closed</strong>
+    <p style='margin: 6px 0 0; color: #7f1d1d; font-size: 13px;'>
+        This application has been reviewed and will not be processed further. 
+        Thank you for your interest in becoming a driver.
+    </p>
+</div>",
+
+                    _ => @"
+<div style='background-color: #f0f4ff; border-left: 4px solid #667eea; padding: 14px 16px; margin: 20px 0;'>
+    <strong style='color: #3730a3;'>📋 What happens next?</strong>
+    <p style='margin: 6px 0 0; color: #4338ca; font-size: 13px;'>
+        Our team typically reviews driver applications within 1–3 business days. 
+        You will receive another email once a decision has been made.
+    </p>
+</div>"
+                };
+
+                string body = $@"
+<html>
+<body style='font-family: Arial, sans-serif;'>
+    <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+
+        <h2 style='color: #333;'>Driver Application Update</h2>
+        <p>Hi <strong>{username}</strong>, here is an update regarding your driver application.</p>
+
+        <!-- Status Box -->
+        <div style='background-color: #f4f4f4; padding: 20px; text-align: center; margin: 20px 0;'>
+            <p style='margin: 0; color: #666; font-size: 14px;'>Application Status</p>
+            <h1 style='color: {statusColor}; font-size: 48px; margin: 8px 0;'>{statusIcon}</h1>
+            <h2 style='color: {statusColor}; font-size: 24px; margin: 0; letter-spacing: 1px;'>{status.ToUpper()}</h2>
+        </div>
+
+        <!-- Status Summary -->
+        <div style='background-color: #f9f9f9; border-left: 4px solid {statusColor}; padding: 14px 16px; margin: 20px 0;'>
+            <strong style='color: {statusColor};'>{statusHeading}</strong>
+            <p style='margin: 6px 0 0; color: #555; font-size: 13px;'>{statusMessage}</p>
+        </div>
+
+        {declinedBlock}
+
+        {nextStepsBlock}
+
+        <hr style='margin: 30px 0; border: none; border-top: 1px solid #ddd;'>
+        <p style='color: #666; font-size: 12px;'>This is an automated message, please do not reply.</p>
+    </div>
+</body>
+</html>";
+
+                using (MailMessage mail = new MailMessage())
+                {
+                    mail.From = new MailAddress(_fromEmail, _fromName);
+                    mail.To.Add(toEmail);
+                    mail.Subject = subject;
+                    mail.Body = body;
+                    mail.IsBodyHtml = true;
+                    using (SmtpClient smtp = new SmtpClient(_smtpHost, _smtpPort))
+                    {
+                        smtp.Credentials = new NetworkCredential(_fromEmail, _fromPassword);
+                        smtp.EnableSsl = true;
+                        smtp.Send(mail);
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Email sending failed: {ex.Message}");
+                return false;
+            }
+        }
         public bool SendSellerStatusEmail(string toEmail, string status, string? declinedReason, string username)
         {
             try

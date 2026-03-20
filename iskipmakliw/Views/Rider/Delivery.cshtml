@@ -49,18 +49,18 @@
                     <b>Time lapsed:</b><br />
                     <span id="timeLapsed">Calculating...</span>
                 </div>
-                <form asp-action="Delivery" asp-controller="Rider" asp-route-Id="@Model.Id" enctype="multipart/form-data">
+                <form id="deliveryForm" asp-action="Delivery" asp-controller="Rider" asp-route-Id="@Model.Id" enctype="multipart/form-data">
                     >
                     @if (Model.PickUpOn == null)
                     {
-                        <button type="submit" class="mt-3 btn btn-warning w-100">
+                        <button type="button" id="receivedBtn" class="mt-3 btn btn-warning w-100">
                             Item received
                         </button>
                         <input type="hidden" name="Type" value="1" />
                     }
                     else if (Model.PickUpOn != null && Model.DropOffOn == null)
                     {
-                        <button type="submit" class="mt-3 btn btn-secondary w-100">
+                        <button type="button" id="dropBtn" class="mt-3 btn btn-secondary w-100">
                             Item drop
                         </button>
                         <input type="hidden" name="Type" value="2" />
@@ -131,6 +131,54 @@
 
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
+                                    function confirmDelivery(message, callback){
+                    Swal.fire({
+                        title: "Are you sure?",
+                        text: message,
+                        icon: "question",
+                        showCancelButton: true,
+                        confirmButtonColor: "#28a745",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Yes, continue",
+                        cancelButtonText: "Cancel"
+                    }).then((result)=>{
+                        if(result.isConfirmed){
+                            callback();
+                        }
+                    });
+                }
+
+                // ITEM RECEIVED
+                const receivedBtn = document.getElementById("receivedBtn");
+                if(receivedBtn){
+                    receivedBtn.addEventListener("click", function(){
+                        confirmDelivery("Confirm that you received the item from the seller.", function(){
+                            document.getElementById("deliveryForm").submit();
+                        });
+                    });
+                }
+
+                // ITEM DROP
+                const dropBtn = document.getElementById("dropBtn");
+                if(dropBtn){
+                    dropBtn.addEventListener("click", function(){
+                        confirmDelivery("Confirm that you dropped the item at the hub.", function(){
+                            document.getElementById("deliveryForm").submit();
+                        });
+                    });
+                }
+
+                // DELIVERED
+                const deliverBtn = document.getElementById("deliverBtn");
+                if(deliverBtn){
+                    deliverBtn.addEventListener("click", function(){
+                        confirmDelivery("Confirm that the item has been delivered to the customer.", function(){
+                            const modal = new bootstrap.Modal(document.getElementById('standardModal'));
+                            modal.show();
+                        });
+                    });
+                }
+
                     $("#deliverBtn").on("click", function(){
                         $("#standardModal").modal("show")
                     })
@@ -421,17 +469,17 @@
                     <b>Time lapsed:</b><br />
                     <span id="timeLapsed">Calculating...</span>
                 </div>
-                <form asp-action="Delivery" asp-controller="Rider" asp-route-Id="@Model.Id" enctype="multipart/form-data">
+                <form id="deliveryForm" asp-action="Delivery" asp-controller="Rider" asp-route-Id="@Model.Id" enctype="multipart/form-data">
                     @if (Model.PickUpOn == null)
                     {
-                        <button type="submit" class="mt-3 btn btn-warning w-100">
+                        <button type="button" id="receivedBtn" class="mt-3 btn btn-warning w-100">
                             Item received
                         </button>
                         <input type="hidden" name="Type" value="1" />
                     }
                     else if (Model.PickUpOn != null && Model.DropOffOn == null)
                     {
-                        <button type="submit" class="mt-3 btn btn-secondary w-100">
+                        <button type="button" id="dropBtn" class="mt-3 btn btn-secondary w-100">
                             Item drop
                         </button>
                         <input type="hidden" name="Type" value="2" />
@@ -502,6 +550,53 @@
 
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
+                                    function confirmDelivery(message, callback){
+                    Swal.fire({
+                        title: "Are you sure?",
+                        text: message,
+                        icon: "question",
+                        showCancelButton: true,
+                        confirmButtonColor: "#28a745",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Yes, continue",
+                        cancelButtonText: "Cancel"
+                    }).then((result)=>{
+                        if(result.isConfirmed){
+                            callback();
+                        }
+                    });
+                }
+
+                // ITEM RECEIVED
+                const receivedBtn = document.getElementById("receivedBtn");
+                if(receivedBtn){
+                    receivedBtn.addEventListener("click", function(){
+                        confirmDelivery("Confirm that you received the item from the seller.", function(){
+                            document.getElementById("deliveryForm").submit();
+                        });
+                    });
+                }
+
+                // ITEM DROP
+                const dropBtn = document.getElementById("dropBtn");
+                if(dropBtn){
+                    dropBtn.addEventListener("click", function(){
+                        confirmDelivery("Confirm that you dropped the item at the hub.", function(){
+                            document.getElementById("deliveryForm").submit();
+                        });
+                    });
+                }
+
+                // DELIVERED
+                const deliverBtn = document.getElementById("deliverBtn");
+                if(deliverBtn){
+                    deliverBtn.addEventListener("click", function(){
+                        confirmDelivery("Confirm that the item has been delivered to the customer.", function(){
+                            const modal = new bootstrap.Modal(document.getElementById('standardModal'));
+                            modal.show();
+                        });
+                    });
+                }
                     // ✅ Location data
                     $("#deliverBtn").on("click", function(){
                         $("#standardModal").modal("show")
